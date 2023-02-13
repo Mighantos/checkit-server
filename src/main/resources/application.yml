@@ -1,0 +1,7 @@
+application:
+  version: ${version}
+
+server:
+  port: 8070
+  servlet:
+    contextPath: /modelujeme/sluzby/checkit-server
