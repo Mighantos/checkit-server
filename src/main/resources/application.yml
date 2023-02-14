@@ -5,3 +5,10 @@ server:
   port: 8070
   servlet:
     contextPath: /modelujeme/sluzby/checkit-server
+
+keycloak:
+  realm: yourRealm
+  clientId: checkit-server
+  authUrl: http://localhost/auth
+  realmKey: YourKey
+  secret: YourSecret

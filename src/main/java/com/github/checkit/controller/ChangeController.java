@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/")
-public class ChangeController {
-    @GetMapping
-    public String helloWorld(){
+public class ChangeController extends BaseController {
+    @GetMapping("/hello")
+    public String helloWorld() {
         return "hello world";
     }
 }
