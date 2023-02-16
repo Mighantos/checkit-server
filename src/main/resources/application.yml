@@ -7,8 +7,14 @@ server:
     contextPath: /modelujeme/sluzby/checkit-server
 
 keycloak:
-  realm: yourRealm
-  clientId: checkit-server
+  realm: YourRealm
+  clientId: CheckIt-server
   authUrl: http://localhost/auth
   realmKey: YourKey
   secret: YourSecret
+
+repository:
+  url: http://localhost/repo
+  driver: cz.cvut.kbss.ontodriver.sesame.SesameDataSource
+  language: cs
+
