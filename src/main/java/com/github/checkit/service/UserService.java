@@ -1,10 +1,10 @@
 package com.github.checkit.service;
 
+import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.UserDao;
 import com.github.checkit.dto.UserDto;
 import com.github.checkit.model.User;
-import com.github.checkit.util.TermVocabulary;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,8 +16,11 @@ public class UserService extends BaseRepositoryService<User> {
 
     private final UserDao userDao;
 
-    public UserService(UserDao userDao) {
+    private final RepositoryConfigProperties repositoryConfigProperties;
+
+    public UserService(UserDao userDao, RepositoryConfigProperties repositoryConfigProperties) {
         this.userDao = userDao;
+        this.repositoryConfigProperties = repositoryConfigProperties;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class UserService extends BaseRepositoryService<User> {
     }
 
     public User findByUserId(String userId) {
-        URI userUri = URI.create(TermVocabulary.UZIVATEL_ID_PREFIX + userId);
+        URI userUri = URI.create(repositoryConfigProperties.getUserIdPrefix() + userId);
         return findRequired(userUri);
     }
 }

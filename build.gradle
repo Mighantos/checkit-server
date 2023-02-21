@@ -15,11 +15,15 @@ plugins {
 }
 
 group = 'com.github'
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 
 compileJava {
     sourceCompatibility = '17'
     targetCompatibility = '17'
+}
+
+bootJar {
+    archiveFileName = "checkit-server-${project.version}.jar"
 }
 
 configurations {

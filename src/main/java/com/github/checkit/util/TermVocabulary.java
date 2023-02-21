@@ -1,7 +1,7 @@
 package com.github.checkit.util;
 
 /**
- * Vocabualry for CheckIt server model.
+ * Vocabulary for CheckIt server model.
  */
 public final class TermVocabulary {
 
@@ -15,9 +15,6 @@ public final class TermVocabulary {
             "http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/";
     public static final String CHANGE_DESCRIPTION_NAMESPACE =
             "https://slovník.gov.cz/datový/popis-zmen/pojem/";
-
-    public static final String UZIVATEL_ID_PREFIX = SLOVNIK_GOV_CZ +
-            "/uživatel/";
 
     /**
      * Terms definition

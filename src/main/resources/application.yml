@@ -2,9 +2,9 @@ application:
   version: ${version}
 
 server:
-  port: 8070
+  port: 8080
   servlet:
-    contextPath: /modelujeme/sluzby/checkit-server
+    contextPath: /checkit-server
 
 keycloak:
   realm: YourRealm
@@ -17,4 +17,5 @@ repository:
   url: http://localhost/repo
   driver: cz.cvut.kbss.ontodriver.sesame.SesameDataSource
   language: cs
+  userIdPrefix: https://slovník.gov.cz/uživatel/
 
