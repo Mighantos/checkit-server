@@ -53,6 +53,7 @@ dependencies {
     implementation 'cz.cvut.kbss.jopa:jopa-impl:0.20.1'
     implementation 'cz.cvut.kbss.jopa:ontodriver-sesame:0.20.1'
     implementation 'com.github.ledsoft:jopa-spring-transaction:0.1.5'
+    implementation 'org.keycloak:keycloak-admin-client:21.0.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
