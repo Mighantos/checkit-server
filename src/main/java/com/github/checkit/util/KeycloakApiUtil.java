@@ -10,12 +10,17 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class KeycloakApiUtil {
+
+    Logger logger = LoggerFactory.getLogger(KeycloakApiUtil.class);
 
     private final KeycloakConfigProperties keycloakConfigProperties;
 
@@ -31,6 +36,9 @@ public class KeycloakApiUtil {
     @Getter
     private RoleRepresentation userRole;
 
+    @Getter
+    private String apiAdminId;
+
 
     public KeycloakApiUtil(KeycloakConfigProperties keycloakConfigProperties) {
         this.keycloakConfigProperties = keycloakConfigProperties;
@@ -41,6 +49,7 @@ public class KeycloakApiUtil {
         createConnection();
         fetchClientUUID();
         fetchClientRoles();
+        fetchApiAdminId();
     }
 
     private void createConnection() {
@@ -80,6 +89,15 @@ public class KeycloakApiUtil {
         }
         if (!requiredRoles.isEmpty()) {
             throw new KeycloakConfigurationException(String.format("Keycloak on %s in realm %s is missing required role(s) %s in client %s.", keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(), requiredRoles, keycloakConfigProperties.getClientId()));
+        }
+    }
+
+    private void fetchApiAdminId() {
+        List<UserRepresentation> userRepresentations = api.users().searchByUsername(keycloakConfigProperties.getAdminApi().getUsername(), true);
+        try {
+            apiAdminId = userRepresentations.get(0).getId();
+        } catch (Exception e) {
+            logger.info("Could not find API admin {} among users.", keycloakConfigProperties.getAdminApi().getUsername());
         }
     }
 }
