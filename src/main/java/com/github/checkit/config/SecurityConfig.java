@@ -67,7 +67,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests().requestMatchers("/**").permitAll();
         http.oauth2Login(Customizer.withDefaults());
         http.oauth2ResourceServer().jwt().jwtAuthenticationConverter(KeycloakAuthenticationConverter());
-        http.cors().and().cors().disable();
+        http.cors().and().csrf().disable();
         return http.build();
     }
 
