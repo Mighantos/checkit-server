@@ -4,7 +4,7 @@ import com.github.checkit.config.properties.RepositoryConfigProperties;
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
-import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.context.annotation.Bean;
@@ -54,7 +54,7 @@ public class PersistenceFactory {
         emfProperties.put(ONTOLOGY_PHYSICAL_URI_KEY, repositoryConfigProperties.getUrl());
         emfProperties.put(DATA_SOURCE_CLASS, repositoryConfigProperties.getDriver());
         emfProperties.put(LANG, repositoryConfigProperties.getLanguage());
-        emfProperties.put(SesameOntoDriverProperties.SESAME_LOAD_ALL_THRESHOLD, "1");
+        emfProperties.put(Rdf4jOntoDriverProperties.LOAD_ALL_THRESHOLD, "1");
         this.emf = Persistence.createEntityManagerFactory("checkItPU", emfProperties);
     }
 
@@ -64,6 +64,4 @@ public class PersistenceFactory {
             emf.close();
         }
     }
-
-
 }

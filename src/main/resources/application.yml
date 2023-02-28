@@ -18,7 +18,7 @@ keycloak:
 
 repository:
   url: http://localhost/repo
-  driver: cz.cvut.kbss.ontodriver.sesame.SesameDataSource
+  driver: cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource
   language: cs
   userIdPrefix: https://slovník.gov.cz/uživatel/
 
