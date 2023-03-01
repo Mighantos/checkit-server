@@ -30,12 +30,21 @@ public class UserService extends BaseRepositoryService<User> {
 
     public UserDto getCurrent() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = findByUserId(auth.getName());
+        User user = findRequiredByUserId(auth.getName());
         return new UserDto(user, auth.getAuthorities());
     }
 
-    public User findByUserId(String userId) {
-        URI userUri = URI.create(repositoryConfigProperties.getUserIdPrefix() + userId);
+    public User findRequiredByUserId(String userId) {
+        URI userUri = createUserUriFromId(userId);
         return findRequired(userUri);
+    }
+
+    public User getRequiredReferenceByUserId(String userId) {
+        URI userUri = createUserUriFromId(userId);
+        return getRequiredReference(userUri);
+    }
+
+    private URI createUserUriFromId(String userId){
+        return URI.create(repositoryConfigProperties.getUserIdPrefix() + userId);
     }
 }

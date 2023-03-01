@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.ProcessingException;
 import java.util.List;
 
 @Component
@@ -52,6 +54,12 @@ public class KeycloakApiUtil {
         fetchApiAdminId();
     }
 
+    public boolean isAdmin(String userId) {
+        return api.users().get(userId)
+                .roles().clientLevel(clientUUID).listAll()
+                .contains(adminRole);
+    }
+
     private void createConnection() {
         api = KeycloakBuilder.builder()
                 .serverUrl(keycloakConfigProperties.getAuthUrl())
@@ -67,8 +75,12 @@ public class KeycloakApiUtil {
         try {
             clientRepresentations = api.clients().findByClientId(keycloakConfigProperties.getClientId());
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new KeycloakConfigurationException(String.format("Bad Keycloak API configuration. serverUrl: %s, realm: %s, username: %s, password: ****, clientId: %s", keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(), keycloakConfigProperties.getAdminApi().getUsername(), keycloakConfigProperties.getApiClientId()));
+            if (e instanceof ProcessingException || e instanceof NotAuthorizedException) {
+                throw new KeycloakConfigurationException(String.format("HTTP 401 Unauthorized: Could not connect to Keycloak API with user %s and given password.", keycloakConfigProperties.getAdminApi().getUsername()));
+            } else {
+                e.printStackTrace();
+                throw new KeycloakConfigurationException(String.format("Bad Keycloak API configuration. serverUrl: %s, realm: %s, username: %s, password: ****, clientId: %s", keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(), keycloakConfigProperties.getAdminApi().getUsername(), keycloakConfigProperties.getApiClientId()));
+            }
         }
         if (clientRepresentations.isEmpty())
             throw new NotFoundException(String.format("Client with id %s not found in Keycloak realm %s on %s.", keycloakConfigProperties.getClientId(), keycloakConfigProperties.getRealm(), keycloakConfigProperties.getAuthUrl()));
