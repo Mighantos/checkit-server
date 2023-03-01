@@ -25,4 +25,13 @@ public final class TermVocabulary {
             + "má-příjmení";
     public static final String s_c_uzivatel = DATA_DESCRIPTION_NAMESPACE
             + "uživatel";
+    public static final String s_c_slovnikovy_kontext = WORKSPACE_NAMESPACE + "slovníkový-kontext";
+    public static final String s_c_prilohovy_kontext = WORKSPACE_NAMESPACE + "přílohový-kontext";
+    public static final String s_c_slovnik = DATA_DESCRIPTION_NAMESPACE + "slovník";
+    public static final String s_p_vychazi_z_verze = WORKSPACE_NAMESPACE + "vychází-z-verze";
+    public static final String s_p_odkazuje_na_prilohovy_kontext = WORKSPACE_NAMESPACE
+            + "odkazuje-na-přílohový-kontext";
+
+    public static final String s_p_ma_gestora = CHANGE_DESCRIPTION_NAMESPACE + "má-gestora";
+    public static final String s_p_je_gestorem = CHANGE_DESCRIPTION_NAMESPACE + "je-gestorem";
 }

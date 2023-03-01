@@ -43,8 +43,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public ClientRegistrationRepository clientRegistrationRepository(){
-        ClientRegistration clientRegistration1= ClientRegistration.withRegistrationId("keycloak")
+    public ClientRegistrationRepository clientRegistrationRepository() {
+        ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("keycloak")
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .clientId(keycloakConfigProperties.getClientId())
                 .clientSecret(keycloakConfigProperties.getSecret())
@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .redirectUri(keycloakConfigProperties.getAuthorizationUrl())
                 .authorizationUri(keycloakConfigProperties.getAuthorizationUrl())
                 .build();
-        return new InMemoryClientRegistrationRepository(clientRegistration1);
+        return new InMemoryClientRegistrationRepository(clientRegistration);
     }
 
     @Bean

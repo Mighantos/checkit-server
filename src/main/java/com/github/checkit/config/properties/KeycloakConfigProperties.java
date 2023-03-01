@@ -27,6 +27,8 @@ public class KeycloakConfigProperties {
     private final String jwksSuffix = "certs";
     private final String endSessionSuffix = "logout";
 
+    private final String apiClientId = "admin-cli";
+
     @Nonnull
     private String realm;
 
@@ -41,6 +43,9 @@ public class KeycloakConfigProperties {
 
     @Nonnull
     private String secret;
+
+    @Nonnull
+    private AdminApiCredentials adminApi;
 
     private String issuerUrl;
 
@@ -107,5 +112,18 @@ public class KeycloakConfigProperties {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         stringBuilder.append(protocolSeparator);
         return stringBuilder.toString();
+    }
+
+    @Getter
+    @Setter
+    @Configuration
+    @ConfigurationProperties("adminapi")
+    public static class AdminApiCredentials {
+
+        @Nonnull
+        private String username;
+
+        @Nonnull
+        private String password;
     }
 }

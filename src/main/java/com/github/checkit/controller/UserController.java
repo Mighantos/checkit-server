@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping(UserController.MAPPING)
 public class UserController extends BaseController {
+
+    public static final String MAPPING = "/users";
 
     private final UserService userService;
 
@@ -17,7 +19,7 @@ public class UserController extends BaseController {
     }
 
     @GetMapping("/current")
-    public UserDto getCurrentUser(){
+    public UserDto getCurrentUser() {
         return userService.getCurrent();
     }
 }

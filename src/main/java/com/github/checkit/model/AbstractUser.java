@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -32,5 +33,27 @@ public abstract class AbstractUser implements HasIdentifier, HasTypes, Serializa
         return uri != null
                 ? uri.getPath().substring(uri.getPath().lastIndexOf('/') + 1)
                 : null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractUser that = (AbstractUser) o;
+        return Objects.equals(uri, that.uri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uri);
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractUser{" +
+                "uri=" + uri +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
     }
 }

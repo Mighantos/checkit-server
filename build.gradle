@@ -50,9 +50,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.0.2'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.0.2'
     implementation 'org.springframework.boot:spring-boot-starter-validation:3.0.2'
-    implementation 'cz.cvut.kbss.jopa:jopa-impl:0.20.1'
-    implementation 'cz.cvut.kbss.jopa:ontodriver-sesame:0.20.1'
+    implementation 'cz.cvut.kbss.jopa:jopa-impl:0.20.0'
+    implementation 'cz.cvut.kbss.jopa:ontodriver-rdf4j:0.20.0'
     implementation 'com.github.ledsoft:jopa-spring-transaction:0.1.5'
+    implementation 'org.keycloak:keycloak-admin-client:21.0.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

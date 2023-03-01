@@ -12,10 +12,13 @@ keycloak:
   authUrl: http://localhost/auth
   realmKey: YourKey
   secret: YourSecret
+  adminAPI:
+    username: admincheckit
+    password: pass
 
 repository:
   url: http://localhost/repo
-  driver: cz.cvut.kbss.ontodriver.sesame.SesameDataSource
+  driver: cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource
   language: cs
   userIdPrefix: https://slovník.gov.cz/uživatel/
 
