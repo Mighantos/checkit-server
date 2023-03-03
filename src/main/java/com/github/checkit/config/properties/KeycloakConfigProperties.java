@@ -45,7 +45,7 @@ public class KeycloakConfigProperties {
     private String secret;
 
     @Nonnull
-    private AdminApiCredentials adminApi;
+    private ApiAdminCredentials apiAdmin;
 
     private String issuerUrl;
 
@@ -117,8 +117,8 @@ public class KeycloakConfigProperties {
     @Getter
     @Setter
     @Configuration
-    @ConfigurationProperties("adminapi")
-    public static class AdminApiCredentials {
+    @ConfigurationProperties("apiadmin")
+    public static class ApiAdminCredentials {
 
         @Nonnull
         private String username;

@@ -7,6 +7,10 @@ public class NotFoundException extends BaseException {
         super(message);
     }
 
+    public NotFoundException(String message, Object... args) {
+        super(message, args);
+    }
+
     public static NotFoundException create(String resourceName, Object identifier) {
         return new NotFoundException(resourceName + " identified by " + identifier + " not found.");
     }

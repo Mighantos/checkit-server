@@ -12,7 +12,7 @@ keycloak:
   authUrl: http://localhost/auth
   realmKey: YourKey
   secret: YourSecret
-  adminAPI:
+  apiAdmin:
     username: admincheckit
     password: pass
 
