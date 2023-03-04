@@ -1,6 +1,6 @@
 package com.github.checkit.controller;
 
-import com.github.checkit.dto.GestorDto;
+import com.github.checkit.dto.GestorUserDto;
 import com.github.checkit.service.AdminUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ public class AdminUserController extends AdminManagementController {
     }
 
     @GetMapping
-    public List<GestorDto> getAllUsers(){
+    public List<GestorUserDto> getAllUsers(){
         return adminUserService.getAllUsers();
     }
 
