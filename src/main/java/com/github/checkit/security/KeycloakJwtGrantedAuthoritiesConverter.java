@@ -20,24 +20,10 @@ public class KeycloakJwtGrantedAuthoritiesConverter implements Converter<Jwt, Co
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
         Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        for (String authority : getAuthorities(jwt)) {
+        List<String> authorities = KeycloakJwtClaimsExtractor.extractAuthorities(jwt, keycloakConfigProperties.getClientId());
+        for (String authority : authorities) {
             grantedAuthorities.add(new SimpleGrantedAuthority(authority));
         }
         return grantedAuthorities;
-    }
-
-    private List<String> getAuthorities(Jwt jwt) {
-        List<String> authorities = new ArrayList<>();
-        Map<String, Object> resourceAccess = (Map) jwt.getClaims().get(KeycloakJwtClaimsConstants.RESOURCE_ACCESS);
-        if (Objects.nonNull(resourceAccess)) {
-            Map<String, Object> checkItResourceAccess = (Map) resourceAccess.get(keycloakConfigProperties.getClientId());
-            if (Objects.nonNull(checkItResourceAccess)) {
-                List<String> roles = (List) checkItResourceAccess.get(KeycloakJwtClaimsConstants.ROLES);
-                if (Objects.nonNull(roles)) {
-                    authorities.addAll(roles);
-                }
-            }
-        }
-        return authorities;
     }
 }

@@ -1,12 +1,13 @@
 package com.github.checkit.service;
 
-import com.github.checkit.dto.GestorDto;
+import com.github.checkit.dto.GestorUserDto;
 import com.github.checkit.exception.KeycloakApiAdminException;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.util.KeycloakApiUtil;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -38,12 +39,13 @@ public class AdminUserService {
         }
     }
 
-    public List<GestorDto> getAllUsers() {
+    public List<GestorUserDto> getAllUsers() {
         return userService.findAll().stream().filter(user -> !user.getId().equals(keycloakApiUtil.getApiAdminId()))
                 .map(user -> {
                     boolean admin = keycloakApiUtil.isAdmin(user.getId());
+                    UserRepresentation userRepresentation = keycloakApiUtil.getApi().users().get(user.getId()).toRepresentation();
                     Set<URI> gestoredVocabularies = user.getGestoredVocabularies();
-                    return new GestorDto(user, admin, gestoredVocabularies);
+                    return new GestorUserDto(user, userRepresentation.getEmail(), userRepresentation.getUsername(), admin, gestoredVocabularies);
                 }).collect(Collectors.toList());
     }
 
