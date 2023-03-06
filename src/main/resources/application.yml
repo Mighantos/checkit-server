@@ -2,6 +2,8 @@ application:
   version: ${version}
 
 server:
+  error:
+    include-message: always
   port: 8080
   servlet:
     contextPath: /checkit-server

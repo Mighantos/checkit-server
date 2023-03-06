@@ -1,7 +1,11 @@
 package com.github.checkit.exception;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 import java.util.Objects;
 
+@ResponseStatus(HttpStatus.NOT_FOUND)
 public class NotFoundException extends BaseException {
     public NotFoundException(String message) {
         super(message);
@@ -12,7 +16,7 @@ public class NotFoundException extends BaseException {
     }
 
     public static NotFoundException create(String resourceName, Object identifier) {
-        return new NotFoundException(resourceName + " identified by " + identifier + " not found.");
+        return new NotFoundException(resourceName + " identified by \"" + identifier + "\" not found.");
     }
 
     public static NotFoundException create(Class<?> resourceType, Object identifier) {

@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.FORBIDDEN)
-public class KeycloakApiAdminException extends BaseException {
+public class SelfAdminRoleChangeException extends BaseException {
 
-    public KeycloakApiAdminException() {
-        super("Modifying API admin user is not allowed.");
+    public SelfAdminRoleChangeException() {
+        super("You can only modify Admin role of others, not your own.");
     }
 }
