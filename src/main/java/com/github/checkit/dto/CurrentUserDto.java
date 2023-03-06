@@ -12,19 +12,14 @@ import java.util.Collection;
 import java.util.List;
 
 @Getter
-public class CurrentUserDto {
-    private final String id;
+public class CurrentUserDto extends UserDto {
     private final String username;
-    private final String firstName;
-    private final String lastName;
     private final String email;
     private final List<String> roles;
 
     public CurrentUserDto(User user, Authentication auth) {
-        this.id = user.getId();
+        super(user);
         this.username = extractUsername(auth);
-        this.firstName = user.getFirstName();
-        this.lastName = user.getLastName();
         this.email = extractEmail(auth);
         this.roles = new ArrayList<>();
         setRolesFromAuthorities(auth.getAuthorities());

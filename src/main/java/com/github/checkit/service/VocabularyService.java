@@ -26,6 +26,7 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
 
 
     public List<VocabularyDto> getAllInDto() {
-        return findAll().stream().map(VocabularyDto::new).sorted(Comparator.comparing(VocabularyDto::getUri)).collect(Collectors.toList());
+        return findAll().stream().map(VocabularyDto::new)
+                .sorted(Comparator.comparing(VocabularyDto::getUri)).collect(Collectors.toList());
     }
 }
