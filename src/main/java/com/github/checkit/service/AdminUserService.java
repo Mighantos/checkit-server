@@ -2,12 +2,12 @@ package com.github.checkit.service;
 
 import com.github.checkit.dto.GestorUserDto;
 import com.github.checkit.exception.KeycloakApiAdminException;
+import com.github.checkit.exception.SelfAdminRoleChangeException;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.util.KeycloakApiUtil;
-import org.keycloak.admin.client.resource.RoleScopeResource;
-import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -30,12 +30,11 @@ public class AdminUserService {
 
     public void setAdminRoleToUser(String userKeycloakId, boolean admin) {
         checkNotApiAdmin(userKeycloakId);
-        UserResource user = keycloakApiUtil.getApi().users().get(userKeycloakId);
-        RoleScopeResource roleScopeResource = user.roles().clientLevel(keycloakApiUtil.getClientUUID());
+        checkNotCurrentUser(userKeycloakId);
         if (admin) {
-            roleScopeResource.add(List.of(keycloakApiUtil.getAdminRole()));
+            keycloakApiUtil.setAdminRoleForUser(userKeycloakId);
         } else {
-            roleScopeResource.remove(List.of(keycloakApiUtil.getAdminRole()));
+            keycloakApiUtil.removeAdminRoleForUser(userKeycloakId);
         }
     }
 
@@ -52,6 +51,13 @@ public class AdminUserService {
     private void checkNotApiAdmin(String userId) {
         if (userId.equals(keycloakApiUtil.getApiAdminId())) {
             throw new KeycloakApiAdminException();
+        }
+    }
+
+    private void checkNotCurrentUser(String userId) {
+        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (userId.equals(currentUserId)) {
+            throw new SelfAdminRoleChangeException();
         }
     }
 
