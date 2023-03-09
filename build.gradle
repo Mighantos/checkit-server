@@ -45,15 +45,15 @@ repositories {
 dependencies {
     aspect 'cz.cvut.kbss.jopa:jopa-impl:0.17.2'
 
-    implementation 'org.springframework.boot:spring-boot-starter-websocket:3.0.2'
-    implementation 'org.springframework.boot:spring-boot-starter-security:3.0.2'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.0.2'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.0.2'
-    implementation 'org.springframework.boot:spring-boot-starter-validation:3.0.2'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket:3.0.4'
+    implementation 'org.springframework.boot:spring-boot-starter-security:3.0.4'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.0.4'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.0.4'
+    implementation 'org.springframework.boot:spring-boot-starter-validation:3.0.4'
     implementation 'cz.cvut.kbss.jopa:jopa-impl:0.20.0'
-    implementation 'cz.cvut.kbss.jopa:ontodriver-rdf4j:0.20.0'
+    implementation 'cz.cvut.kbss.jopa:ontodriver-rdf4j:0.21.0'
     implementation 'com.github.ledsoft:jopa-spring-transaction:0.1.5'
-    implementation 'org.keycloak:keycloak-admin-client:21.0.0'
+    implementation 'org.keycloak:keycloak-admin-client:21.0.1'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
