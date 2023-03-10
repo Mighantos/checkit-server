@@ -8,9 +8,11 @@ import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @MappedSuperclass
+@EqualsAndHashCode
 public abstract class AbstractEntity implements HasIdentifier, HasTypes, Serializable {
 
     @Id(generated = true)

@@ -28,10 +28,15 @@ public class UserService extends BaseRepositoryService<User> {
         return userDao;
     }
 
-    public CurrentUserDto getCurrent() {
+    public CurrentUserDto getCurrentDto() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = findRequiredByUserId(auth.getName());
+        User user = getCurrent();
         return new CurrentUserDto(user, auth);
+    }
+
+    public User getCurrent() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return findRequiredByUserId(auth.getName());
     }
 
     public User findRequiredByUserId(String userId) {
@@ -44,7 +49,7 @@ public class UserService extends BaseRepositoryService<User> {
         return getRequiredReference(userUri);
     }
 
-    private URI createUserUriFromId(String userId){
+    private URI createUserUriFromId(String userId) {
         return URI.create(repositoryConfigProperties.getUserIdPrefix() + userId);
     }
 }

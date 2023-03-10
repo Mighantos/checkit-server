@@ -1,6 +1,8 @@
 package com.github.checkit.persistence;
 
+import com.github.checkit.model.GestoringRequest;
 import com.github.checkit.model.Vocabulary;
+import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -66,6 +68,24 @@ public class DescriptorFactory {
         Objects.requireNonNull(vocabularyUri);
         EntityDescriptor descriptor = entityDescriptor(vocabularyUri);
         descriptor.addAttributeDescriptor(fieldSpec(Vocabulary.class, "gestors"),
+                new EntityDescriptor((URI) null));
+        return descriptor;
+    }
+
+    /**
+     * Creates a JOPA descriptor for a vocabulary with the specified identifier.
+     *
+     * <p>The descriptor specifies that the instance will correspond to the given IRI.
+     * It also initializes other required attribute descriptors.
+     *
+     * @return Vocabulary descriptor
+     */
+    public Descriptor gestoringRequestDescriptor() {
+        URI contextUri = URI.create(TermVocabulary.s_c_pozadavek_na_gestorovani);
+        EntityDescriptor descriptor = entityDescriptor(contextUri);
+        descriptor.addAttributeDescriptor(fieldSpec(GestoringRequest.class, "applicant"),
+                new EntityDescriptor((URI) null));
+        descriptor.addAttributeDescriptor(fieldSpec(GestoringRequest.class, "vocabulary"),
                 new EntityDescriptor((URI) null));
         return descriptor;
     }
