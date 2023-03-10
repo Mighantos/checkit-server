@@ -5,21 +5,23 @@ import com.github.checkit.exception.KeycloakConfigurationException;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.security.UserRole;
 import jakarta.annotation.PostConstruct;
+import java.util.List;
+import java.util.Map;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.ProcessingException;
 import lombok.Getter;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.representations.idm.*;
+import org.keycloak.representations.idm.ClientMappingsRepresentation;
+import org.keycloak.representations.idm.ClientRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.ProcessingException;
-import java.util.List;
-import java.util.Map;
 
 @Component
 public class KeycloakApiUtil {
@@ -86,12 +88,12 @@ public class KeycloakApiUtil {
 
     private void createApiConnection() {
         api = KeycloakBuilder.builder()
-                .serverUrl(keycloakConfigProperties.getAuthUrl())
-                .realm(keycloakConfigProperties.getRealm())
-                .username(keycloakConfigProperties.getApiAdmin().getUsername())
-                .password(keycloakConfigProperties.getApiAdmin().getPassword())
-                .clientId(keycloakConfigProperties.getApiClientId())
-                .build().realm(keycloakConfigProperties.getRealm());
+            .serverUrl(keycloakConfigProperties.getAuthUrl())
+            .realm(keycloakConfigProperties.getRealm())
+            .username(keycloakConfigProperties.getApiAdmin().getUsername())
+            .password(keycloakConfigProperties.getApiAdmin().getPassword())
+            .clientId(keycloakConfigProperties.getApiClientId())
+            .build().realm(keycloakConfigProperties.getRealm());
     }
 
     private void checkApiRights() {
@@ -108,12 +110,21 @@ public class KeycloakApiUtil {
             api.users().searchByUsername(keycloakConfigProperties.getApiAdmin().getUsername(), true);
         } catch (Exception e) {
             if (e instanceof ProcessingException || e instanceof NotAuthorizedException) {
-                throw new KeycloakConfigurationException("HTTP 401 Unauthorized. Could not connect to Keycloak API with user \"%s\" and given password.", keycloakConfigProperties.getApiAdmin().getUsername());
+                throw new KeycloakConfigurationException(
+                    "HTTP 401 Unauthorized. Could not connect to Keycloak API with user \"%s\" and given password.",
+                    keycloakConfigProperties.getApiAdmin().getUsername());
             } else if (e instanceof ForbiddenException) {
-                throw new KeycloakConfigurationException("HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not search in users by username.", keycloakConfigProperties.getApiAdmin().getUsername());
+                throw new KeycloakConfigurationException(
+                    "HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not search in users by "
+                        + "username.",
+                    keycloakConfigProperties.getApiAdmin().getUsername());
             } else if (!(e instanceof KeycloakConfigurationException)) {
                 e.printStackTrace();
-                throw new KeycloakConfigurationException("Bad Keycloak API configuration. serverUrl: \"%s\", realm: \"%s\", username: \"%s\", password: ****, clientId: \"%s\"", keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(), keycloakConfigProperties.getApiAdmin().getUsername(), keycloakConfigProperties.getApiClientId());
+                throw new KeycloakConfigurationException(
+                    "Bad Keycloak API configuration. serverUrl: \"%s\", realm: \"%s\", username: \"%s\", password: "
+                        + "****, clientId: \"%s\"",
+                    keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(),
+                    keycloakConfigProperties.getApiAdmin().getUsername(), keycloakConfigProperties.getApiClientId());
             }
         }
     }
@@ -126,17 +137,24 @@ public class KeycloakApiUtil {
         try {
             apiAdminUserResource.update(apiAdminUserRepresentation);
         } catch (ForbiddenException e) {
-            throw new KeycloakConfigurationException("HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not update user.", keycloakConfigProperties.getApiAdmin().getUsername());
+            throw new KeycloakConfigurationException(
+                "HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not update user.",
+                keycloakConfigProperties.getApiAdmin().getUsername());
         }
     }
 
     private void checkClientSearchRight() {
         try {
             List<ClientRepresentation> allClients = api.clients().findAll();
-            if (allClients.isEmpty())
-                throw new KeycloakConfigurationException("HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not search for clients.", keycloakConfigProperties.getApiAdmin().getUsername());
+            if (allClients.isEmpty()) {
+                throw new KeycloakConfigurationException(
+                    "HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not search for clients.",
+                    keycloakConfigProperties.getApiAdmin().getUsername());
+            }
         } catch (ForbiddenException e) {
-            throw new KeycloakConfigurationException("HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not search for clients.", keycloakConfigProperties.getApiAdmin().getUsername());
+            throw new KeycloakConfigurationException(
+                "HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not search for clients.",
+                keycloakConfigProperties.getApiAdmin().getUsername());
         }
 
     }
@@ -144,27 +162,36 @@ public class KeycloakApiUtil {
     private void checkUserClientRolesUpdateRight(UserResource apiAdminUserResource) {
         // Checks that user client roles can be changed for all assembly line clients (prefixed with "al-")
         try {
-            Map<String, ClientMappingsRepresentation> clientMappings = apiAdminUserResource.roles().getAll().getClientMappings();
+            Map<String, ClientMappingsRepresentation> clientMappings =
+                apiAdminUserResource.roles().getAll().getClientMappings();
             for (String clientId : clientMappings.keySet()) {
-                if (!clientId.startsWith(ASSEMBLY_LINE_CLIENT_PREFIX))
+                if (!clientId.startsWith(ASSEMBLY_LINE_CLIENT_PREFIX)) {
                     continue;
+                }
                 List<ClientRepresentation> foundClients = api.clients().findByClientId(clientId);
                 if (foundClients.isEmpty()) {
                     logger.warn("Could not find client with clientId {}", clientId);
                     continue;
                 }
-                RoleScopeResource roleScopeResource = apiAdminUserResource.roles().clientLevel(foundClients.get(0).getId());
+                RoleScopeResource roleScopeResource =
+                    apiAdminUserResource.roles().clientLevel(foundClients.get(0).getId());
                 roleScopeResource.remove(roleScopeResource.listAll());
             }
         } catch (ForbiddenException e) {
-            throw new KeycloakConfigurationException("HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not update user client roles.", keycloakConfigProperties.getApiAdmin().getUsername());
+            throw new KeycloakConfigurationException(
+                "HTTP 403 Forbidden. Bad API Admin user \"%s\" configuration. Could not update user client roles.",
+                keycloakConfigProperties.getApiAdmin().getUsername());
         }
     }
 
     private void fetchClientUUID() {
-        List<ClientRepresentation> clientRepresentations = api.clients().findByClientId(keycloakConfigProperties.getClientId());
-        if (clientRepresentations.isEmpty())
-            throw new NotFoundException("Client with id \"%s\" not found in Keycloak realm \"%s\" on \"%s\".", keycloakConfigProperties.getClientId(), keycloakConfigProperties.getRealm(), keycloakConfigProperties.getAuthUrl());
+        List<ClientRepresentation> clientRepresentations =
+            api.clients().findByClientId(keycloakConfigProperties.getClientId());
+        if (clientRepresentations.isEmpty()) {
+            throw new NotFoundException("Client with id \"%s\" not found in Keycloak realm \"%s\" on \"%s\".",
+                keycloakConfigProperties.getClientId(), keycloakConfigProperties.getRealm(),
+                keycloakConfigProperties.getAuthUrl());
+        }
         clientUUID = clientRepresentations.get(0).getId();
     }
 
@@ -181,14 +208,20 @@ public class KeycloakApiUtil {
             }
         }
         if (!requiredRoles.isEmpty()) {
-            throw new KeycloakConfigurationException("Keycloak on \"%s\" in realm \"%s\" is missing required role(s) \"%s\" in client \"%s\".", keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(), requiredRoles, keycloakConfigProperties.getClientId());
+            throw new KeycloakConfigurationException(
+                "Keycloak on \"%s\" in realm \"%s\" is missing required role(s) \"%s\" in client \"%s\".",
+                keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(), requiredRoles,
+                keycloakConfigProperties.getClientId());
         }
     }
 
     private void fetchApiAdminId() {
-        List<UserRepresentation> userRepresentations = api.users().searchByUsername(keycloakConfigProperties.getApiAdmin().getUsername(), true);
-        if (userRepresentations.isEmpty())
-            throw new KeycloakConfigurationException("Could not find API admin \"%s\" among users.", keycloakConfigProperties.getApiAdmin().getUsername());
+        List<UserRepresentation> userRepresentations =
+            api.users().searchByUsername(keycloakConfigProperties.getApiAdmin().getUsername(), true);
+        if (userRepresentations.isEmpty()) {
+            throw new KeycloakConfigurationException("Could not find API admin \"%s\" among users.",
+                keycloakConfigProperties.getApiAdmin().getUsername());
+        }
         apiAdminId = userRepresentations.get(0).getId();
     }
 }

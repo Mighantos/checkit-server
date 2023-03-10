@@ -1,10 +1,9 @@
 package com.github.checkit.dto;
 
 import com.github.checkit.model.Vocabulary;
-import lombok.Getter;
-
 import java.net.URI;
 import java.util.List;
+import lombok.Getter;
 
 @Getter
 public class VocabularyDto {

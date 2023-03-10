@@ -1,12 +1,17 @@
 package com.github.checkit.model;
 
 import com.github.checkit.util.TermVocabulary;
-import cz.cvut.kbss.jopa.model.annotations.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
+import cz.cvut.kbss.jopa.model.annotations.CascadeType;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
+import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -22,7 +27,8 @@ public class GestoringRequest extends AbstractEntity {
     private User applicant;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = TermVocabulary.s_p_ma_zada_o_gestorovani, fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @OWLObjectProperty(iri = TermVocabulary.s_p_ma_zada_o_gestorovani, fetch = FetchType.EAGER, cascade =
+        CascadeType.DETACH)
     private Vocabulary vocabulary;
 
     @PrePersist
@@ -37,11 +43,11 @@ public class GestoringRequest extends AbstractEntity {
 
     @Override
     public String toString() {
-        return "GestoringRequest{" +
-                "uri=" + getUri() +
-                ", created=" + created +
-                ", applicant=" + (applicant != null ? applicant.getUri() : applicant) +
-                ", vocabulary=" + (vocabulary != null ? vocabulary.getUri() : vocabulary) +
-                '}';
+        return "GestoringRequest{"
+            + "uri=" + getUri()
+            + ", created=" + created
+            + ", applicant=" + (applicant != null ? applicant.getUri() : applicant)
+            + ", vocabulary=" + (vocabulary != null ? vocabulary.getUri() : vocabulary)
+            + '}';
     }
 }

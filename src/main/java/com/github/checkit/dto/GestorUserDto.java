@@ -1,10 +1,9 @@
 package com.github.checkit.dto;
 
 import com.github.checkit.model.User;
-import lombok.Getter;
-
 import java.net.URI;
 import java.util.Set;
+import lombok.Getter;
 
 @Getter
 public class GestorUserDto extends UserDto {

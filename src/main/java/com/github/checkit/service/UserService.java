@@ -5,11 +5,10 @@ import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.UserDao;
 import com.github.checkit.dto.CurrentUserDto;
 import com.github.checkit.model.User;
+import java.net.URI;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.net.URI;
 
 @Service
 public class UserService extends BaseRepositoryService<User> {

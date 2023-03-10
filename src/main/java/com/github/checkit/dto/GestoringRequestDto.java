@@ -1,10 +1,9 @@
 package com.github.checkit.dto;
 
 import com.github.checkit.model.GestoringRequest;
-import lombok.Getter;
-
 import java.net.URI;
 import java.time.Instant;
+import lombok.Getter;
 
 @Getter
 public class GestoringRequestDto {

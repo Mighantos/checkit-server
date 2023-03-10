@@ -1,14 +1,17 @@
 package com.github.checkit.model;
 
 import com.github.checkit.util.TermVocabulary;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
+import lombok.Data;
 
 @Data
 @MappedSuperclass
@@ -31,14 +34,18 @@ public abstract class AbstractUser implements HasIdentifier, HasTypes, Serializa
 
     public String getId() {
         return uri != null
-                ? uri.getPath().substring(uri.getPath().lastIndexOf('/') + 1)
-                : null;
+               ? uri.getPath().substring(uri.getPath().lastIndexOf('/') + 1)
+               : null;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AbstractUser that = (AbstractUser) o;
         return Objects.equals(uri, that.uri);
     }
@@ -50,10 +57,10 @@ public abstract class AbstractUser implements HasIdentifier, HasTypes, Serializa
 
     @Override
     public String toString() {
-        return "AbstractUser{" +
-                "uri=" + uri +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                '}';
+        return "AbstractUser{"
+            + "uri=" + uri
+            + ", firstName='" + firstName + '\''
+            + ", lastName='" + lastName + '\''
+            + '}';
     }
 }

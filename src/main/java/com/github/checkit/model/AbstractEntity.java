@@ -2,11 +2,10 @@ package com.github.checkit.model;
 
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Set;
-
-import cz.cvut.kbss.jopa.model.annotations.Types;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

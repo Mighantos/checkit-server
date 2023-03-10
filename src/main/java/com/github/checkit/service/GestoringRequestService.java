@@ -5,11 +5,10 @@ import com.github.checkit.dao.GestoringRequestDao;
 import com.github.checkit.dto.GestoringRequestDto;
 import com.github.checkit.model.GestoringRequest;
 import com.github.checkit.util.TermVocabulary;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.net.URI;
 import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GestoringRequestService extends BaseRepositoryService<GestoringRequest> {
@@ -18,7 +17,8 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     private final UserService userService;
     private final VocabularyService vocabularyService;
 
-    public GestoringRequestService(GestoringRequestDao gestoringRequestDao, UserService userService, VocabularyService vocabularyService) {
+    public GestoringRequestService(GestoringRequestDao gestoringRequestDao, UserService userService,
+                                   VocabularyService vocabularyService) {
         this.gestoringRequestDao = gestoringRequestDao;
         this.userService = userService;
         this.vocabularyService = vocabularyService;

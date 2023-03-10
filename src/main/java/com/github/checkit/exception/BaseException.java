@@ -4,6 +4,7 @@ abstract class BaseException extends RuntimeException {
 
     protected BaseException() {
     }
+
     public BaseException(String message) {
         super(message);
     }

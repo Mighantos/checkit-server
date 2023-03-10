@@ -2,14 +2,13 @@ package com.github.checkit.dto;
 
 import com.github.checkit.model.User;
 import com.github.checkit.security.KeycloakJwtClaimsExtractor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import lombok.Getter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @Getter
 public class CurrentUserDto extends UserDto {

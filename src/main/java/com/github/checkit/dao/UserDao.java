@@ -3,13 +3,12 @@ package com.github.checkit.dao;
 import com.github.checkit.model.User;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import org.springframework.stereotype.Repository;
-
 import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserDao extends BaseDao<User> {
@@ -34,11 +33,11 @@ public class UserDao extends BaseDao<User> {
     }
 
     private Set<URI> loadGestoredVocabularies(User user) {
-        return new HashSet<>(em.createNativeQuery("SELECT ?vocab WHERE {" +
-                        "?user ?jeGestorem ?vocab ." +
-                        "}", URI.class)
-                .setParameter("user", user.getUri())
-                .setParameter("jeGestorem", URI.create(TermVocabulary.s_p_je_gestorem))
-                .getResultList());
+        return new HashSet<>(em.createNativeQuery("SELECT ?vocab WHERE {"
+                + "?user ?jeGestorem ?vocab ."
+                + "}", URI.class)
+            .setParameter("user", user.getUri())
+            .setParameter("jeGestorem", URI.create(TermVocabulary.s_p_je_gestorem))
+            .getResultList());
     }
 }
