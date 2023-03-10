@@ -22,6 +22,13 @@ public final class KeycloakJwtClaimsExtractor {
         return (String) jwt.getClaims().get(USERNAME);
     }
 
+    /**
+     * Extracts roles for given client ID from JWT token sent by Keycloak.
+     *
+     * @param jwt JWT token from Keycloak
+     * @param clientId Keycloak client ID
+     * @return list of roles
+     */
     public static List<String> extractAuthorities(Jwt jwt, String clientId) {
         List<String> authorities = new ArrayList<>();
         Map<String, Object> resourceAccess = (Map) jwt.getClaims().get(KeycloakJwtClaimsExtractor.RESOURCE_ACCESS);

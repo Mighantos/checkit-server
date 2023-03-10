@@ -27,6 +27,11 @@ public class UserService extends BaseRepositoryService<User> {
         return userDao;
     }
 
+    /**
+     * Returns current user with his roles.
+     *
+     * @return current user
+     */
     public CurrentUserDto getCurrentDto() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = getCurrent();

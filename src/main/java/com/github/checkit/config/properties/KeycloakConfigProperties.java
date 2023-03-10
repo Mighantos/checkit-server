@@ -59,6 +59,11 @@ public class KeycloakConfigProperties {
 
     private String endSessionUrl;
 
+    /**
+     * Generates and returns issuer URL if not specified.
+     *
+     * @return issuer URL
+     */
     public String getIssuerUrl() {
         if (issuerUrl == null) {
             generateIssuerUrl();
@@ -66,6 +71,11 @@ public class KeycloakConfigProperties {
         return issuerUrl;
     }
 
+    /**
+     * Generates and returns JSON Web Key Sets URL if not specified.
+     *
+     * @return JWKS URL
+     */
     public String getJwksUrl() {
         if (jwksUrl == null) {
             jwksUrl = generateProtocolPrefixUrl() + jwksSuffix;
@@ -73,6 +83,11 @@ public class KeycloakConfigProperties {
         return jwksUrl;
     }
 
+    /**
+     * Generates and returns authorization URL if not specified.
+     *
+     * @return authorization URL
+     */
     public String getAuthorizationUrl() {
         if (authorizationUrl == null) {
             authorizationUrl = generateProtocolPrefixUrl() + authorizationSuffix;
@@ -80,6 +95,11 @@ public class KeycloakConfigProperties {
         return authorizationUrl;
     }
 
+    /**
+     * Generates and returns token issuer URL if not specified.
+     *
+     * @return token issuer URL
+     */
     public String getTokenUrl() {
         if (tokenUrl == null) {
             tokenUrl = generateProtocolPrefixUrl() + tokenSuffix;
@@ -87,6 +107,11 @@ public class KeycloakConfigProperties {
         return tokenUrl;
     }
 
+    /**
+     * Generates and returns user info URL if not specified.
+     *
+     * @return user info URL
+     */
     public String getUserInfoUrl() {
         if (userInfoUrl == null) {
             userInfoUrl = generateProtocolPrefixUrl() + userInfoSuffix;
@@ -94,6 +119,11 @@ public class KeycloakConfigProperties {
         return userInfoUrl;
     }
 
+    /**
+     * Generates and returns URL to end session if not specified.
+     *
+     * @return end session URL
+     */
     public String getEndSessionUrl() {
         if (endSessionUrl == null) {
             endSessionUrl = generateProtocolPrefixUrl() + endSessionSuffix;

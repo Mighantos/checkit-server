@@ -21,6 +21,9 @@ public class AdminUserService {
     private final UserService userService;
     private final VocabularyService vocabularyService;
 
+    /**
+     * Constructor.
+     */
     public AdminUserService(KeycloakApiUtil keycloakApiUtil, UserService userService,
                             VocabularyService vocabularyService) {
         this.keycloakApiUtil = keycloakApiUtil;
@@ -28,6 +31,12 @@ public class AdminUserService {
         this.vocabularyService = vocabularyService;
     }
 
+    /**
+     * Sets or removes admin role for specified user in keycloak.
+     *
+     * @param userKeycloakId ID of user to be modified
+     * @param admin if user should have admin role or not
+     */
     public void setAdminRoleToUser(String userKeycloakId, boolean admin) {
         checkNotApiAdmin(userKeycloakId);
         checkNotCurrentUser(userKeycloakId);
@@ -38,6 +47,11 @@ public class AdminUserService {
         }
     }
 
+    /**
+     * Returns all users with their gestored vocabularies.
+     *
+     * @return list of users
+     */
     public List<GestorUserDto> getAllUsers() {
         return userService.findAll().stream().filter(user -> !user.getId().equals(keycloakApiUtil.getApiAdminId()))
             .map(user -> {
@@ -48,6 +62,34 @@ public class AdminUserService {
                 return new GestorUserDto(user, userRepresentation.getEmail(), userRepresentation.getUsername(), admin,
                     gestoredVocabularies);
             }).collect(Collectors.toList());
+    }
+
+    /**
+     * Adds user as a gestor of the specified vocabulary.
+     *
+     * @param vocabularyUri vocabulary URI
+     * @param userId user's ID
+     */
+    public void addUserAsGestorOfVocabulary(URI vocabularyUri, String userId) {
+        checkNotApiAdmin(userId);
+        Vocabulary vocabulary = vocabularyService.findRequired(vocabularyUri);
+        User user = userService.getRequiredReferenceByUserId(userId);
+        vocabulary.addGestor(user);
+        vocabularyService.update(vocabulary);
+    }
+
+    /**
+     * Removes user from gestors of the specified vocabulary.
+     *
+     * @param vocabularyUri vocabulary URI
+     * @param userId user's ID
+     */
+    public void removeUserAsGestorFromVocabulary(URI vocabularyUri, String userId) {
+        checkNotApiAdmin(userId);
+        Vocabulary vocabulary = vocabularyService.findRequired(vocabularyUri);
+        User user = userService.getRequiredReferenceByUserId(userId);
+        vocabulary.removeGestor(user);
+        vocabularyService.update(vocabulary);
     }
 
     private void checkNotApiAdmin(String userId) {
@@ -61,21 +103,5 @@ public class AdminUserService {
         if (userId.equals(currentUserId)) {
             throw new SelfAdminRoleChangeException();
         }
-    }
-
-    public void addUserAsGestorOfVocabulary(URI vocabularyUri, String userId) {
-        checkNotApiAdmin(userId);
-        Vocabulary vocabulary = vocabularyService.findRequired(vocabularyUri);
-        User user = userService.getRequiredReferenceByUserId(userId);
-        vocabulary.addGestor(user);
-        vocabularyService.update(vocabulary);
-    }
-
-    public void removeUserAsGestorFromVocabulary(URI vocabularyUri, String userId) {
-        checkNotApiAdmin(userId);
-        Vocabulary vocabulary = vocabularyService.findRequired(vocabularyUri);
-        User user = userService.getRequiredReferenceByUserId(userId);
-        vocabulary.removeGestor(user);
-        vocabularyService.update(vocabulary);
     }
 }

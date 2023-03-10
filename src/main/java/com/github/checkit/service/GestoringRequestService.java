@@ -17,6 +17,9 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     private final UserService userService;
     private final VocabularyService vocabularyService;
 
+    /**
+     * Constructor.
+     */
     public GestoringRequestService(GestoringRequestDao gestoringRequestDao, UserService userService,
                                    VocabularyService vocabularyService) {
         this.gestoringRequestDao = gestoringRequestDao;
@@ -48,6 +51,11 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
         remove(gestoringRequest);
     }
 
+    /**
+     * Creates gestoring request for given vocabulary with current user as applicant.
+     *
+     * @param vocabularyUri vocabulary URI
+     */
     @Transactional
     public void create(URI vocabularyUri) {
         GestoringRequest gestoringRequest = new GestoringRequest();

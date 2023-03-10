@@ -16,6 +16,9 @@ public class CurrentUserDto extends UserDto {
     private final String email;
     private final List<String> roles;
 
+    /**
+     * Constructor.
+     */
     public CurrentUserDto(User user, Authentication auth) {
         super(user);
         this.username = extractUsername(auth);

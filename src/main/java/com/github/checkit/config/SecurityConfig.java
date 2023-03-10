@@ -28,6 +28,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@SuppressWarnings("checkstyle:MissingJavadocMethod")
 public class SecurityConfig {
 
     private final KeycloakConfigProperties keycloakConfigProperties;

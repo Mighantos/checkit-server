@@ -32,6 +32,11 @@ public abstract class AbstractUser implements HasIdentifier, HasTypes, Serializa
     @Types
     protected Set<String> types;
 
+    /**
+     * Gets user's ID extracted from {@link AbstractUser#uri}.
+     *
+     * @return returns id extracted from {@link AbstractUser#uri}
+     */
     public String getId() {
         return uri != null
                ? uri.getPath().substring(uri.getPath().lastIndexOf('/') + 1)

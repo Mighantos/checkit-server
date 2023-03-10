@@ -14,6 +14,9 @@ public class GestoringRequestDto {
     private final URI applicant;
     private final URI vocabulary;
 
+    /**
+     * Constructor.
+     */
     public GestoringRequestDto(GestoringRequest gestoringRequest) {
         this.id = gestoringRequest.getId();
         this.uri = gestoringRequest.getUri();

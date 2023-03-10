@@ -12,6 +12,9 @@ public class VocabularyDto {
     private final String label;
     private final List<UserDto> gestors;
 
+    /**
+     * Constructor.
+     */
     public VocabularyDto(Vocabulary vocabulary) {
         this.uri = vocabulary.getUri();
         this.label = vocabulary.getLabel();
