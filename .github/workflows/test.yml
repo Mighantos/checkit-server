@@ -30,4 +30,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Build
-        run: gradle clean build -x test
+        run: gradle clean build -x test -x checkstyleMain -x checkstyleTest
+
+      - name: Checkstyle
+        run: gradle checkstyleMain checkstyleTest
+
+      - name: Test
+        run: gradle test
