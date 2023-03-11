@@ -19,7 +19,7 @@ public class VocabularyContext extends AbstractEntity {
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
     @OWLObjectProperty(iri = TermVocabulary.s_p_vychazi_z_verze, fetch = FetchType.EAGER)
-    private Vocabulary vocabulary;
+    private Vocabulary basedOnVocabulary;
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_odkazuje_na_prilohovy_kontext, fetch = FetchType.EAGER)
     private Set<AttachmentContext> attachmentContexts = new HashSet<>();

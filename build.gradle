@@ -16,7 +16,7 @@ plugins {
 }
 
 group = 'com.github'
-version = "0.2.0"
+version = "0.3.0"
 
 compileJava {
     sourceCompatibility = '17'
@@ -55,6 +55,7 @@ dependencies {
     implementation 'cz.cvut.kbss.jopa:ontodriver-rdf4j:0.21.0'
     implementation 'com.github.ledsoft:jopa-spring-transaction:0.1.5'
     implementation 'org.keycloak:keycloak-admin-client:21.0.1'
+    implementation 'org.apache.jena:apache-jena-libs:4.7.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
