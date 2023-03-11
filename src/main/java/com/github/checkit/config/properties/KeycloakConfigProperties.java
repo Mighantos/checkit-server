@@ -36,7 +36,7 @@ public class KeycloakConfigProperties {
     private String clientId;
 
     @Nonnull
-    private String authUrl;
+    private String url;
 
     @Nonnull
     private String realmKey;
@@ -133,7 +133,7 @@ public class KeycloakConfigProperties {
 
     private void generateIssuerUrl() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(authUrl);
+        stringBuilder.append(url);
         if (stringBuilder.charAt(stringBuilder.length() - 1) == '/') {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
