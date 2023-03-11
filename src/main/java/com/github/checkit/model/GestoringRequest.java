@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
 @OWLClass(iri = TermVocabulary.s_c_pozadavek_na_gestorovani)
 public class GestoringRequest extends AbstractEntity {
 
-    //    @ParticipationConstraints(nonEmpty = true)
+    @ParticipationConstraints(nonEmpty = true)
     @OWLDataProperty(iri = TermVocabulary.s_p_ma_datum_a_cas_vytvoreni)
     private Instant created;
 
