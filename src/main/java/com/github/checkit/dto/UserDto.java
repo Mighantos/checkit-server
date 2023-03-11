@@ -10,12 +10,9 @@ public class UserDto {
     private final String firstName;
     private final String lastName;
 
-    public UserDto(String id, String firstName, String lastName) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
-
+    /**
+     * Constructor.
+     */
     public UserDto(User user) {
         this.id = user.getId();
         this.firstName = user.getFirstName();

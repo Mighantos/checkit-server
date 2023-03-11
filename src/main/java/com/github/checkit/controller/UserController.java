@@ -20,6 +20,6 @@ public class UserController extends BaseController {
 
     @GetMapping("/current")
     public CurrentUserDto getCurrentUser() {
-        return userService.getCurrent();
+        return userService.getCurrentDto();
     }
 }

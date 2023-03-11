@@ -6,11 +6,10 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.vocabulary.DC;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.util.HashSet;
 import java.util.Set;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 
 @Data

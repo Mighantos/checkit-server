@@ -4,7 +4,6 @@ import com.github.checkit.exception.PersistenceException;
 import com.github.checkit.model.HasIdentifier;
 import com.github.checkit.util.EntityToOwlClassMapper;
 import cz.cvut.kbss.jopa.model.EntityManager;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -32,8 +31,8 @@ public abstract class BaseDao<T extends HasIdentifier> implements GenericDao<T> 
     public List<T> findAll() {
         try {
             return em.createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", type)
-                    .setParameter("type", typeUri)
-                    .getResultList();
+                .setParameter("type", typeUri)
+                .getResultList();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
@@ -104,9 +103,9 @@ public abstract class BaseDao<T extends HasIdentifier> implements GenericDao<T> 
         Objects.requireNonNull(id);
         try {
             return em.createNativeQuery("ASK { ?x a ?type . }", Boolean.class)
-                    .setParameter("x", id)
-                    .setParameter("type", typeUri)
-                    .getSingleResult();
+                .setParameter("x", id)
+                .setParameter("type", typeUri)
+                .getSingleResult();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }

@@ -2,6 +2,7 @@ package com.github.checkit.config;
 
 import com.github.checkit.config.properties.KeycloakConfigProperties;
 import com.github.checkit.security.KeycloakJwtGrantedAuthoritiesConverter;
+import java.util.Collections;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -24,11 +25,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Collections;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@SuppressWarnings("checkstyle:MissingJavadocMethod")
 public class SecurityConfig {
 
     private final KeycloakConfigProperties keycloakConfigProperties;
@@ -45,15 +45,15 @@ public class SecurityConfig {
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
         ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("keycloak")
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .clientId(keycloakConfigProperties.getClientId())
-                .clientSecret(keycloakConfigProperties.getSecret())
-                .issuerUri(keycloakConfigProperties.getIssuerUrl())
-                .tokenUri(keycloakConfigProperties.getTokenUrl())
-                .userInfoUri(keycloakConfigProperties.getUserInfoUrl())
-                .redirectUri(keycloakConfigProperties.getAuthorizationUrl())
-                .authorizationUri(keycloakConfigProperties.getAuthorizationUrl())
-                .build();
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .clientId(keycloakConfigProperties.getClientId())
+            .clientSecret(keycloakConfigProperties.getSecret())
+            .issuerUri(keycloakConfigProperties.getIssuerUrl())
+            .tokenUri(keycloakConfigProperties.getTokenUrl())
+            .userInfoUri(keycloakConfigProperties.getUserInfoUrl())
+            .redirectUri(keycloakConfigProperties.getAuthorizationUrl())
+            .authorizationUri(keycloakConfigProperties.getAuthorizationUrl())
+            .build();
         return new InMemoryClientRegistrationRepository(clientRegistration);
     }
 
@@ -66,14 +66,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests().requestMatchers("/**").permitAll();
         http.oauth2Login(Customizer.withDefaults());
-        http.oauth2ResourceServer().jwt().jwtAuthenticationConverter(KeycloakAuthenticationConverter());
+        http.oauth2ResourceServer().jwt().jwtAuthenticationConverter(
+            keycloakAuthenticationConverter());
         http.cors().and().csrf().disable();
         return http.build();
     }
 
-    protected JwtAuthenticationConverter KeycloakAuthenticationConverter() {
+    protected JwtAuthenticationConverter keycloakAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(new KeycloakJwtGrantedAuthoritiesConverter(keycloakConfigProperties));
+        converter.setJwtGrantedAuthoritiesConverter(
+            new KeycloakJwtGrantedAuthoritiesConverter(keycloakConfigProperties));
         return converter;
     }
 
@@ -84,7 +86,7 @@ public class SecurityConfig {
         // than just the UI.
         // This behavior can be restricted later.
         final CorsConfiguration corsConfiguration =
-                new CorsConfiguration().applyPermitDefaultValues();
+            new CorsConfiguration().applyPermitDefaultValues();
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
         corsConfiguration.addExposedHeader(HttpHeaders.AUTHORIZATION);

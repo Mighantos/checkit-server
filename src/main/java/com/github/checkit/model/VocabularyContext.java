@@ -6,11 +6,10 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.util.HashSet;
 import java.util.Set;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

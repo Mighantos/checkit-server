@@ -5,25 +5,23 @@ import com.fasterxml.classmate.TypeResolver;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.model.HasIdentifier;
-import jakarta.validation.Validator;
-import org.springframework.lang.NonNull;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.lang.NonNull;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Base implementation of repository services.
- * <p>
- * It contains the basic transactional CRUD operations. Subclasses are expected to provide DAO of the correct type,
+ *
+ * <p>It contains the basic transactional CRUD operations. Subclasses are expected to provide DAO of the correct type,
  * which is used by the CRUD methods implemented by this base class.
- * <p>
- * In order to minimize chances of messing up the transactional behavior, subclasses *should not* override the main CRUD
- * methods and instead should provide custom business logic by overriding the helper hooks such as {@link
- * #prePersist(HasIdentifier)}.
+ *
+ * <p>In order to minimize chances of messing up the transactional behavior, subclasses *should not* override the main
+ * CRUD methods and instead should provide custom business logic by overriding the helper hooks such as
+ * {@link #prePersist(HasIdentifier)}.
  *
  * @param <T> Domain object type managed by this service
  */
@@ -37,7 +35,8 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
     protected abstract BaseDao<T> getPrimaryDao();
 
     // Read methods are intentionally not transactional because, for example, when postLoad manipulates the resulting
-    // entity in any way, transaction commit would attempt to insert the change into the repository, which is not desired
+    // entity in any way, transaction commit would attempt to insert the change into the repository,
+    // which is not desired
 
     /**
      * Loads all instances of the type managed by this service from the repository.
@@ -62,12 +61,12 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
 
     /**
      * Gets a reference to an object wih the specified identifier.
-     * <p>
-     * Note that all attributes of the reference are loaded lazily and the corresponding persistence context must be
+     *
+     * <p>Note that all attributes of the reference are loaded lazily and the corresponding persistence context must be
      * still open to load them.
-     * <p>
-     * Also note that, in contrast to {@link #find(URI)}, this method does not invoke {@link #postLoad(HasIdentifier)}
-     * for the loaded instance.
+     *
+     * <p>Also note that, in contrast to {@link #find(URI)}, this method does not invoke
+     * {@link #postLoad(HasIdentifier)} for the loaded instance.
      *
      * @param id Identifier of the object to load
      * @return {@link Optional} with the loaded reference or an empty one
@@ -78,9 +77,9 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
 
     /**
      * Finds an object with the specified id and returns it.
-     * <p>
-     * In comparison to {@link #find(URI)}, this method guarantees to return a matching instance. If no such object is
-     * found, a {@link NotFoundException} is thrown.
+     *
+     * <p>In comparison to {@link #find(URI)}, this method guarantees to return a matching instance. If no such object
+     * is found, a {@link NotFoundException} is thrown.
      *
      * @param id Identifier of the object to load
      * @return The matching object
@@ -88,26 +87,28 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
      * @see #find(URI)
      */
     public T findRequired(URI id) {
-        return find(id).orElseThrow(() -> NotFoundException.create(resolveGenericType().getSimpleName(), id));
+        return find(id).orElseThrow(
+            () -> NotFoundException.create(resolveGenericType().getSimpleName(), id));
     }
 
     /**
      * Gets a reference to an object wih the specified identifier.
-     * <p>
-     * In comparison to {@link #getReference(URI)}, this method guarantees to return a matching instance. If no such
+     *
+     * <p>In comparison to {@link #getReference(URI)}, this method guarantees to return a matching instance. If no such
      * object is found, a {@link NotFoundException} is thrown.
-     * <p>
-     * Note that all attributes of the reference are loaded lazily and the corresponding persistence context must be
+     *
+     * <p>Note that all attributes of the reference are loaded lazily and the corresponding persistence context must be
      * still open to load them.
-     * <p>
-     * Also note that, in contrast to {@link #find(URI)}, this method does not invoke {@link #postLoad(HasIdentifier)}
-     * for the loaded instance.
+     *
+     * <p>Also note that, in contrast to {@link #find(URI)}, this method does not invoke
+     * {@link #postLoad(HasIdentifier)} for the loaded instance.
      *
      * @param id Identifier of the object to load
      * @return {@link Optional} with the loaded reference or an empty one
      */
     public T getRequiredReference(URI id) {
-        return getReference(id).orElseThrow(() -> NotFoundException.create(resolveGenericType().getSimpleName(), id));
+        return getReference(id).orElseThrow(
+            () -> NotFoundException.create(resolveGenericType().getSimpleName(), id));
     }
 
     /**
@@ -118,7 +119,8 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
     private Class<T> resolveGenericType() {
         // Adapted from https://gist.github.com/yunspace/930d4d40a787a1f6a7d1
         final List<ResolvedType> typeParameters =
-                new TypeResolver().resolve(this.getClass()).typeParametersFor(BaseRepositoryService.class);
+            new TypeResolver().resolve(this.getClass())
+                .typeParametersFor(BaseRepositoryService.class);
         assert typeParameters.size() == 1;
         return (Class<T>) typeParameters.get(0).getErasedType();
     }
@@ -182,8 +184,8 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
 
     /**
      * Override this method to plug custom behavior into the transactional cycle of {@link #update(HasIdentifier)} )}.
-     * <p>
-     * The default behavior is to ensure its existence in the repository.
+     *
+     * <p>The default behavior is to ensure its existence in the repository.
      *
      * @param instance The instance to be updated, not {@code null}
      */
@@ -196,8 +198,8 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
     /**
      * Override this method to plug custom behavior into the transactional cycle of {@link #update(HasIdentifier)} )}.
      *
-     * @param instance The updated instance which will be returned by {@link #update(HasIdentifier)} )}, not {@code
-     *                 null}
+     * @param instance The updated instance which will be returned by {@link #update(HasIdentifier)} )}, not
+     *                 {@code null}
      */
     protected void postUpdate(@NonNull T instance) {
         // Do nothing
@@ -218,8 +220,8 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
 
     /**
      * Override this method to plug custom behavior into the transactional cycle of {@link #remove(HasIdentifier)}.
-     * <p>
-     * The default behavior is a no-op.
+     *
+     * <p>The default behavior is a no-op.
      *
      * @param instance The instance to be removed, not {@code null}
      */
@@ -229,8 +231,8 @@ public abstract class BaseRepositoryService<T extends HasIdentifier> {
 
     /**
      * Override this method to plug custom behavior into the transactional cycle of {@link #remove(HasIdentifier)}.
-     * <p>
-     * The default behavior is a no-op.
+     *
+     * <p>The default behavior is a no-op.
      *
      * @param instance The removed instance, not {@code null}
      */

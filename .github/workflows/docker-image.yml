@@ -11,9 +11,30 @@ env:
   TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Gradle 8.0.1
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 8.0.1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build
+        run: gradle clean build -x test
 
   build-and-publish:
-
+    name: Build JAR and publish Docker image
+    needs: build-and-test
     runs-on: ubuntu-latest
     permissions:
       contents: read

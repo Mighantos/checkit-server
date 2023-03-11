@@ -4,12 +4,11 @@ import com.github.checkit.exception.PersistenceException;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.persistence.DescriptorFactory;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import org.springframework.stereotype.Repository;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class VocabularyDao extends BaseDao<Vocabulary> {
@@ -25,8 +24,8 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
     public List<Vocabulary> findAll() {
         try {
             return em.createNativeQuery("SELECT ?voc WHERE { GRAPH ?voc { ?voc a ?type . } }", type)
-                    .setParameter("type", typeUri)
-                    .getResultList();
+                .setParameter("type", typeUri)
+                .getResultList();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }

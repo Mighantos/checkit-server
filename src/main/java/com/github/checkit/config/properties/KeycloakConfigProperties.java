@@ -59,47 +59,84 @@ public class KeycloakConfigProperties {
 
     private String endSessionUrl;
 
+    /**
+     * Generates and returns issuer URL if not specified.
+     *
+     * @return issuer URL
+     */
     public String getIssuerUrl() {
-        if (issuerUrl == null)
+        if (issuerUrl == null) {
             generateIssuerUrl();
+        }
         return issuerUrl;
     }
 
+    /**
+     * Generates and returns JSON Web Key Sets URL if not specified.
+     *
+     * @return JWKS URL
+     */
     public String getJwksUrl() {
-        if (jwksUrl == null)
+        if (jwksUrl == null) {
             jwksUrl = generateProtocolPrefixUrl() + jwksSuffix;
+        }
         return jwksUrl;
     }
 
+    /**
+     * Generates and returns authorization URL if not specified.
+     *
+     * @return authorization URL
+     */
     public String getAuthorizationUrl() {
-        if (authorizationUrl == null)
+        if (authorizationUrl == null) {
             authorizationUrl = generateProtocolPrefixUrl() + authorizationSuffix;
+        }
         return authorizationUrl;
     }
 
+    /**
+     * Generates and returns token issuer URL if not specified.
+     *
+     * @return token issuer URL
+     */
     public String getTokenUrl() {
-        if (tokenUrl == null)
+        if (tokenUrl == null) {
             tokenUrl = generateProtocolPrefixUrl() + tokenSuffix;
+        }
         return tokenUrl;
     }
 
+    /**
+     * Generates and returns user info URL if not specified.
+     *
+     * @return user info URL
+     */
     public String getUserInfoUrl() {
-        if (userInfoUrl == null)
+        if (userInfoUrl == null) {
             userInfoUrl = generateProtocolPrefixUrl() + userInfoSuffix;
+        }
         return userInfoUrl;
     }
 
+    /**
+     * Generates and returns URL to end session if not specified.
+     *
+     * @return end session URL
+     */
     public String getEndSessionUrl() {
-        if (endSessionUrl == null)
+        if (endSessionUrl == null) {
             endSessionUrl = generateProtocolPrefixUrl() + endSessionSuffix;
+        }
         return endSessionUrl;
     }
 
     private void generateIssuerUrl() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(authUrl);
-        if (stringBuilder.charAt(stringBuilder.length() - 1) == '/')
+        if (stringBuilder.charAt(stringBuilder.length() - 1) == '/') {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
         stringBuilder.append(realmSeparator);
         stringBuilder.append(realm);
         issuerUrl = stringBuilder.toString();
@@ -108,8 +145,9 @@ public class KeycloakConfigProperties {
     private String generateProtocolPrefixUrl() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(getIssuerUrl());
-        if (stringBuilder.charAt(stringBuilder.length() - 1) == '/')
+        if (stringBuilder.charAt(stringBuilder.length() - 1) == '/') {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
         stringBuilder.append(protocolSeparator);
         return stringBuilder.toString();
     }

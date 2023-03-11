@@ -1,0 +1,26 @@
+application:
+  version: ${version}
+
+server:
+  error:
+    include-message: always
+  port: 8080
+  servlet:
+    contextPath: /checkit-server
+
+keycloak:
+  realm: YourRealm
+  clientId: CheckIt-server
+  authUrl: http://localhost/auth
+  realmKey: YourKey
+  secret: YourSecret
+  apiAdmin:
+    username: admincheckit
+    password: pass
+
+repository:
+  url: memcheckit
+  driver: cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource
+  language: cs
+  userIdPrefix: https://slovník.gov.cz/uživatel/
+

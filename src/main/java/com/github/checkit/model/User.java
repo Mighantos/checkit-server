@@ -3,13 +3,12 @@ package com.github.checkit.model;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.Transient;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)

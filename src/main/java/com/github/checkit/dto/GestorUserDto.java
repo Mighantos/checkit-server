@@ -1,10 +1,9 @@
 package com.github.checkit.dto;
 
 import com.github.checkit.model.User;
-import lombok.Getter;
-
 import java.net.URI;
 import java.util.Set;
+import lombok.Getter;
 
 @Getter
 public class GestorUserDto extends UserDto {
@@ -13,6 +12,9 @@ public class GestorUserDto extends UserDto {
     private final boolean admin;
     private final Set<URI> gestoredVocabularies;
 
+    /**
+     * Constructor.
+     */
     public GestorUserDto(User user, String email, String username, boolean admin, Set<URI> gestoredVocabularies) {
         super(user);
         this.username = username;

@@ -1,7 +1,6 @@
 package com.github.checkit.dao;
 
 import com.github.checkit.model.HasIdentifier;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -24,8 +23,8 @@ public interface GenericDao<T extends HasIdentifier> {
      * Finds entity instance with the specified identifier.
      *
      * @param id Identifier
-     * @return {@code Optional} containing the matching entity instance or an empty {@code Optional}
-     *     if no such instance exists
+     * @return {@code Optional} containing the matching entity instance or an empty {@code Optional} if no such instance
+     *     exists
      */
     Optional<T> find(URI id);
 
@@ -33,12 +32,12 @@ public interface GenericDao<T extends HasIdentifier> {
      * Gets a reference to an instance with the specified identifier.
      *
      * <p>Note that the reference is initially an empty object wth all attributes loaded lazily and
-     * the corresponding persistence context has to be available for the loading. This method should
-     * be useful for removal and update operations.
+     * the corresponding persistence context has to be available for the loading. This method should be useful for
+     * removal and update operations.
      *
      * @param id Identifier
-     * @return {@code Optional} containing a reference to a matching instance or an empty {@code
-     *     Optional }if no such instance exists
+     * @return {@code Optional} containing a reference to a matching instance or an empty {@code Optional }if no such
+     *     instance exists
      */
     Optional<T> getReference(URI id);
 
@@ -53,8 +52,7 @@ public interface GenericDao<T extends HasIdentifier> {
      * Updates the specified entity.
      *
      * @param entity Entity to update
-     * @return The updated entity. Use it for further processing, as it could be a completely
-     *     different instance
+     * @return The updated entity. Use it for further processing, as it could be a completely different instance
      */
     T update(T entity);
 
@@ -73,8 +71,7 @@ public interface GenericDao<T extends HasIdentifier> {
     void remove(URI id);
 
     /**
-     * Checks whether an entity with the specified id exists (and has the type managed by this
-     * DAO).
+     * Checks whether an entity with the specified id exists (and has the type managed by this DAO).
      *
      * @param id Entity identifier
      * @return {@literal true} if entity exists, {@literal false} otherwise

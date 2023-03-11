@@ -1,18 +1,17 @@
 package com.github.checkit.security;
 
-import org.springframework.security.oauth2.jwt.Jwt;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 public final class KeycloakJwtClaimsExtractor {
-    public final static String RESOURCE_ACCESS = "resource_access";
-    public final static String ROLES = "roles";
-    public final static String USERNAME = "preferred_username";
-    public final static String EMAIL = "email";
-    public final static String ROLE_PREFIX = "ROLE_";
+    public static final String RESOURCE_ACCESS = "resource_access";
+    public static final String ROLES = "roles";
+    public static final String USERNAME = "preferred_username";
+    public static final String EMAIL = "email";
+    public static final String ROLE_PREFIX = "ROLE_";
 
     public static String extractEmail(Jwt jwt) {
         return (String) jwt.getClaims().get(EMAIL);
@@ -23,6 +22,13 @@ public final class KeycloakJwtClaimsExtractor {
         return (String) jwt.getClaims().get(USERNAME);
     }
 
+    /**
+     * Extracts roles for given client ID from JWT token sent by Keycloak.
+     *
+     * @param jwt JWT token from Keycloak
+     * @param clientId Keycloak client ID
+     * @return list of roles
+     */
     public static List<String> extractAuthorities(Jwt jwt, String clientId) {
         List<String> authorities = new ArrayList<>();
         Map<String, Object> resourceAccess = (Map) jwt.getClaims().get(KeycloakJwtClaimsExtractor.RESOURCE_ACCESS);
