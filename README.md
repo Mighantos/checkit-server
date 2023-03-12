@@ -127,7 +127,7 @@ Optional variables allowing more configuration.
 | KEYCLOAK_AUTHORIZATION-URL  | URL of Keycloak's authorization endpoint.           |
 | KEYCLOAK_TOKEN-URL          | URL of Keycloak's token endpoint.                   |
 | KEYCLOAK_USER-INFO-URL      | URL of Keycloak's user info endpoint.               |
-| KEYCLOAK_JWKS-URL           | Keycloak's JWKS URI.                                |
+| KEYCLOAK_JWKS-URL           | Keycloak's JWK Set URL.                             |
 | KEYCLOAK_END_SESSION_URL    | URL of Keycloak's end session (logout) endpoint.    |
 | REPOSITORY_USER-ID-PREFIX   | Prefix for Keycloak user IDs used in Database.      |
 | REPOSITORY_DRIVER           | Database connection driver.                         |

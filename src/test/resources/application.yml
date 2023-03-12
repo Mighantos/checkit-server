@@ -9,11 +9,11 @@ server:
     contextPath: /checkit-server
 
 keycloak:
-  realm: YourRealm
-  clientId: CheckIt-server
-  authUrl: http://localhost/auth
-  realmKey: YourKey
-  secret: YourSecret
+  realm: your-realm
+  clientId: client-checkit-server
+  url: http://keyclaok:8080/
+  realmKey: YourRealmKeyThatIsVeryLongAndUsuallyStartsLikeThisMIIBIjANB
+  secret: YourSecret-Looking-Like-This-858d5e62a5e5
   apiAdmin:
     username: admincheckit
     password: pass
