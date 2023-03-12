@@ -96,8 +96,8 @@ here:
   is:
     anExample: "of YAML format"
 
-  # Environment variables format
-  HERE_IS_AN-EXAMPLE="of environment variable format"
+# Environment variables format
+HERE_IS_AN-EXAMPLE="of environment variable format"
 ```
 
 ### Required
