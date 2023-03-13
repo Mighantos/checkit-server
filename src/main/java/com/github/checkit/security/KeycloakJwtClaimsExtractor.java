@@ -25,7 +25,7 @@ public final class KeycloakJwtClaimsExtractor {
     /**
      * Extracts roles for given client ID from JWT token sent by Keycloak.
      *
-     * @param jwt JWT token from Keycloak
+     * @param jwt      JWT token from Keycloak
      * @param clientId Keycloak client ID
      * @return list of roles
      */

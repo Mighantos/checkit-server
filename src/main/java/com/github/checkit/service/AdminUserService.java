@@ -20,15 +20,17 @@ public class AdminUserService {
     private final KeycloakApiUtil keycloakApiUtil;
     private final UserService userService;
     private final VocabularyService vocabularyService;
+    private final GestoringRequestService gestoringRequestService;
 
     /**
      * Constructor.
      */
     public AdminUserService(KeycloakApiUtil keycloakApiUtil, UserService userService,
-                            VocabularyService vocabularyService) {
+                            VocabularyService vocabularyService, GestoringRequestService gestoringRequestService) {
         this.keycloakApiUtil = keycloakApiUtil;
         this.userService = userService;
         this.vocabularyService = vocabularyService;
+        this.gestoringRequestService = gestoringRequestService;
     }
 
     /**
@@ -75,6 +77,7 @@ public class AdminUserService {
         Vocabulary vocabulary = vocabularyService.findRequired(vocabularyUri);
         User user = userService.getRequiredReferenceByUserId(userId);
         vocabulary.addGestor(user);
+        gestoringRequestService.remove(vocabularyUri, user.getUri());
         vocabularyService.update(vocabulary);
     }
 

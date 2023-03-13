@@ -38,5 +38,5 @@ public final class TermVocabulary {
     public static final String s_p_je_gestorem = CHANGE_DESCRIPTION_NAMESPACE + "je-gestorem";
     public static final String s_c_pozadavek_na_gestorovani = CHANGE_DESCRIPTION_NAMESPACE + "požadavek-na-gestorování";
     public static final String s_p_ma_zadatele = CHANGE_DESCRIPTION_NAMESPACE + "má-žadatele";
-    public static final String s_p_ma_zada_o_gestorovani = CHANGE_DESCRIPTION_NAMESPACE + "žádá-o-gestorování";
+    public static final String s_p_zada_o_gestorovani = CHANGE_DESCRIPTION_NAMESPACE + "žádá-o-gestorování";
 }

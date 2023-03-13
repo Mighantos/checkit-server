@@ -16,7 +16,7 @@ plugins {
 }
 
 group = 'com.github'
-version = '0.2.2'
+version = '0.2.3'
 
 compileJava {
     sourceCompatibility = '17'
@@ -44,9 +44,9 @@ repositories {
 }
 
 ext {
-    jopaVersion='0.21.0'
-    springVersion='3.0.4'
-    keycloakVersion='21.0.1'
+    jopaVersion = '0.21.0'
+    springVersion = '3.0.4'
+    keycloakVersion = '21.0.1'
 }
 
 dependencies {
