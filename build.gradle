@@ -44,9 +44,9 @@ repositories {
 }
 
 ext {
-    jopaVersion='0.21.0'
-    springVersion='3.0.4'
-    keycloakVersion='21.0.1'
+    jopaVersion = '0.21.0'
+    springVersion = '3.0.4'
+    keycloakVersion = '21.0.1'
 }
 
 dependencies {
