@@ -51,7 +51,8 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     }
 
     /**
-     * Creates gestoring request for given vocabulary with current user as applicant if it does not exist yet.
+     * Creates gestoring request for given vocabulary with current user as applicant if it does not exist or user
+     * already does not gestor the vocabulary already.
      *
      * @param vocabularyUri vocabulary URI
      */
@@ -59,6 +60,10 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     public void create(URI vocabularyUri) {
         User applicant = userService.getCurrent();
         Vocabulary vocabulary = vocabularyService.findRequired(vocabularyUri);
+        if (vocabulary.getGestors().contains(applicant)) {
+            throw new AlreadyExistsException("User \"%s\" already gestors vocabulary \"%s\".",
+                applicant.getFullName(), vocabulary.getLabel());
+        }
         if (gestoringRequestDao.exists(applicant.getUri(), vocabulary.getUri())) {
             throw new AlreadyExistsException("Gestoring request from user \"%s\" to vocabulary \"%s\" already exists.",
                 applicant.getFullName(), vocabulary.getLabel());
@@ -77,8 +82,8 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     public void resolveGestoringRequest(String requestId, boolean approved) {
         if (approved) {
             GestoringRequest gestoringRequest = findRequiredById(requestId);
-            Vocabulary vocabulary = gestoringRequest.getVocabulary();
-            User applicant = gestoringRequest.getApplicant();
+            Vocabulary vocabulary = vocabularyService.findRequired(gestoringRequest.getVocabulary().getUri());
+            User applicant = userService.findRequired(gestoringRequest.getApplicant().getUri());
             vocabulary.addGestor(applicant);
             vocabularyService.update(vocabulary);
         }

@@ -24,10 +24,10 @@ public class Vocabulary extends AbstractEntity implements HasTypes {
     private Set<User> gestors = new HashSet<>();
 
     public void addGestor(User user) {
-        gestors.add(user);
+        getGestors().add(user);
     }
 
     public void removeGestor(User user) {
-        gestors.remove(user);
+        getGestors().remove(user);
     }
 }
