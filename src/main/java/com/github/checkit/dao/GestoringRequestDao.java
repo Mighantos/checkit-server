@@ -62,4 +62,19 @@ public class GestoringRequestDao extends BaseDao<GestoringRequest> {
             throw new PersistenceException(e);
         }
     }
+
+    /**
+     * Counts gestoring requests.
+     *
+     * @return number of gestoring requests
+     */
+    public int getAllCount() {
+        try {
+            return em.createNativeQuery("SELECT (count(?gr) as ?count) WHERE { ?gr a ?type . }", Integer.class)
+                .setParameter("type", typeUri)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
 }
