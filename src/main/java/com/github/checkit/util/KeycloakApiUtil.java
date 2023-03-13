@@ -76,6 +76,10 @@ public class KeycloakApiUtil {
         user.roles().clientLevel(clientUUID).remove(List.of(adminRole));
     }
 
+    public int getAdminCount() {
+        return api.clients().get(clientUUID).roles().get(adminRole.getName()).getUserMembers().size();
+    }
+
     private UserResource fetchUser(String userId) {
         try {
             UserResource user = api.users().get(userId);

@@ -28,4 +28,12 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
         return findAll().stream().map(VocabularyDto::new)
             .sorted(Comparator.comparing(VocabularyDto::getUri)).collect(Collectors.toList());
     }
+
+    public int getAllCount() {
+        return vocabularyDao.getAllCount();
+    }
+
+    public int getGestoredCount() {
+        return vocabularyDao.getGestoredCount();
+    }
 }

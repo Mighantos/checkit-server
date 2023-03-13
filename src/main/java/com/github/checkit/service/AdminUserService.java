@@ -104,4 +104,8 @@ public class AdminUserService {
             throw new SelfAdminRoleChangeException();
         }
     }
+
+    public int getAllAdminCount() {
+        return keycloakApiUtil.getAdminCount();
+    }
 }

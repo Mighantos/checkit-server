@@ -63,4 +63,8 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
         gestoringRequest.setVocabulary(vocabularyService.findRequired(vocabularyUri));
         persist(gestoringRequest);
     }
+
+    public int getAllCount() {
+        return gestoringRequestDao.getAllCount();
+    }
 }
