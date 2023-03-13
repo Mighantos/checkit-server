@@ -1,6 +1,7 @@
 package com.github.checkit.dao;
 
 import com.github.checkit.exception.PersistenceException;
+import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.persistence.DescriptorFactory;
 import com.github.checkit.util.TermVocabulary;
@@ -87,5 +88,20 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
+    }
+
+    /**
+     * Find vocabularies gestored by specified user.
+     *
+     * @param user user
+     * @return list of vocabularies
+     */
+    public List<Vocabulary> findGestoredVocabularies(User user) {
+        return em.createNativeQuery("SELECT ?vocab WHERE {"
+                + "?vocab ?jeGestorem ?user ."
+                + "}", Vocabulary.class)
+            .setParameter("user", user.getUri())
+            .setParameter("jeGestorem", URI.create(TermVocabulary.s_p_ma_gestora))
+            .getResultList();
     }
 }
