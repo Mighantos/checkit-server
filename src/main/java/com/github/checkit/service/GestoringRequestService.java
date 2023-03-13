@@ -10,6 +10,7 @@ import com.github.checkit.model.Vocabulary;
 import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +49,12 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     public void remove(String id) {
         GestoringRequest gestoringRequest = findRequiredById(id);
         remove(gestoringRequest);
+    }
+
+    @Transactional
+    public void remove(URI vocabularyUri, URI applicantUri) {
+        Optional<GestoringRequest> gestoringRequest = gestoringRequestDao.find(vocabularyUri, applicantUri);
+        gestoringRequest.ifPresent(this::remove);
     }
 
     /**

@@ -42,6 +42,32 @@ public class GestoringRequestDao extends BaseDao<GestoringRequest> {
         }
     }
 
+    /**
+     * Finds gestoring request with specified user and vocabulary.
+     *
+     * @param applicantUri  User URI of applicant
+     * @param vocabularyUri Vocabulary URI applicant wants to gestor
+     * @return {@link GestoringRequest}
+     */
+    public Optional<GestoringRequest> find(URI vocabularyUri, URI applicantUri) {
+        Objects.requireNonNull(applicantUri);
+        Objects.requireNonNull(vocabularyUri);
+        try {
+            return Optional.ofNullable(em.createNativeQuery("SELECT ?gr { ?gr a ?type ; "
+                    + "?applies ?applicant ; "
+                    + "?requests ?vocabulary . "
+                    + "}", GestoringRequest.class)
+                .setParameter("type", typeUri)
+                .setParameter("applies", URI.create(TermVocabulary.s_p_ma_zadatele))
+                .setParameter("applicant", applicantUri)
+                .setParameter("requests", URI.create(TermVocabulary.s_p_zada_o_gestorovani))
+                .setParameter("vocabulary", vocabularyUri)
+                .getSingleResult());
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
     @Override
     public void persist(GestoringRequest entity) {
         Objects.requireNonNull(entity);
@@ -87,15 +113,21 @@ public class GestoringRequestDao extends BaseDao<GestoringRequest> {
      * @return if gestoring request exists
      */
     public boolean exists(URI applicantUri, URI vocabularyUri) {
-        return em.createNativeQuery("ASK { ?x a ?type ; "
-                + "?applies ?applicant ; "
-                + "?requests ?vocabulary . "
-                + "}", Boolean.class)
-            .setParameter("type", typeUri)
-            .setParameter("applies", URI.create(TermVocabulary.s_p_ma_zadatele))
-            .setParameter("applicant", applicantUri)
-            .setParameter("requests", URI.create(TermVocabulary.s_p_zada_o_gestorovani))
-            .setParameter("vocabulary", vocabularyUri)
-            .getSingleResult();
+        Objects.requireNonNull(applicantUri);
+        Objects.requireNonNull(vocabularyUri);
+        try {
+            return em.createNativeQuery("ASK { ?x a ?type ; "
+                    + "?applies ?applicant ; "
+                    + "?requests ?vocabulary . "
+                    + "}", Boolean.class)
+                .setParameter("type", typeUri)
+                .setParameter("applies", URI.create(TermVocabulary.s_p_ma_zadatele))
+                .setParameter("applicant", applicantUri)
+                .setParameter("requests", URI.create(TermVocabulary.s_p_zada_o_gestorovani))
+                .setParameter("vocabulary", vocabularyUri)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
     }
 }
