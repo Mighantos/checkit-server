@@ -3,6 +3,8 @@ package com.github.checkit.service;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.VocabularyDao;
 import com.github.checkit.dto.VocabularyDto;
+import com.github.checkit.dto.VocabularyInfoDto;
+import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import java.util.Comparator;
 import java.util.List;
@@ -13,9 +15,11 @@ import org.springframework.stereotype.Service;
 public class VocabularyService extends BaseRepositoryService<Vocabulary> {
 
     private final VocabularyDao vocabularyDao;
+    private final UserService userService;
 
-    public VocabularyService(VocabularyDao vocabularyDao) {
+    public VocabularyService(VocabularyDao vocabularyDao, UserService userService) {
         this.vocabularyDao = vocabularyDao;
+        this.userService = userService;
     }
 
     @Override
@@ -35,5 +39,10 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
 
     public int getGestoredCount() {
         return vocabularyDao.getGestoredCount();
+    }
+
+    public List<VocabularyInfoDto> getMyGestoredVocabularies() {
+        User currentUser = userService.getCurrent();
+        return vocabularyDao.findGestoredVocabularies(currentUser).stream().map(VocabularyInfoDto::new).toList();
     }
 }
