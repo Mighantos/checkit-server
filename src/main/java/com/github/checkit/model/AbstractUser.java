@@ -43,6 +43,10 @@ public abstract class AbstractUser implements HasIdentifier, HasTypes, Serializa
                : null;
     }
 
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

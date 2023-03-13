@@ -12,9 +12,11 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+@NoArgsConstructor
 @OWLClass(iri = TermVocabulary.s_c_pozadavek_na_gestorovani)
 public class GestoringRequest extends AbstractEntity {
 
@@ -27,9 +29,14 @@ public class GestoringRequest extends AbstractEntity {
     private User applicant;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = TermVocabulary.s_p_ma_zada_o_gestorovani, fetch = FetchType.EAGER, cascade =
+    @OWLObjectProperty(iri = TermVocabulary.s_p_zada_o_gestorovani, fetch = FetchType.EAGER, cascade =
         CascadeType.DETACH)
     private Vocabulary vocabulary;
+
+    public GestoringRequest(User applicant, Vocabulary vocabulary) {
+        this.applicant = applicant;
+        this.vocabulary = vocabulary;
+    }
 
     @PrePersist
     public void prePersist() {

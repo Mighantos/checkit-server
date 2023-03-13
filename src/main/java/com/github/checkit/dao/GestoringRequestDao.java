@@ -3,6 +3,7 @@ package com.github.checkit.dao;
 import com.github.checkit.exception.PersistenceException;
 import com.github.checkit.model.GestoringRequest;
 import com.github.checkit.persistence.DescriptorFactory;
+import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import java.net.URI;
 import java.util.List;
@@ -76,5 +77,25 @@ public class GestoringRequestDao extends BaseDao<GestoringRequest> {
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
+    }
+
+    /**
+     * Finds if gestoring request with specified user and vocabulary exists.
+     *
+     * @param applicantUri  User URI of applicant
+     * @param vocabularyUri Vocabulary URI applicant wants to gestor
+     * @return if gestoring request exists
+     */
+    public boolean exists(URI applicantUri, URI vocabularyUri) {
+        return em.createNativeQuery("ASK { ?x a ?type ; "
+                + "?applies ?applicant ; "
+                + "?requests ?vocabulary . "
+                + "}", Boolean.class)
+            .setParameter("type", typeUri)
+            .setParameter("applies", URI.create(TermVocabulary.s_p_ma_zadatele))
+            .setParameter("applicant", applicantUri)
+            .setParameter("requests", URI.create(TermVocabulary.s_p_zada_o_gestorovani))
+            .setParameter("vocabulary", vocabularyUri)
+            .getSingleResult();
     }
 }
