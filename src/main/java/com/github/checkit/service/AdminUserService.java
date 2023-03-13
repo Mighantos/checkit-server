@@ -35,7 +35,7 @@ public class AdminUserService {
      * Sets or removes admin role for specified user in keycloak.
      *
      * @param userKeycloakId ID of user to be modified
-     * @param admin if user should have admin role or not
+     * @param admin          if user should have admin role or not
      */
     public void setAdminRoleToUser(String userKeycloakId, boolean admin) {
         checkNotApiAdmin(userKeycloakId);
@@ -68,7 +68,7 @@ public class AdminUserService {
      * Adds user as a gestor of the specified vocabulary.
      *
      * @param vocabularyUri vocabulary URI
-     * @param userId user's ID
+     * @param userId        user's ID
      */
     public void addUserAsGestorOfVocabulary(URI vocabularyUri, String userId) {
         checkNotApiAdmin(userId);
@@ -82,7 +82,7 @@ public class AdminUserService {
      * Removes user from gestors of the specified vocabulary.
      *
      * @param vocabularyUri vocabulary URI
-     * @param userId user's ID
+     * @param userId        user's ID
      */
     public void removeUserAsGestorFromVocabulary(URI vocabularyUri, String userId) {
         checkNotApiAdmin(userId);
