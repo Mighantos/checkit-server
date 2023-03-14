@@ -41,7 +41,7 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
         return findRequired(uri);
     }
 
-    public List<GestoringRequestDto> findAllAsDtos() {
+    public List<GestoringRequestDto> findAllRequestsAsDtos() {
         return findAll().stream().map(GestoringRequestDto::new).toList();
     }
 
@@ -97,11 +97,16 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
         remove(requestId);
     }
 
-    private URI createUriFromId(String id) {
-        return URI.create(TermVocabulary.s_c_pozadavek_na_gestorovani + "/" + id);
-    }
-
     public int getAllCount() {
         return gestoringRequestDao.getAllCount();
+    }
+
+    public List<GestoringRequestDto> findMyRequestsAsDto() {
+        URI currentUserUri = userService.getCurrent().getUri();
+        return gestoringRequestDao.findAllFromApplicant(currentUserUri).stream().map(GestoringRequestDto::new).toList();
+    }
+
+    private URI createUriFromId(String id) {
+        return URI.create(TermVocabulary.s_c_pozadavek_na_gestorovani + "/" + id);
     }
 }

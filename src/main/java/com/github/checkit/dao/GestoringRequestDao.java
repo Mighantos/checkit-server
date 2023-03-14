@@ -22,11 +22,20 @@ public class GestoringRequestDao extends BaseDao<GestoringRequest> {
         this.descriptorFactory = descriptorFactory;
     }
 
-    @Override
-    public List<GestoringRequest> findAll() {
+    /**
+     * Find all gestoring requests with specified user as an applicant.
+     *
+     * @param applicantUri user URI
+     * @return list of gestoring requests
+     */
+    public List<GestoringRequest> findAllFromApplicant(URI applicantUri) {
         try {
-            return em.createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", type)
+            return em.createNativeQuery("SELECT ?x WHERE { ?x a ?type ; "
+                    + "?applies ?applicant . "
+                    + "}", type)
                 .setParameter("type", typeUri)
+                .setParameter("applies", URI.create(TermVocabulary.s_p_ma_zadatele))
+                .setParameter("applicant", applicantUri)
                 .getResultList();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
