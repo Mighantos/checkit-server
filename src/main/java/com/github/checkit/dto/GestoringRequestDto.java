@@ -12,7 +12,7 @@ public class GestoringRequestDto {
     private final URI uri;
     private final Instant created;
     private final UserDto applicant;
-    private final VocabularyInfoDto vocabulary;
+    private final VocabularyDto vocabulary;
 
     /**
      * Constructor.
@@ -22,6 +22,6 @@ public class GestoringRequestDto {
         this.uri = gestoringRequest.getUri();
         this.created = gestoringRequest.getCreated();
         this.applicant = new UserDto(gestoringRequest.getApplicant());
-        this.vocabulary = new VocabularyInfoDto(gestoringRequest.getVocabulary());
+        this.vocabulary = new VocabularyDto(gestoringRequest.getVocabulary());
     }
 }
