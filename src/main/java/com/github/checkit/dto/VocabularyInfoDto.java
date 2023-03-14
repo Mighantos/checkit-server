@@ -5,7 +5,7 @@ import java.net.URI;
 import lombok.Getter;
 
 @Getter
-public class VocabularyInfoDto {
+public class VocabularyInfoDto implements Comparable<VocabularyInfoDto> {
 
     private final URI uri;
     private final String label;
@@ -16,5 +16,10 @@ public class VocabularyInfoDto {
     public VocabularyInfoDto(Vocabulary vocabulary) {
         this.uri = vocabulary.getUri();
         this.label = vocabulary.getLabel();
+    }
+
+    @Override
+    public int compareTo(VocabularyInfoDto right) {
+        return getLabel().toLowerCase().compareTo(right.getLabel().toLowerCase());
     }
 }
