@@ -31,7 +31,12 @@ public class GestoringRequestController extends BaseController {
     @GetMapping
     @PreAuthorize("hasRole('" + UserRole.ADMIN + "')")
     public List<GestoringRequestDto> getAllGestoringRequests() {
-        return gestoringRequestService.findAllAsDtos();
+        return gestoringRequestService.findAllRequestsAsDtos();
+    }
+
+    @GetMapping("/my-requests")
+    public List<GestoringRequestDto> getMyGestoringRequests() {
+        return gestoringRequestService.findMyRequestsAsDto();
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

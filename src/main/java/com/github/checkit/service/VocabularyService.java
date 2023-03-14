@@ -30,7 +30,7 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
 
     public List<VocabularyDto> getAllInDto() {
         return findAll().stream().map(VocabularyDto::new)
-            .sorted(Comparator.comparing(VocabularyDto::getUri)).collect(Collectors.toList());
+            .sorted(Comparator.comparing(VocabularyDto::getLabel)).collect(Collectors.toList());
     }
 
     public int getAllCount() {
@@ -41,8 +41,14 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
         return vocabularyDao.getGestoredCount();
     }
 
+    /**
+     * Finds vocabularies gestored by current user.
+     *
+     * @return list of gestored vocabularies
+     */
     public List<VocabularyInfoDto> getMyGestoredVocabularies() {
         User currentUser = userService.getCurrent();
-        return vocabularyDao.findGestoredVocabularies(currentUser).stream().map(VocabularyInfoDto::new).toList();
+        return vocabularyDao.findGestoredVocabularies(currentUser).stream().map(VocabularyInfoDto::new)
+            .sorted(Comparator.comparing(VocabularyInfoDto::getLabel)).toList();
     }
 }
