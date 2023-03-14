@@ -4,6 +4,7 @@ import com.github.checkit.exception.PersistenceException;
 import com.github.checkit.model.GestoringRequest;
 import com.github.checkit.persistence.DescriptorFactory;
 import com.github.checkit.util.TermVocabulary;
+import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import java.net.URI;
 import java.util.List;
@@ -63,6 +64,8 @@ public class GestoringRequestDao extends BaseDao<GestoringRequest> {
                 .setParameter("requests", URI.create(TermVocabulary.s_p_zada_o_gestorovani))
                 .setParameter("vocabulary", vocabularyUri)
                 .getSingleResult());
+        } catch (NoResultException nre) {
+            return Optional.empty();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
