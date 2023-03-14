@@ -1,7 +1,6 @@
 package com.github.checkit.controller;
 
 import com.github.checkit.dto.VocabularyDto;
-import com.github.checkit.dto.VocabularyInfoDto;
 import com.github.checkit.service.VocabularyService;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +25,7 @@ public class VocabularyController extends BaseController {
     }
 
     @GetMapping("/my-gestored")
-    public List<VocabularyInfoDto> getMyGestoredVocabularies() {
+    public List<VocabularyDto> getMyGestoredVocabularies() {
         return vocabularyService.getMyGestoredVocabularies();
     }
 }

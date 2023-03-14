@@ -3,7 +3,6 @@ package com.github.checkit.service;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.VocabularyDao;
 import com.github.checkit.dto.VocabularyDto;
-import com.github.checkit.dto.VocabularyInfoDto;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import java.util.Comparator;
@@ -46,9 +45,9 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
      *
      * @return list of gestored vocabularies
      */
-    public List<VocabularyInfoDto> getMyGestoredVocabularies() {
+    public List<VocabularyDto> getMyGestoredVocabularies() {
         User currentUser = userService.getCurrent();
-        return vocabularyDao.findGestoredVocabularies(currentUser).stream().map(VocabularyInfoDto::new)
-            .sorted(Comparator.comparing(VocabularyInfoDto::getLabel)).toList();
+        return vocabularyDao.findGestoredVocabularies(currentUser).stream().map(VocabularyDto::new)
+            .sorted(Comparator.comparing(VocabularyDto::getLabel)).toList();
     }
 }
