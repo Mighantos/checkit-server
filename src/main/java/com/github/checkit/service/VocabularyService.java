@@ -4,6 +4,7 @@ import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.VocabularyDao;
 import com.github.checkit.dto.VocabularyDto;
+import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import java.net.URI;
 import java.util.Comparator;
@@ -19,10 +20,12 @@ import org.springframework.stereotype.Service;
 public class VocabularyService extends BaseRepositoryService<Vocabulary> {
 
     private final VocabularyDao vocabularyDao;
+    private final UserService userService;
     private final RepositoryConfigProperties repositoryConfigProperties;
 
-    public VocabularyService(VocabularyDao vocabularyDao, RepositoryConfigProperties repositoryConfigProperties) {
+    public VocabularyService(VocabularyDao vocabularyDao, UserService userService) {
         this.vocabularyDao = vocabularyDao;
+        this.userService = userService;
         this.repositoryConfigProperties = repositoryConfigProperties;
     }
 
@@ -33,8 +36,20 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
 
 
     public List<VocabularyDto> getAllInDto() {
-        return findAll().stream().map(VocabularyDto::new)
-            .sorted(Comparator.comparing(VocabularyDto::getUri)).collect(Collectors.toList());
+        return findAll().stream().map(VocabularyDto::new).sorted().collect(Collectors.toList());
+    }
+
+    public int getAllCount() {
+        return vocabularyDao.getAllCount();
+    }
+
+    public int getGestoredCount() {
+        return vocabularyDao.getGestoredCount();
+    }
+
+    public List<VocabularyDto> getMyGestoredVocabularies() {
+        User currentUser = userService.getCurrent();
+        return vocabularyDao.findGestoredVocabularies(currentUser).stream().map(VocabularyDto::new).sorted().toList();
     }
 
     /**

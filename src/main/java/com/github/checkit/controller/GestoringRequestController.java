@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,12 +31,17 @@ public class GestoringRequestController extends BaseController {
     @GetMapping
     @PreAuthorize("hasRole('" + UserRole.ADMIN + "')")
     public List<GestoringRequestDto> getAllGestoringRequests() {
-        return gestoringRequestService.findAllAsDtos();
+        return gestoringRequestService.findAllRequestsAsDtos();
+    }
+
+    @GetMapping("/my-requests")
+    public List<GestoringRequestDto> getMyGestoringRequests() {
+        return gestoringRequestService.findMyRequestsAsDto();
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping
-    public void createGestoringRequest(@RequestParam URI vocabularyUri) {
+    public void createGestoringRequest(@RequestBody URI vocabularyUri) {
         gestoringRequestService.create(vocabularyUri);
     }
 
@@ -44,5 +49,12 @@ public class GestoringRequestController extends BaseController {
     @DeleteMapping("/{requestId}")
     public void removeGestoringRequest(@PathVariable String requestId) {
         gestoringRequestService.remove(requestId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/{requestId}/approved")
+    @PreAuthorize("hasRole('" + UserRole.ADMIN + "')")
+    public void resolveGestoringRequest(@PathVariable String requestId, @RequestBody Boolean approved) {
+        gestoringRequestService.resolveGestoringRequest(requestId, approved);
     }
 }

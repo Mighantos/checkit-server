@@ -30,7 +30,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build
-        run: gradle clean build -x test
+        run: gradle clean build
 
   build-and-publish:
     name: Build JAR and publish Docker image

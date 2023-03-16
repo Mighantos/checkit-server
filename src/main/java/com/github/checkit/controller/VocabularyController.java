@@ -23,4 +23,9 @@ public class VocabularyController extends BaseController {
     public List<VocabularyDto> getAllVocabularies() {
         return vocabularyService.getAllInDto();
     }
+
+    @GetMapping("/my-gestored")
+    public List<VocabularyDto> getMyGestoredVocabularies() {
+        return vocabularyService.getMyGestoredVocabularies();
+    }
 }

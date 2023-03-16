@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Getter;
 
 @Getter
-public class VocabularyDto {
+public class VocabularyDto implements Comparable<VocabularyDto> {
 
     private final URI uri;
     private final String label;
@@ -19,5 +19,10 @@ public class VocabularyDto {
         this.uri = vocabulary.getUri();
         this.label = vocabulary.getLabel();
         this.gestors = vocabulary.getGestors().stream().map(UserDto::new).toList();
+    }
+
+    @Override
+    public int compareTo(VocabularyDto right) {
+        return getLabel().toLowerCase().compareTo(right.getLabel().toLowerCase());
     }
 }

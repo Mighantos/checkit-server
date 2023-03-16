@@ -76,6 +76,10 @@ public class KeycloakApiUtil {
         user.roles().clientLevel(clientUUID).remove(List.of(adminRole));
     }
 
+    public int getAdminCount() {
+        return api.clients().get(clientUUID).roles().get(adminRole.getName()).getUserMembers().size();
+    }
+
     private UserResource fetchUser(String userId) {
         try {
             UserResource user = api.users().get(userId);
@@ -88,7 +92,7 @@ public class KeycloakApiUtil {
 
     private void createApiConnection() {
         api = KeycloakBuilder.builder()
-            .serverUrl(keycloakConfigProperties.getAuthUrl())
+            .serverUrl(keycloakConfigProperties.getUrl())
             .realm(keycloakConfigProperties.getRealm())
             .username(keycloakConfigProperties.getApiAdmin().getUsername())
             .password(keycloakConfigProperties.getApiAdmin().getPassword())
@@ -123,7 +127,7 @@ public class KeycloakApiUtil {
                 throw new KeycloakConfigurationException(
                     "Bad Keycloak API configuration. serverUrl: \"%s\", realm: \"%s\", username: \"%s\", password: "
                         + "****, clientId: \"%s\"",
-                    keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(),
+                    keycloakConfigProperties.getUrl(), keycloakConfigProperties.getRealm(),
                     keycloakConfigProperties.getApiAdmin().getUsername(), keycloakConfigProperties.getApiClientId());
             }
         }
@@ -190,7 +194,7 @@ public class KeycloakApiUtil {
         if (clientRepresentations.isEmpty()) {
             throw new NotFoundException("Client with id \"%s\" not found in Keycloak realm \"%s\" on \"%s\".",
                 keycloakConfigProperties.getClientId(), keycloakConfigProperties.getRealm(),
-                keycloakConfigProperties.getAuthUrl());
+                keycloakConfigProperties.getUrl());
         }
         clientUUID = clientRepresentations.get(0).getId();
     }
@@ -210,7 +214,7 @@ public class KeycloakApiUtil {
         if (!requiredRoles.isEmpty()) {
             throw new KeycloakConfigurationException(
                 "Keycloak on \"%s\" in realm \"%s\" is missing required role(s) \"%s\" in client \"%s\".",
-                keycloakConfigProperties.getAuthUrl(), keycloakConfigProperties.getRealm(), requiredRoles,
+                keycloakConfigProperties.getUrl(), keycloakConfigProperties.getRealm(), requiredRoles,
                 keycloakConfigProperties.getClientId());
         }
     }
