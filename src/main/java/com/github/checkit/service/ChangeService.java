@@ -1,5 +1,8 @@
 package com.github.checkit.service;
 
+import com.github.checkit.model.AbstractChangeableContext;
+import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.VocabularyContext;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.SKOS;
@@ -24,16 +27,17 @@ public class ChangeService {
         this.vocabularyContextService = vocabularyContextService;
     }
 
-    public String getChangesAsString(URI vocabularyContextUri) {
-        VocabularyContext vc = vocabularyContextService.findRequired(vocabularyContextUri);
-        Model changedVocabularyContent = vocabularyContextService.getVocabularyContent(vc.getUri());
-        Model vocabularyContent = vocabularyService.getVocabularyContent(vc.getBasedOnVocabulary().getUri());
-        return getChanges(vocabularyContent, changedVocabularyContent);
+    public List<Change> getChanges(VocabularyContext vocabularyContext) {
+        Model canonicalGraph =
+            vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVocabulary().getUri());
+        Model draftGraph = vocabularyContextService.getVocabularyContent(vocabularyContext.getUri());
+        return getChanges(canonicalGraph, draftGraph, vocabularyContext);
     }
 
-    private String getChanges(Model canonicalGraph, Model draftGraph) {
-        HashMap<Resource, ArrayList<Statement>> removedStatements = getChangedStatements(canonicalGraph, draftGraph);
-        HashMap<Resource, ArrayList<Statement>> newStatements = getChangedStatements(draftGraph, canonicalGraph);
+    public List<Change> getChanges(Model canonicalGraph, Model draftGraph,
+                                   AbstractChangeableContext abstractChangeableContext) {
+        HashMap<Resource, ArrayList<Statement>> newStatements = getChangedStatements(canonicalGraph, draftGraph);
+        HashMap<Resource, ArrayList<Statement>> removedStatements = getChangedStatements(draftGraph, canonicalGraph);
         HashMap<Resource, Model> canonicalSubGraphs = getSubGraphs(canonicalGraph);
         HashMap<Resource, Model> draftSubGraphs = getSubGraphs(draftGraph);
         HashMap<Resource, ArrayList<Resource>> canonicalTopLevelSubjectsSubGraphs =
@@ -84,85 +88,79 @@ public class ChangeService {
             draftTopLevelSubjectsSubGraphs.remove(subject);
         }
 
-        String print = getChangesAsString(newStatements, removedStatements, canonicalGraph, draftGraph);
-        System.out.println(print);
-        return print;
+        return getChangesFromStatements(abstractChangeableContext, newStatements, removedStatements, canonicalGraph,
+            draftGraph);
     }
 
-    private String getChangesAsString(HashMap<Resource, ArrayList<Statement>> newStatements,
-                                      HashMap<Resource, ArrayList<Statement>> removedStatements,
-                                      Model canonicalGraph, Model draftGraph) {
-        String res = "\nadded:\n";
+    private List<Change> getChangesFromStatements(AbstractChangeableContext abstractChangeableContext,
+                                                  HashMap<Resource, ArrayList<Statement>> newStatements,
+                                                  HashMap<Resource, ArrayList<Statement>> removedStatements,
+                                                  Model canonicalGraph, Model draftGraph) {
+        List<Change> changes = new ArrayList<>();
         for (Resource subject : newStatements.keySet()) {
             if (removedStatements.containsKey(subject)) {
                 continue;
             }
-            String text = "\n";
-            Statement labelStatement =
-                subject.getProperty(draftGraph.getProperty(SKOS.PREF_LABEL));
-            if (labelStatement == null) {
-                labelStatement = subject.getProperty(draftGraph.getProperty(DC.Terms.TITLE));
-            }
-            if (labelStatement != null) {
-                text += labelStatement.getObject().asLiteral().getString();
-            }
-            text += " (" + subject + ")";
+            String label = fetchChangeLabel(subject, draftGraph);
             for (Statement statement : newStatements.get(subject)) {
-                text += "\n+ " + statement.toString();
+                Change change = new Change(abstractChangeableContext);
+                change.setChangeType(ChangeType.CREATED);
+                change.setLabel(label);
+                change.setSubject(URI.create(statement.getSubject().getURI()));
+                change.setPredicate(URI.create(statement.getPredicate().getURI()));
+                change.setObject(statement.getObject().toString());
+                changes.add(change);
             }
-            res += text + "\n";
         }
 
-        res += "\nchanged:\n";
         for (Resource subject : removedStatements.keySet()) {
-            if (!newStatements.containsKey(subject)) {
-                continue;
-            }
-            String text = "";
-            Statement labelStatement =
-                subject.getProperty(canonicalGraph.getProperty(SKOS.PREF_LABEL));
-            if (labelStatement == null) {
-                labelStatement = subject.getProperty(canonicalGraph.getProperty(DC.Terms.TITLE));
-            }
-            if (labelStatement != null) {
-                text += labelStatement.getObject().asLiteral().getString();
-            }
-            text += " (" + subject + ")";
-            text += "\n- " + removedStatements.get(subject);
-            text += "\n+ ";
-            text += newStatements.get(subject).toString();
-            res += text + "\n";
-        }
-
-        res += "\nremoved:\n";
-        for (Resource subject : removedStatements.keySet()) {
+            ChangeType changeType;
             if (newStatements.containsKey(subject)) {
-                continue;
+                changeType = ChangeType.MODIFIED;
+            } else {
+                changeType = ChangeType.REMOVED;
             }
-            String text = "";
-            Statement labelStatement =
-                subject.getProperty(canonicalGraph.getProperty(SKOS.PREF_LABEL));
-            if (labelStatement == null) {
-                labelStatement = subject.getProperty(canonicalGraph.getProperty(DC.Terms.TITLE));
+            String label = fetchChangeLabel(subject, canonicalGraph);
+            for (Statement statement : removedStatements.get(subject)) {
+                Change change = new Change(abstractChangeableContext);
+                change.setChangeType(changeType);
+                change.setLabel(label);
+                change.setSubject(URI.create(statement.getSubject().getURI()));
+                change.setPredicate(URI.create(statement.getPredicate().getURI()));
+                change.setObject(statement.getObject().toString());
+                if (changeType == ChangeType.MODIFIED) {
+                    change.setNewObject(change.getObject());
+                    Statement originalStatement =
+                        canonicalGraph.getProperty(statement.getSubject(), statement.getPredicate());
+                    change.setObject(originalStatement.getObject().toString());
+                }
+                changes.add(change);
             }
-            if (labelStatement != null) {
-                text += labelStatement.getObject().asLiteral().getString();
-            }
-            text += " (" + subject + ")";
-            text += "\n- " + removedStatements.get(subject);
-            res += text + "\n";
         }
-        return res;
+        return changes;
+    }
+
+    private String fetchChangeLabel(Resource subject, Model graph) {
+        Statement labelStatement =
+            subject.getProperty(graph.getProperty(SKOS.PREF_LABEL));
+        String label = null;
+        if (labelStatement == null) {
+            labelStatement = subject.getProperty(graph.getProperty(DC.Terms.TITLE));
+        }
+        if (labelStatement != null) {
+            label = labelStatement.getObject().asLiteral().getString();
+        }
+        return label;
     }
 
     private HashMap<Resource, ArrayList<Statement>> getChangedStatements(Model base, Model modified) {
         HashMap<Resource, ArrayList<Statement>> changedStatements = new HashMap<>();
-        StmtIterator stmtIterator = base.listStatements();
+        StmtIterator stmtIterator = modified.listStatements();
         while (stmtIterator.hasNext()) {
             Statement statement = stmtIterator.nextStatement();
             if (statement.asTriple().getSubject().isBlank()
                 || statement.asTriple().getObject().isBlank()
-                || modified.contains(statement)) {
+                || base.contains(statement)) {
                 continue;
             }
             if (!changedStatements.containsKey(statement.getSubject())) {

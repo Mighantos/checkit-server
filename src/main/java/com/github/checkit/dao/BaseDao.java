@@ -4,6 +4,8 @@ import com.github.checkit.exception.PersistenceException;
 import com.github.checkit.model.HasIdentifier;
 import com.github.checkit.util.EntityToOwlClassMapper;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -108,6 +110,15 @@ public abstract class BaseDao<T extends HasIdentifier> implements GenericDao<T> 
                 .getSingleResult();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
+        }
+    }
+
+    @Override
+    public URI generateEntityUri() {
+        try {
+            return em.unwrap(Connection.class).generateIdentifier(em.getMetamodel().entity(type).getIRI().toURI());
+        } catch (OntoDriverException e) {
+            throw new RuntimeException(e);
         }
     }
 }

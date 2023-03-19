@@ -5,9 +5,9 @@ import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.VocabularyContextDao;
 import com.github.checkit.model.VocabularyContext;
 import java.net.URI;
+import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,8 @@ public class VocabularyContextService extends BaseRepositoryService<VocabularyCo
 
     private final RepositoryConfigProperties repositoryConfigProperties;
 
-    public VocabularyContextService(VocabularyContextDao vocabularyContextDao, RepositoryConfigProperties repositoryConfigProperties) {
+    public VocabularyContextService(VocabularyContextDao vocabularyContextDao,
+                                    RepositoryConfigProperties repositoryConfigProperties) {
         this.vocabularyContextDao = vocabularyContextDao;
         this.repositoryConfigProperties = repositoryConfigProperties;
     }
@@ -36,13 +37,15 @@ public class VocabularyContextService extends BaseRepositoryService<VocabularyCo
      * @return Jena model of vocabulary content
      */
     public Model getVocabularyContent(URI vocabularyContextUri) {
-        Query query = QueryFactory.create("CONSTRUCT { ?s ?p ?o . } WHERE { ?s ?p ?o . }");
+        ParameterizedSparqlString parameterizedSparqlString = new ParameterizedSparqlString();
+        parameterizedSparqlString.setCommandText("CONSTRUCT { ?s ?p ?o . } WHERE { "
+            + "?s ?p ?o . "
+            + "FILTER(?s != ?vc)"
+            + "}");
+        parameterizedSparqlString.setIri("vc", vocabularyContextUri.toString());
+        Query query = parameterizedSparqlString.asQuery();
         query.addGraphURI(vocabularyContextUri.toString());
-        Model model = QueryExecution.service(repositoryConfigProperties.getUrl())
-                .query(query).construct();
-        //Remove context metadata
-        Resource resource = model.getResource(vocabularyContextUri.toString());
-        model.remove(resource.listProperties());
-        return model;
+        return QueryExecution.service(repositoryConfigProperties.getUrl())
+            .query(query).construct();
     }
 }

@@ -6,13 +6,13 @@ import com.github.checkit.dao.VocabularyDao;
 import com.github.checkit.dto.VocabularyDto;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
+import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,11 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
     private final UserService userService;
     private final RepositoryConfigProperties repositoryConfigProperties;
 
-    public VocabularyService(VocabularyDao vocabularyDao, UserService userService) {
+    /**
+     * Constructor.
+     */
+    public VocabularyService(VocabularyDao vocabularyDao, UserService userService,
+                             RepositoryConfigProperties repositoryConfigProperties) {
         this.vocabularyDao = vocabularyDao;
         this.userService = userService;
         this.repositoryConfigProperties = repositoryConfigProperties;
@@ -59,10 +63,16 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
      * @return Jena model of vocabulary content
      */
     public Model getVocabularyContent(URI vocabularyUri) {
-        Query query = QueryFactory.create("CONSTRUCT { ?s ?p ?o . } WHERE { ?s ?p ?o . }");
+        ParameterizedSparqlString parameterizedSparqlString = new ParameterizedSparqlString();
+        parameterizedSparqlString.setCommandText("CONSTRUCT { ?s ?p ?o . } WHERE { "
+            + "?s ?p ?o . "
+            + "FILTER(?p != ?hasGestor) "
+            + "}");
+        parameterizedSparqlString.setIri("hasGestor", TermVocabulary.s_p_ma_gestora);
+        Query query = parameterizedSparqlString.asQuery();
         query.addGraphURI(vocabularyUri.toString());
         return QueryExecution.service(repositoryConfigProperties.getUrl())
-                .query(query).construct();
+            .query(query).construct();
     }
 
     public VocabularyDto getInDto(URI uri) {

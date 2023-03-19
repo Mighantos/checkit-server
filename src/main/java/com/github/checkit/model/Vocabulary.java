@@ -2,10 +2,12 @@ package com.github.checkit.model;
 
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.vocabulary.DC;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Data;
@@ -22,6 +24,10 @@ public class Vocabulary extends AbstractEntity implements HasTypes {
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_ma_gestora, fetch = FetchType.EAGER)
     private Set<User> gestors = new HashSet<>();
+
+    @Inferred
+    @OWLObjectProperty(iri = TermVocabulary.s_p_ma_pozadavek_na_gestorovani)
+    private Set<URI> gestoringRequests;
 
     public void addGestor(User user) {
         getGestors().add(user);

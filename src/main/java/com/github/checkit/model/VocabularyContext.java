@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @OWLClass(iri = TermVocabulary.s_c_slovnikovy_kontext)
-public class VocabularyContext extends AbstractEntity {
+public class VocabularyContext extends AbstractChangeableContext {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
