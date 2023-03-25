@@ -32,7 +32,8 @@ public class PublicationContext extends AbstractEntity {
     @OWLDataProperty(iri = TermVocabulary.s_p_ma_datum_a_cas_posledni_modifikace)
     private Instant modified;
 
-    @OWLObjectProperty(iri = TermVocabulary.s_p_ma_zmenu, cascade = CascadeType.ALL)
+    @OWLObjectProperty(iri = TermVocabulary.s_p_ma_zmenu,
+        cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     private Set<Change> changes = new HashSet<>();
 
     @PrePersist
@@ -44,5 +45,10 @@ public class PublicationContext extends AbstractEntity {
     @PreUpdate
     public void preUpdate() {
         this.modified = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    }
+
+    public void setChanges(Set<Change> changes) {
+        this.changes.clear();
+        this.changes.addAll(changes);
     }
 }

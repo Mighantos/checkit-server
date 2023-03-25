@@ -1,5 +1,7 @@
 package com.github.checkit.service;
 
+import com.github.checkit.dao.BaseDao;
+import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.model.AbstractChangeableContext;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
@@ -18,13 +20,24 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ChangeService {
+public class ChangeService extends BaseRepositoryService<Change> {
     private final VocabularyService vocabularyService;
     private final VocabularyContextService vocabularyContextService;
+    private final ChangeDao changeDao;
 
-    public ChangeService(VocabularyService vocabularyService, VocabularyContextService vocabularyContextService) {
+    /**
+     * Constructor.
+     */
+    public ChangeService(VocabularyService vocabularyService, VocabularyContextService vocabularyContextService,
+                         ChangeDao changeDao) {
         this.vocabularyService = vocabularyService;
         this.vocabularyContextService = vocabularyContextService;
+        this.changeDao = changeDao;
+    }
+
+    @Override
+    protected BaseDao<Change> getPrimaryDao() {
+        return changeDao;
     }
 
     public List<Change> getChanges(VocabularyContext vocabularyContext) {
@@ -129,10 +142,9 @@ public class ChangeService {
                 change.setPredicate(URI.create(statement.getPredicate().getURI()));
                 change.setObject(statement.getObject().toString());
                 if (changeType == ChangeType.MODIFIED) {
-                    change.setNewObject(change.getObject());
-                    Statement originalStatement =
-                        canonicalGraph.getProperty(statement.getSubject(), statement.getPredicate());
-                    change.setObject(originalStatement.getObject().toString());
+                    Statement modifiedStatement =
+                        draftGraph.getProperty(statement.getSubject(), statement.getPredicate());
+                    change.setNewObject(modifiedStatement.getObject().toString());
                 }
                 changes.add(change);
             }

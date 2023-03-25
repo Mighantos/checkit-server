@@ -29,6 +29,12 @@ public class Change extends AbstractEntity {
         this.context = context;
     }
 
+    @NotBlank
+    @ParticipationConstraints(nonEmpty = true)
+    @Enumerated(EnumType.OBJECT_ONE_OF)
+    @OWLAnnotationProperty(iri = TermVocabulary.s_p_je_typu)
+    private ChangeType changeType;
+
     @OWLDataProperty(iri = RDFS.LABEL)
     private String label;
 
@@ -49,12 +55,6 @@ public class Change extends AbstractEntity {
 
     @OWLAnnotationProperty(iri = TermVocabulary.s_p_ma_novy_objekt)
     private String newObject;
-
-    @NotBlank
-    @ParticipationConstraints(nonEmpty = true)
-    @Enumerated(EnumType.OBJECT_ONE_OF)
-    @OWLAnnotationProperty(iri = TermVocabulary.s_p_je_typu)
-    private ChangeType changeType;
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
@@ -107,5 +107,14 @@ public class Change extends AbstractEntity {
         Objects.requireNonNull(right);
         return hasSameTripleAs(right) && ((Objects.isNull(this.newObject) && Objects.isNull(right.newObject))
             || this.newObject.equals(right.newObject));
+    }
+
+    public boolean hasBeenReviewed() {
+        return !approvedBy.isEmpty() || !rejectedBy.isEmpty();
+    }
+
+    public void clearReviews() {
+        approvedBy.clear();
+        rejectedBy.clear();
     }
 }

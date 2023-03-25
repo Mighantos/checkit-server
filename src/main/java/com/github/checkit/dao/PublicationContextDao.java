@@ -69,17 +69,28 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
         }
     }
 
+    @Override
+    public Optional<PublicationContext> find(URI id) {
+        Objects.requireNonNull(id);
+        try {
+            Descriptor descriptor = descriptorFactory.publicationContextDescriptor(id);
+            return Optional.ofNullable(em.find(type, id, descriptor));
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
     /**
      * Finds publication context related to specified project.
      *
      * @param projectContext project context
-     * @return publication context
+     * @return URI identifier publication context
      */
-    public Optional<PublicationContext> find(ProjectContext projectContext) {
+    public Optional<URI> find(ProjectContext projectContext) {
         try {
             return Optional.ofNullable(em.createNativeQuery("SELECT ?pc WHERE { ?pc a ?type ; "
                     + "?fromProject ?project . "
-                    + "}", type)
+                    + "}", URI.class)
                 .setParameter("type", typeUri)
                 .setParameter("fromProject", URI.create(TermVocabulary.s_p_z_projektu))
                 .setParameter("project", projectContext.getUri())

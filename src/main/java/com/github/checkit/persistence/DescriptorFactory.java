@@ -101,7 +101,7 @@ public class DescriptorFactory {
      */
     public Descriptor publicationContextDescriptor(PublicationContext publicationContext) {
         Objects.requireNonNull(publicationContext);
-        return vocabularyDescriptor(publicationContext.getUri());
+        return publicationContextDescriptor(publicationContext.getUri());
     }
 
     /**
