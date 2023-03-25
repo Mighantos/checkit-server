@@ -1,11 +1,13 @@
 package com.github.checkit.controller;
 
+import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.service.PublicationContextService;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,5 +34,10 @@ public class PublicationContextController extends BaseController {
     @GetMapping
     public List<PublicationContextDto> getRelevantPublicationContexts() {
         return publicationContextService.getRelevantPublicationContexts();
+    }
+
+    @GetMapping("/{id}")
+    public PublicationContextDetailDto getPublicationContextDetail(@PathVariable String id) {
+        return publicationContextService.getPublicationContextDetail(id);
     }
 }

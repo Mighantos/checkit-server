@@ -31,7 +31,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @param userUri URI identifiers of a user
      * @return list of publication contexts
      */
-    public List<PublicationContext> findAllThatAffectVocabularies(URI userUri) {
+    public List<PublicationContext> findAllThatAffectVocabulariesGestoredBy(URI userUri) {
         try {
             return em.createNativeQuery("SELECT DISTINCT ?pc WHERE {"
                     + "?pc a ?type ;"
@@ -41,6 +41,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                     + "?voc ?gestoredBy ?user ."
                     + "}", type)
                 .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
                 .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
                 .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
@@ -114,7 +115,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @param projectContext project context
      * @return URI identifier publication context
      */
-    public Optional<URI> find(ProjectContext projectContext) {
+    public Optional<URI> findByProject(ProjectContext projectContext) {
         try {
             return Optional.ofNullable(em.createNativeQuery("SELECT DISTINCT ?pc WHERE { ?pc a ?type ; "
                     + "?fromProject ?project . "
@@ -148,10 +149,40 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                     + "}", Vocabulary.class)
                 .setParameter("pc", publicationContextUri)
                 .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
                 .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
                 .setParameter("vocType", URI.create(TermVocabulary.s_c_slovnik))
                 .getResultList();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Checks if specified publication context has some change that is in vocabulary gestored by specified user.
+     *
+     * @param userUri URI identifier of user
+     * @param publicationContextUri URI identifier of publication context
+     * @return true or false
+     */
+    public boolean doesUserHaveAnyChangesToReview(URI userUri, URI publicationContextUri) {
+        try {
+            return em.createNativeQuery("ASK {"
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "?voc ?gestoredBy ?user ."
+                    + "}", Boolean.class)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
+                .setParameter("user", userUri)
+                .getSingleResult();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }

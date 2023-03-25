@@ -2,8 +2,10 @@ package com.github.checkit.service;
 
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.PublicationContextDao;
+import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
-import com.github.checkit.dto.VocabularyDto;
+import com.github.checkit.dto.ReviewableVocabularyDto;
+import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
@@ -12,6 +14,7 @@ import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
 import com.github.checkit.util.PublicationContextState;
+import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,13 +58,32 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     public List<PublicationContextDto> getRelevantPublicationContexts() {
         URI userUri = userService.getCurrent().getUri();
         List<PublicationContext> publicationContexts =
-            publicationContextDao.findAllThatAffectVocabularies(userUri);
+            publicationContextDao.findAllThatAffectVocabulariesGestoredBy(userUri);
         return publicationContexts.stream().map(pc -> {
-            List<VocabularyDto> affectedVocabularies =
-                publicationContextDao.findAffectedVocabularies(pc.getUri()).stream().map(VocabularyDto::new).toList();
             PublicationContextState state = getState(pc);
-            return new PublicationContextDto(pc, affectedVocabularies, state);
+            return new PublicationContextDto(pc, state);
         }).toList();
+    }
+
+    /**
+     * Get detail of publication context specified by id.
+     *
+     * @param publicationContextId identifier of publication context
+     * @return publication context detail
+     */
+    @Transactional
+    public PublicationContextDetailDto getPublicationContextDetail(String publicationContextId) {
+        User current = userService.getCurrent();
+        URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
+        checkUserCanViewPublicationContext(current.getUri(), publicationContextUri);
+
+        PublicationContext pc = findRequired(publicationContextUri);
+        PublicationContextState state = getState(pc);
+        List<ReviewableVocabularyDto> affectedVocabularies =
+            publicationContextDao.findAffectedVocabularies(pc.getUri()).stream()
+                .map(vocabulary -> new ReviewableVocabularyDto(vocabulary, vocabulary.getGestors().contains(current)))
+                .toList();
+        return new PublicationContextDetailDto(pc, state, affectedVocabularies);
     }
 
     /**
@@ -96,6 +118,16 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         } else {
             persist(publicationContext);
         }
+    }
+
+    private void checkUserCanViewPublicationContext(URI userUri, URI publicationContextUri) {
+        if (!publicationContextDao.doesUserHaveAnyChangesToReview(userUri, publicationContextUri)) {
+            throw new ForbiddenException();
+        }
+    }
+
+    private URI createPublicationContextUriFromId(String id) {
+        return URI.create(TermVocabulary.s_c_publikacni_kontext + "/" + id);
     }
 
     private PublicationContextState getState(PublicationContext pc) {
@@ -149,7 +181,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private PublicationContext findRequiredFromProject(ProjectContext projectContext) {
-        return findRequired(publicationContextDao.find(projectContext).orElseThrow(
+        return findRequired(publicationContextDao.findByProject(projectContext).orElseThrow(
             () -> new NotFoundException("Publication context related to project \"%s\" was not found.",
                 projectContext.getUri())));
     }
