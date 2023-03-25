@@ -62,27 +62,43 @@ public class Change extends AbstractEntity {
     private AbstractChangeableContext context;
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_schvaleno)
-    private Set<User> approvedBy = new HashSet<>();
+    private Set<User> approvedBy;
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_zamitnuto)
-    private Set<User> rejectedBy = new HashSet<>();
+    private Set<User> rejectedBy;
+
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
+    public Set<User> getApprovedBy() {
+        if (Objects.isNull(approvedBy)) {
+            approvedBy = new HashSet<>();
+        }
+        return approvedBy;
+    }
+
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
+    public Set<User> getRejectedBy() {
+        if (Objects.isNull(rejectedBy)) {
+            rejectedBy = new HashSet<>();
+        }
+        return rejectedBy;
+    }
 
     public void addApprovedBy(User user) {
-        rejectedBy.remove(user);
-        approvedBy.add(user);
+        getRejectedBy().remove(user);
+        getApprovedBy().add(user);
     }
 
     public void removeApprovedBy(User user) {
-        approvedBy.remove(user);
+        getApprovedBy().remove(user);
     }
 
     public void addRejectedBy(User user) {
-        approvedBy.remove(user);
-        rejectedBy.add(user);
+        getApprovedBy().remove(user);
+        getRejectedBy().add(user);
     }
 
     public void removeRejectedBy(User user) {
-        rejectedBy.remove(user);
+        getRejectedBy().remove(user);
     }
 
     /**
@@ -110,11 +126,15 @@ public class Change extends AbstractEntity {
     }
 
     public boolean hasBeenReviewed() {
-        return !approvedBy.isEmpty() || !rejectedBy.isEmpty();
+        return !getApprovedBy().isEmpty() || !getRejectedBy().isEmpty();
     }
 
     public void clearReviews() {
-        approvedBy.clear();
-        rejectedBy.clear();
+        getApprovedBy().clear();
+        getRejectedBy().clear();
+    }
+
+    public boolean isRejected() {
+        return !getRejectedBy().isEmpty();
     }
 }

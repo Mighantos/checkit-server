@@ -2,12 +2,16 @@ package com.github.checkit.service;
 
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.PublicationContextDao;
+import com.github.checkit.dto.PublicationContextDto;
+import com.github.checkit.dto.VocabularyDto;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
+import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
+import com.github.checkit.util.PublicationContextState;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,20 +27,41 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final PublicationContextDao publicationContextDao;
     private final ProjectContextService projectContextService;
     private final ChangeService changeService;
+    private final UserService userService;
 
     /**
      * Construct.
      */
     public PublicationContextService(PublicationContextDao publicationContextDao,
-                                     ProjectContextService projectContextService, ChangeService changeService) {
+                                     ProjectContextService projectContextService, ChangeService changeService,
+                                     UserService userService) {
         this.publicationContextDao = publicationContextDao;
         this.projectContextService = projectContextService;
         this.changeService = changeService;
+        this.userService = userService;
     }
 
     @Override
     protected BaseDao<PublicationContext> getPrimaryDao() {
         return publicationContextDao;
+    }
+
+    /**
+     * Gets list of publication contexts relevant to current user.
+     *
+     * @return list of publication contexts
+     */
+    @Transactional
+    public List<PublicationContextDto> getRelevantPublicationContexts() {
+        URI userUri = userService.getCurrent().getUri();
+        List<PublicationContext> publicationContexts =
+            publicationContextDao.findAllThatAffectVocabularies(userUri);
+        return publicationContexts.stream().map(pc -> {
+            List<VocabularyDto> affectedVocabularies =
+                publicationContextDao.findAffectedVocabularies(pc.getUri()).stream().map(VocabularyDto::new).toList();
+            PublicationContextState state = getState(pc);
+            return new PublicationContextDto(pc, affectedVocabularies, state);
+        }).toList();
     }
 
     /**
@@ -71,6 +96,19 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         } else {
             persist(publicationContext);
         }
+    }
+
+    private PublicationContextState getState(PublicationContext pc) {
+        List<Change> changes = new ArrayList<>(pc.getChanges());
+        if (changes.stream().anyMatch(Change::isRejected)) {
+            return PublicationContextState.REJECTED;
+        }
+        for (User user : changes.get(0).getApprovedBy()) {
+            if (changes.stream().allMatch(change -> change.getApprovedBy().contains(user))) {
+                return PublicationContextState.APPROVED;
+            }
+        }
+        return PublicationContextState.CREATED;
     }
 
     private Set<Change> takeIntoConsiderationExistingChanges(List<Change> currentChanges, Set<Change> existingChanges) {

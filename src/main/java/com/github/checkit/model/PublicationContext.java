@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,7 +35,7 @@ public class PublicationContext extends AbstractEntity {
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_ma_zmenu,
         cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
-    private Set<Change> changes = new HashSet<>();
+    private Set<Change> changes;
 
     @PrePersist
     public void prePersist() {
@@ -50,5 +51,17 @@ public class PublicationContext extends AbstractEntity {
     public void setChanges(Set<Change> changes) {
         this.changes.clear();
         this.changes.addAll(changes);
+    }
+
+    public String getId() {
+        return getUri().toString().substring(getUri().toString().lastIndexOf("/") + 1);
+    }
+
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
+    public Set<Change> getChanges() {
+        if (Objects.isNull(changes)) {
+            changes = new HashSet<>();
+        }
+        return changes;
     }
 }
