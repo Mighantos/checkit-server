@@ -40,6 +40,12 @@ public class ChangeService extends BaseRepositoryService<Change> {
         return changeDao;
     }
 
+    /**
+     * Returns list of changes made in specified vocabulary context compared to its canonical version.
+     *
+     * @param vocabularyContext {@link VocabularyContext} to find changes in
+     * @return list of changes
+     */
     public List<Change> getChanges(VocabularyContext vocabularyContext) {
         Model canonicalGraph =
             vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVocabulary().getUri());
@@ -47,10 +53,16 @@ public class ChangeService extends BaseRepositoryService<Change> {
         return getChanges(canonicalGraph, draftGraph, vocabularyContext);
     }
 
+    /**
+     * Returns list of changes made in specified draft compared to provided canonical version.
+     *
+     * @param canonicalGraph            Model representation of canonical graph (context)
+     * @param draftGraph                Model representation of draft graph (context)
+     * @param abstractChangeableContext context the changes were made in
+     * @return list of changes
+     */
     public List<Change> getChanges(Model canonicalGraph, Model draftGraph,
                                    AbstractChangeableContext abstractChangeableContext) {
-        HashMap<Resource, ArrayList<Statement>> newStatements = getChangedStatements(canonicalGraph, draftGraph);
-        HashMap<Resource, ArrayList<Statement>> removedStatements = getChangedStatements(draftGraph, canonicalGraph);
         HashMap<Resource, Model> canonicalSubGraphs = getSubGraphs(canonicalGraph);
         HashMap<Resource, Model> draftSubGraphs = getSubGraphs(draftGraph);
         HashMap<Resource, ArrayList<Resource>> canonicalTopLevelSubjectsSubGraphs =
@@ -101,6 +113,10 @@ public class ChangeService extends BaseRepositoryService<Change> {
             draftTopLevelSubjectsSubGraphs.remove(subject);
         }
 
+        HashMap<Resource, ArrayList<Statement>> newStatements =
+            getChangedStatementsWithoutBlankNodes(canonicalGraph, draftGraph);
+        HashMap<Resource, ArrayList<Statement>> removedStatements =
+            getChangedStatementsWithoutBlankNodes(draftGraph, canonicalGraph);
         return getChangesFromStatements(abstractChangeableContext, newStatements, removedStatements, canonicalGraph,
             draftGraph);
     }
@@ -165,7 +181,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
         return label;
     }
 
-    private HashMap<Resource, ArrayList<Statement>> getChangedStatements(Model base, Model modified) {
+    private HashMap<Resource, ArrayList<Statement>> getChangedStatementsWithoutBlankNodes(Model base, Model modified) {
         HashMap<Resource, ArrayList<Statement>> changedStatements = new HashMap<>();
         StmtIterator stmtIterator = modified.listStatements();
         while (stmtIterator.hasNext()) {
