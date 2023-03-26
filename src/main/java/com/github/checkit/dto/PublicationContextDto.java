@@ -11,7 +11,6 @@ public class PublicationContextDto {
     private final String id;
     private final URI uri;
     private final String label;
-
     private final URI projectContext;
     private final PublicationContextState state;
 

@@ -2,6 +2,8 @@ package com.github.checkit.service;
 
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.PublicationContextDao;
+import com.github.checkit.dto.ChangeDto;
+import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
@@ -87,6 +89,27 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     /**
+     * Get changes made in specified vocabulary in specified publication context.
+     *
+     * @param publicationContextId identifier of publication context
+     * @param vocabularyUri        URI identifier of vocabulary
+     * @return basic information about context and changes made
+     */
+    @Transactional
+    public ContextChangesDto getChangesInContextInPublicationContext(String publicationContextId, URI vocabularyUri) {
+        User current = userService.getCurrent();
+        URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
+        checkUserCanReviewContext(current.getUri(), publicationContextUri, vocabularyUri);
+
+        PublicationContext pc = findRequired(publicationContextUri);
+        List<ChangeDto> changes =
+            pc.getChanges().stream().filter(change ->
+                    ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
+                .map(change -> new ChangeDto(change, current)).sorted().toList();
+        return new ContextChangesDto(vocabularyUri, "label", changes);
+    }
+
+    /**
      * Create (or update if already exists) publication context with all changes made in specified project compared to
      * canonical version of its vocabularies and attachments.
      *
@@ -122,6 +145,13 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
     private void checkUserCanViewPublicationContext(URI userUri, URI publicationContextUri) {
         if (!publicationContextDao.doesUserHaveAnyChangesToReview(userUri, publicationContextUri)) {
+            throw new ForbiddenException();
+        }
+    }
+
+    private void checkUserCanReviewContext(URI userUri, URI publicationContextUri, URI vocabularyUri) {
+        if (!publicationContextDao.doesUserHavePermissionToReviewVocabulary(userUri, publicationContextUri,
+            vocabularyUri)) {
             throw new ForbiddenException();
         }
     }

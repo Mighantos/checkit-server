@@ -1,5 +1,6 @@
 package com.github.checkit.controller;
 
+import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.service.PublicationContextService;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,5 +41,11 @@ public class PublicationContextController extends BaseController {
     @GetMapping("/{id}")
     public PublicationContextDetailDto getPublicationContextDetail(@PathVariable String id) {
         return publicationContextService.getPublicationContextDetail(id);
+    }
+
+    @GetMapping("/{id}/vocabulary-changes")
+    public ContextChangesDto getPublicationContextDetail(@PathVariable String id,
+                                                         @RequestParam("vocabularyUri") URI vocabularyUri) {
+        return publicationContextService.getChangesInContextInPublicationContext(id, vocabularyUri);
     }
 }

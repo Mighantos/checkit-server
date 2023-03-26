@@ -79,7 +79,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     }
 
     /**
-     * Returns if publication context related to specified project exists.
+     * Checks if publication context related to specified project exists.
      *
      * @param projectContext Project context
      * @return if publication context exists
@@ -162,7 +162,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     /**
      * Checks if specified publication context has some change that is in vocabulary gestored by specified user.
      *
-     * @param userUri URI identifier of user
+     * @param userUri               URI identifier of user
      * @param publicationContextUri URI identifier of publication context
      * @return true or false
      */
@@ -180,6 +180,37 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
                 .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
+                .setParameter("user", userUri)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Checks if specified user is gestor of specified vocabulary present in specified publication context.
+     *
+     * @param userUri               URI identifier of user
+     * @param publicationContextUri URI identifier of publication context
+     * @param vocabularyUri         URI identifier of vocabulary
+     * @return true or false
+     */
+    public boolean doesUserHavePermissionToReviewVocabulary(URI userUri, URI publicationContextUri, URI vocabularyUri) {
+        try {
+            return em.createNativeQuery("ASK {"
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "?voc ?gestoredBy ?user ."
+                    + "}", Boolean.class)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("voc", vocabularyUri)
                 .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
                 .setParameter("user", userUri)
                 .getSingleResult();
