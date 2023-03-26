@@ -2,7 +2,6 @@ package com.github.checkit.service;
 
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
-import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.model.AbstractChangeableContext;
 import com.github.checkit.model.Change;
@@ -47,6 +46,11 @@ public class ChangeService extends BaseRepositoryService<Change> {
         return changeDao;
     }
 
+    /**
+     * Markes specified change as approved by current user.
+     *
+     * @param changeId identifier of change
+     */
     @Transactional
     public void approveChange(String changeId) {
         User current = userService.getCurrent();
@@ -58,6 +62,11 @@ public class ChangeService extends BaseRepositoryService<Change> {
         changeDao.update(change);
     }
 
+    /**
+     * Markes specified change as approved by current user.
+     *
+     * @param changeId identifier of change
+     */
     @Transactional
     public void rejectChange(String changeId) {
         User current = userService.getCurrent();
