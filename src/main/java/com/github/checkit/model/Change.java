@@ -67,6 +67,10 @@ public class Change extends AbstractEntity {
     @OWLObjectProperty(iri = TermVocabulary.s_p_zamitnuto)
     private Set<User> rejectedBy;
 
+    public String getId() {
+        return getUri().toString().substring(getUri().toString().lastIndexOf("/") + 1);
+    }
+
     @SuppressWarnings("checkstyle:MissingJavadocMethod")
     public Set<User> getApprovedBy() {
         if (Objects.isNull(approvedBy)) {
@@ -84,7 +88,6 @@ public class Change extends AbstractEntity {
     }
 
     public void addApprovedBy(User user) {
-        getRejectedBy().remove(user);
         getApprovedBy().add(user);
     }
 
@@ -93,7 +96,6 @@ public class Change extends AbstractEntity {
     }
 
     public void addRejectedBy(User user) {
-        getApprovedBy().remove(user);
         getRejectedBy().add(user);
     }
 

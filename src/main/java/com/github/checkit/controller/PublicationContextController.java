@@ -38,14 +38,14 @@ public class PublicationContextController extends BaseController {
         return publicationContextService.getRelevantPublicationContexts();
     }
 
-    @GetMapping("/{id}")
-    public PublicationContextDetailDto getPublicationContextDetail(@PathVariable String id) {
-        return publicationContextService.getPublicationContextDetail(id);
+    @GetMapping("/{publicationContextId}")
+    public PublicationContextDetailDto getPublicationContextDetail(@PathVariable String publicationContextId) {
+        return publicationContextService.getPublicationContextDetail(publicationContextId);
     }
 
-    @GetMapping("/{id}/vocabulary-changes")
-    public ContextChangesDto getPublicationContextDetail(@PathVariable String id,
+    @GetMapping("/{publicationContextId}/vocabulary-changes")
+    public ContextChangesDto getPublicationContextDetail(@PathVariable String publicationContextId,
                                                          @RequestParam("vocabularyUri") URI vocabularyUri) {
-        return publicationContextService.getChangesInContextInPublicationContext(id, vocabularyUri);
+        return publicationContextService.getChangesInContextInPublicationContext(publicationContextId, vocabularyUri);
     }
 }

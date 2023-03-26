@@ -2,10 +2,14 @@ package com.github.checkit.service;
 
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
+import com.github.checkit.dto.ContextChangesDto;
+import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.model.AbstractChangeableContext;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
+import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
+import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.SKOS;
 import java.net.URI;
@@ -18,26 +22,51 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChangeService extends BaseRepositoryService<Change> {
     private final VocabularyService vocabularyService;
     private final VocabularyContextService vocabularyContextService;
+    private final UserService userService;
     private final ChangeDao changeDao;
 
     /**
      * Constructor.
      */
     public ChangeService(VocabularyService vocabularyService, VocabularyContextService vocabularyContextService,
-                         ChangeDao changeDao) {
+                         UserService userService, ChangeDao changeDao) {
         this.vocabularyService = vocabularyService;
         this.vocabularyContextService = vocabularyContextService;
+        this.userService = userService;
         this.changeDao = changeDao;
     }
 
     @Override
     protected BaseDao<Change> getPrimaryDao() {
         return changeDao;
+    }
+
+    @Transactional
+    public void approveChange(String changeId) {
+        User current = userService.getCurrent();
+        URI changeUri = createChangeUriFromId(changeId);
+        checkUserCanReviewChange(current.getUri(), changeUri);
+        Change change = findRequired(changeUri);
+        change.addApprovedBy(current);
+        change.removeRejectedBy(current);
+        changeDao.update(change);
+    }
+
+    @Transactional
+    public void rejectChange(String changeId) {
+        User current = userService.getCurrent();
+        URI changeUri = createChangeUriFromId(changeId);
+        checkUserCanReviewChange(current.getUri(), changeUri);
+        Change change = findRequired(changeUri);
+        change.addRejectedBy(current);
+        change.removeApprovedBy(current);
+        changeDao.update(change);
     }
 
     /**
@@ -119,6 +148,16 @@ public class ChangeService extends BaseRepositoryService<Change> {
             getChangedStatementsWithoutBlankNodes(draftGraph, canonicalGraph);
         return getChangesFromStatements(abstractChangeableContext, newStatements, removedStatements, canonicalGraph,
             draftGraph);
+    }
+
+    private void checkUserCanReviewChange(URI userUri, URI changeUri) {
+        if (!changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
+            throw new ForbiddenException();
+        }
+    }
+
+    private URI createChangeUriFromId(String id) {
+        return URI.create(TermVocabulary.s_c_zmena + "/" + id);
     }
 
     private List<Change> getChangesFromStatements(AbstractChangeableContext abstractChangeableContext,

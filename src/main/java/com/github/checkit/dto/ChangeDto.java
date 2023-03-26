@@ -10,6 +10,7 @@ import lombok.Getter;
 @Getter
 public class ChangeDto implements Comparable<ChangeDto> {
 
+    private final String id;
     private final URI uri;
     private final ChangeType type;
     private final String label;
@@ -25,6 +26,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
      * Constructor.
      */
     public ChangeDto(Change change, User user) {
+        this.id = change.getId();
         this.uri = change.getUri();
         this.type = change.getChangeType();
         this.label = change.getLabel();
