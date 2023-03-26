@@ -77,4 +77,11 @@ public interface GenericDao<T extends HasIdentifier> {
      * @return {@literal true} if entity exists, {@literal false} otherwise
      */
     boolean exists(URI id);
+
+    /**
+     * Generates a unique URI for the class managed by this DAO.
+     *
+     * @return generated URI
+     */
+    URI generateEntityUri();
 }

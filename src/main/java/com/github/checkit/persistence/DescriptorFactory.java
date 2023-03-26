@@ -1,6 +1,9 @@
 package com.github.checkit.persistence;
 
+import com.github.checkit.model.Change;
 import com.github.checkit.model.GestoringRequest;
+import com.github.checkit.model.ProjectContext;
+import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
@@ -37,7 +40,6 @@ public class DescriptorFactory {
     public <T> FieldSpecification<? super T, ?> fieldSpec(Class<T> entityClass, String attributeName) {
         return emf.getMetamodel().entity(entityClass).getFieldSpecification(attributeName);
     }
-
 
     /**
      * Creates a JOPA descriptor for a specific vocabulary.
@@ -84,6 +86,91 @@ public class DescriptorFactory {
         descriptor.addAttributeDescriptor(fieldSpec(GestoringRequest.class, "applicant"),
             new EntityDescriptor((URI) null));
         descriptor.addAttributeDescriptor(fieldSpec(GestoringRequest.class, "vocabulary"),
+            new EntityDescriptor((URI) null));
+        return descriptor;
+    }
+
+    /**
+     * Creates a JOPA descriptor for a specific publication context.
+     *
+     * <p>The descriptor specifies that the instance will correspond to the given model.
+     * It also initializes other required attribute descriptors.
+     *
+     * @param publicationContext Publication context for which the descriptor should be created
+     * @return Publication context descriptor
+     */
+    public Descriptor publicationContextDescriptor(PublicationContext publicationContext) {
+        Objects.requireNonNull(publicationContext);
+        return publicationContextDescriptor(publicationContext.getUri());
+    }
+
+    /**
+     * Creates a JOPA descriptor for a publication context with the specified identifier.
+     *
+     * <p>The descriptor specifies that the instance will correspond to the given IRI.
+     * It also initializes other required attribute descriptors.
+     *
+     * @param publicationContextUri Publication context identifier for which the descriptor should be created
+     * @return Publication context descriptor
+     */
+    public Descriptor publicationContextDescriptor(URI publicationContextUri) {
+        Objects.requireNonNull(publicationContextUri);
+        EntityDescriptor descriptor = entityDescriptor(publicationContextUri);
+        descriptor.addAttributeDescriptor(fieldSpec(PublicationContext.class, "fromProject"),
+            new EntityDescriptor((URI) null));
+        descriptor.addAttributeDescriptor(fieldSpec(PublicationContext.class, "changes"),
+            changeDescriptor(publicationContextUri));
+        return descriptor;
+    }
+
+    /**
+     * Creates a JOPA descriptor for a change located in the specified publication context.
+     *
+     * <p>The descriptor specifies that the instance will correspond to the given IRI.
+     * It also initializes other required attribute descriptors.
+     *
+     * @param publicationContextUri Publication context identifier in which the change is located
+     * @return Change descriptor
+     */
+    public Descriptor changeDescriptor(URI publicationContextUri) {
+        Objects.requireNonNull(publicationContextUri);
+        EntityDescriptor descriptor = entityDescriptor(publicationContextUri);
+        descriptor.addAttributeDescriptor(fieldSpec(Change.class, "context"),
+            new EntityDescriptor((URI) null));
+        descriptor.addAttributeDescriptor(fieldSpec(Change.class, "approvedBy"),
+            new EntityDescriptor((URI) null));
+        descriptor.addAttributeDescriptor(fieldSpec(Change.class, "rejectedBy"),
+            new EntityDescriptor((URI) null));
+        return descriptor;
+    }
+
+    /**
+     * Creates a JOPA descriptor for a specific project context.
+     *
+     * <p>The descriptor specifies that the instance will correspond to the given model.
+     * It also initializes other required attribute descriptors.
+     *
+     * @param projectContext Project context for which the descriptor should be created
+     * @return Project context descriptor
+     */
+    public Descriptor projectContextDescriptor(ProjectContext projectContext) {
+        Objects.requireNonNull(projectContext);
+        return vocabularyDescriptor(projectContext.getUri());
+    }
+
+    /**
+     * Creates a JOPA descriptor for a project context with the specified identifier.
+     *
+     * <p>The descriptor specifies that the instance will correspond to the given IRI.
+     * It also initializes other required attribute descriptors.
+     *
+     * @param projectContextUri Project context identifier for which the descriptor should be created
+     * @return Project context descriptor
+     */
+    public Descriptor projectContextDescriptor(URI projectContextUri) {
+        Objects.requireNonNull(projectContextUri);
+        EntityDescriptor descriptor = entityDescriptor(projectContextUri);
+        descriptor.addAttributeDescriptor(fieldSpec(ProjectContext.class, "vocabularyContexts"),
             new EntityDescriptor((URI) null));
         return descriptor;
     }

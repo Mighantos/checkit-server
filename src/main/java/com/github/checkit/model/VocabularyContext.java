@@ -14,12 +14,12 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @OWLClass(iri = TermVocabulary.s_c_slovnikovy_kontext)
-public class VocabularyContext extends AbstractEntity {
+public class VocabularyContext extends AbstractChangeableContext {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
     @OWLObjectProperty(iri = TermVocabulary.s_p_vychazi_z_verze, fetch = FetchType.EAGER)
-    private Vocabulary vocabulary;
+    private Vocabulary basedOnVocabulary;
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_odkazuje_na_prilohovy_kontext, fetch = FetchType.EAGER)
     private Set<AttachmentContext> attachmentContexts = new HashSet<>();
