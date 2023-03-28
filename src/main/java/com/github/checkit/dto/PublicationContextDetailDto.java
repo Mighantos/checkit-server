@@ -1,7 +1,7 @@
 package com.github.checkit.dto;
 
+import com.github.checkit.dto.auxiliary.PublicationContextState;
 import com.github.checkit.model.PublicationContext;
-import com.github.checkit.util.PublicationContextState;
 import java.util.List;
 import lombok.Getter;
 

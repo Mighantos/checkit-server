@@ -1,6 +1,5 @@
 package com.github.checkit.controller;
 
-import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.service.ChangeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;

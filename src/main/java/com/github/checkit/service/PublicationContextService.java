@@ -7,6 +7,7 @@ import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
+import com.github.checkit.dto.auxiliary.PublicationContextState;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.model.Change;
@@ -15,7 +16,6 @@ import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
-import com.github.checkit.util.PublicationContextState;
 import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,6 +32,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final PublicationContextDao publicationContextDao;
     private final ProjectContextService projectContextService;
     private final ChangeService changeService;
+    private final VocabularyService vocabularyService;
     private final UserService userService;
 
     /**
@@ -39,10 +40,11 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      */
     public PublicationContextService(PublicationContextDao publicationContextDao,
                                      ProjectContextService projectContextService, ChangeService changeService,
-                                     UserService userService) {
+                                     VocabularyService vocabularyService, UserService userService) {
         this.publicationContextDao = publicationContextDao;
         this.projectContextService = projectContextService;
         this.changeService = changeService;
+        this.vocabularyService = vocabularyService;
         this.userService = userService;
     }
 
@@ -102,11 +104,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         checkUserCanReviewContext(current.getUri(), publicationContextUri, vocabularyUri);
 
         PublicationContext pc = findRequired(publicationContextUri);
+        String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
         List<ChangeDto> changes =
             pc.getChanges().stream().filter(change ->
                     ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
                 .map(change -> new ChangeDto(change, current)).sorted().toList();
-        return new ContextChangesDto(vocabularyUri, "label", changes);
+        return new ContextChangesDto(vocabularyUri, vocabularyLabel, changes);
     }
 
     /**

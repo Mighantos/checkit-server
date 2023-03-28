@@ -1,6 +1,7 @@
 package com.github.checkit.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.github.checkit.dto.auxiliary.ChangeState;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.User;
@@ -19,8 +20,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
     private final String object;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String newObject;
-    private final boolean approved;
-    private final boolean rejected;
+    private final ChangeState state;
 
     /**
      * Constructor.
@@ -34,8 +34,17 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.predicate = change.getPredicate();
         this.object = change.getObject();
         this.newObject = change.getNewObject();
-        this.approved = change.getApprovedBy().contains(user);
-        this.rejected = change.getRejectedBy().contains(user);
+        this.state = resolveChangeState(change, user);
+    }
+
+    private ChangeState resolveChangeState(Change change, User user) {
+        if (change.getRejectedBy().contains(user)) {
+            return ChangeState.REJECTED;
+        }
+        if (change.getApprovedBy().contains(user)) {
+            return ChangeState.APPROVED;
+        }
+        return ChangeState.NOT_REVIEWED;
     }
 
     @Override

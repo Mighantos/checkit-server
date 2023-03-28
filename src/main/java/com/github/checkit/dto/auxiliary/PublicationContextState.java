@@ -1,4 +1,4 @@
-package com.github.checkit.util;
+package com.github.checkit.dto.auxiliary;
 
 public enum PublicationContextState {
     CREATED,
