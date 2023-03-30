@@ -1,11 +1,11 @@
 package com.github.checkit.persistence;
 
+import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.GestoringRequest;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.Vocabulary;
-import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -18,9 +18,11 @@ import org.springframework.stereotype.Component;
 public class DescriptorFactory {
 
     private final EntityManagerFactory emf;
+    private final RepositoryConfigProperties repositoryConfigProperties;
 
-    public DescriptorFactory(EntityManagerFactory emf) {
+    public DescriptorFactory(EntityManagerFactory emf, RepositoryConfigProperties repositoryConfigProperties) {
         this.emf = emf;
+        this.repositoryConfigProperties = repositoryConfigProperties;
     }
 
     private static EntityDescriptor entityDescriptor(URI uri) {
@@ -73,15 +75,15 @@ public class DescriptorFactory {
     }
 
     /**
-     * Creates a JOPA descriptor for a vocabulary with the specified identifier.
+     * Creates a JOPA descriptor for a gestoring request entity.
      *
-     * <p>The descriptor specifies that the instance will correspond to the given IRI.
+     * <p>The descriptor specifies that the instance will correspond to the set IRI.
      * It also initializes other required attribute descriptors.
      *
      * @return Vocabulary descriptor
      */
     public Descriptor gestoringRequestDescriptor() {
-        URI contextUri = URI.create(TermVocabulary.s_c_pozadavek_na_gestorovani);
+        URI contextUri = URI.create(repositoryConfigProperties.getGestoringRequest().getContext());
         EntityDescriptor descriptor = entityDescriptor(contextUri);
         descriptor.addAttributeDescriptor(fieldSpec(GestoringRequest.class, "applicant"),
             new EntityDescriptor((URI) null));
