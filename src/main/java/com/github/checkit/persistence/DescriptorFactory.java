@@ -2,6 +2,7 @@ package com.github.checkit.persistence;
 
 import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.model.Change;
+import com.github.checkit.model.Comment;
 import com.github.checkit.model.GestoringRequest;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
@@ -173,6 +174,24 @@ public class DescriptorFactory {
         Objects.requireNonNull(projectContextUri);
         EntityDescriptor descriptor = entityDescriptor(projectContextUri);
         descriptor.addAttributeDescriptor(fieldSpec(ProjectContext.class, "vocabularyContexts"),
+            new EntityDescriptor((URI) null));
+        return descriptor;
+    }
+
+    /**
+     * Creates a JOPA descriptor for a comment entity.
+     *
+     * <p>The descriptor specifies that the instance will correspond to the set IRI.
+     * It also initializes other required attribute descriptors.
+     *
+     * @return Change descriptor
+     */
+    public Descriptor commentDescriptor() {
+        URI contextUri = URI.create(repositoryConfigProperties.getComment().getContext());
+        EntityDescriptor descriptor = entityDescriptor(contextUri);
+        descriptor.addAttributeDescriptor(fieldSpec(Comment.class, "topic"),
+            new EntityDescriptor((URI) null));
+        descriptor.addAttributeDescriptor(fieldSpec(Comment.class, "author"),
             new EntityDescriptor((URI) null));
         return descriptor;
     }

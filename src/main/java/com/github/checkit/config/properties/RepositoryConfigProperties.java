@@ -33,6 +33,9 @@ public class RepositoryConfigProperties {
     @Nonnull
     private GestoringRequestProperties gestoringRequest;
 
+    @Nonnull
+    private CommentProperties comment;
+
     @Getter
     @Setter
     @Configuration
@@ -51,6 +54,16 @@ public class RepositoryConfigProperties {
     @Configuration
     @ConfigurationProperties("gestoringrequest")
     public static class GestoringRequestProperties {
+
+        @Nonnull
+        private String context;
+    }
+
+    @Getter
+    @Setter
+    @Configuration
+    @ConfigurationProperties("comment")
+    public static class CommentProperties {
 
         @Nonnull
         private String context;
