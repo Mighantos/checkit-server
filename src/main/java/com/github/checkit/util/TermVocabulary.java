@@ -15,6 +15,8 @@ public final class TermVocabulary {
         "http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/";
     public static final String CHANGE_DESCRIPTION_NAMESPACE =
         "https://slovník.gov.cz/datový/popis-zmen/pojem/";
+    public static final String SIOC_NAMESPACE = "http://rdfs.org/sioc/ns#";
+    public static final String SIOCT_NAMESPACE = "http://rdfs.org/sioc/types#";
 
     /**
      * Change description terms definition.
@@ -50,6 +52,7 @@ public final class TermVocabulary {
     public static final String s_c_slovnikovy_kontext = WORKSPACE_NAMESPACE + "slovníkový-kontext";
     public static final String s_c_prilohovy_kontext = WORKSPACE_NAMESPACE + "přílohový-kontext";
     public static final String s_c_slovnik = DATA_DESCRIPTION_NAMESPACE + "slovník";
+    public static final String s_c_Comment = SIOCT_NAMESPACE + "Comment";
     public static final String s_p_ma_krestni_jmeno = DATA_DESCRIPTION_NAMESPACE + "má-křestní-jméno";
     public static final String s_p_ma_prijmeni = DATA_DESCRIPTION_NAMESPACE + "má-příjmení";
     public static final String s_p_vychazi_z_verze = WORKSPACE_NAMESPACE + "vychází-z-verze";
@@ -59,4 +62,7 @@ public final class TermVocabulary {
     public static final String s_p_ma_datum_a_cas_vytvoreni = DATA_DESCRIPTION_NAMESPACE + "má-datum-a-čas-vytvoření";
     public static final String s_p_ma_datum_a_cas_posledni_modifikace = DATA_DESCRIPTION_NAMESPACE
         + "má-datum-a-čas-poslední-modifikace";
+    public static final String s_p_has_creator = SIOC_NAMESPACE + "has_creator";
+    public static final String s_p_topic = SIOC_NAMESPACE + "topic";
+    public static final String s_p_content = SIOC_NAMESPACE + "content";
 }

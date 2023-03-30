@@ -54,6 +54,6 @@ public class UserService extends BaseRepositoryService<User> {
     }
 
     private URI createUserUriFromId(String userId) {
-        return URI.create(repositoryConfigProperties.getUserIdPrefix() + userId);
+        return URI.create(repositoryConfigProperties.getUser().getIdPrefix() + userId);
     }
 }

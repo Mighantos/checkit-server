@@ -27,12 +27,6 @@ public class PublicationContextController extends BaseController {
         this.publicationContextService = publicationContextService;
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping
-    public void submitProjectForReview(@RequestBody URI projectUri) {
-        publicationContextService.createOrUpdatePublicationContext(projectUri);
-    }
-
     @GetMapping
     public List<PublicationContextDto> getRelevantPublicationContexts() {
         return publicationContextService.getRelevantPublicationContexts();
@@ -47,5 +41,11 @@ public class PublicationContextController extends BaseController {
     public ContextChangesDto getPublicationContextDetail(@PathVariable String publicationContextId,
                                                          @RequestParam("vocabularyUri") URI vocabularyUri) {
         return publicationContextService.getChangesInContextInPublicationContext(publicationContextId, vocabularyUri);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping
+    public void submitProjectForReview(@RequestBody URI projectUri) {
+        publicationContextService.createOrUpdatePublicationContext(projectUri);
     }
 }

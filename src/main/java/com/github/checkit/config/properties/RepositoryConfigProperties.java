@@ -28,5 +28,44 @@ public class RepositoryConfigProperties {
     private String language;
 
     @Nonnull
-    private String userIdPrefix;
+    private UserProperties user;
+
+    @Nonnull
+    private GestoringRequestProperties gestoringRequest;
+
+    @Nonnull
+    private CommentProperties comment;
+
+    @Getter
+    @Setter
+    @Configuration
+    @ConfigurationProperties("user")
+    public static class UserProperties {
+
+        @Nonnull
+        private String idPrefix;
+
+        @Nonnull
+        private String context;
+    }
+
+    @Getter
+    @Setter
+    @Configuration
+    @ConfigurationProperties("gestoringrequest")
+    public static class GestoringRequestProperties {
+
+        @Nonnull
+        private String context;
+    }
+
+    @Getter
+    @Setter
+    @Configuration
+    @ConfigurationProperties("comment")
+    public static class CommentProperties {
+
+        @Nonnull
+        private String context;
+    }
 }
