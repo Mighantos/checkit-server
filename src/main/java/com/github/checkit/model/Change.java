@@ -3,6 +3,7 @@ package com.github.checkit.model;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.EnumType;
 import cz.cvut.kbss.jopa.model.annotations.Enumerated;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -61,10 +62,10 @@ public class Change extends AbstractEntity {
     @OWLObjectProperty(iri = TermVocabulary.s_p_v_kontextu)
     private AbstractChangeableContext context;
 
-    @OWLObjectProperty(iri = TermVocabulary.s_p_schvaleno)
+    @OWLObjectProperty(iri = TermVocabulary.s_p_schvaleno, fetch = FetchType.EAGER)
     private Set<User> approvedBy;
 
-    @OWLObjectProperty(iri = TermVocabulary.s_p_zamitnuto)
+    @OWLObjectProperty(iri = TermVocabulary.s_p_zamitnuto, fetch = FetchType.EAGER)
     private Set<User> rejectedBy;
 
     public String getId() {

@@ -99,11 +99,11 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     }
 
     @Override
-    public Optional<PublicationContext> find(URI id) {
-        Objects.requireNonNull(id);
+    public Optional<PublicationContext> find(URI uri) {
+        Objects.requireNonNull(uri);
         try {
-            Descriptor descriptor = descriptorFactory.publicationContextDescriptor(id);
-            return Optional.ofNullable(em.find(type, id, descriptor));
+            Descriptor descriptor = descriptorFactory.publicationContextDescriptor(uri);
+            return Optional.ofNullable(em.find(type, uri, descriptor));
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
@@ -113,17 +113,18 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * Finds publication context related to specified project.
      *
      * @param projectContext project context
-     * @return URI identifier publication context
+     * @return publication context
      */
-    public Optional<URI> findByProject(ProjectContext projectContext) {
+    public Optional<PublicationContext> findByProject(ProjectContext projectContext) {
         try {
-            return Optional.ofNullable(em.createNativeQuery("SELECT DISTINCT ?pc WHERE { ?pc a ?type ; "
+            URI uri = em.createNativeQuery("SELECT DISTINCT ?pc WHERE { ?pc a ?type ; "
                     + "?fromProject ?project . "
                     + "}", URI.class)
                 .setParameter("type", typeUri)
                 .setParameter("fromProject", URI.create(TermVocabulary.s_p_z_projektu))
                 .setParameter("project", projectContext.getUri())
-                .getSingleResult());
+                .getSingleResult();
+            return find(uri);
         } catch (NoResultException nre) {
             return Optional.empty();
         } catch (RuntimeException e) {
