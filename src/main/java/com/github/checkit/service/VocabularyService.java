@@ -38,6 +38,9 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
         return vocabularyDao;
     }
 
+    public List<Vocabulary> findAllAffectedVocabularies(URI publicationContextUri) {
+        return vocabularyDao.findAllAffectedVocabularies(publicationContextUri);
+    }
 
     public List<VocabularyDto> getAllInDto() {
         return findAll().stream().map(VocabularyDto::new).sorted().collect(Collectors.toList());

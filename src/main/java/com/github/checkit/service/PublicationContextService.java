@@ -98,7 +98,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         PublicationContext pc = findRequired(publicationContextUri);
         PublicationContextState state = getState(pc);
         List<ReviewableVocabularyDto> affectedVocabularies =
-            publicationContextDao.findAffectedVocabularies(pc.getUri()).stream()
+            vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> new ReviewableVocabularyDto(vocabulary, vocabulary.getGestors().contains(current)))
                 .toList();
         return new PublicationContextDetailDto(pc, state, affectedVocabularies);

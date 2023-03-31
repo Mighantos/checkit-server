@@ -33,6 +33,34 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
         }
     }
 
+    /**
+     * Finds affected vocabularies of specified publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @return list of canonical vocabularies
+     */
+    public List<Vocabulary> findAllAffectedVocabularies(URI publicationContextUri) {
+        Objects.requireNonNull(publicationContextUri);
+        try {
+            return em.createNativeQuery("SELECT DISTINCT ?voc WHERE {"
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "?voc a ?vocType . "
+                    + "}", Vocabulary.class)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("type", URI.create(TermVocabulary.s_c_publikacni_kontext))
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("vocType", typeUri)
+                .getResultList();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
     @Override
     public Optional<Vocabulary> find(URI uri) {
         Objects.requireNonNull(uri);
@@ -48,7 +76,7 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
         Objects.requireNonNull(entity);
         try {
             Vocabulary merged = em.merge(entity, descriptorFactory.vocabularyDescriptor(entity));
-            em.getEntityManagerFactory().getCache().evict(Vocabulary.class);
+            em.getEntityManagerFactory().getCache().evictAll();
             return merged;
         } catch (RuntimeException e) {
             throw new PersistenceException(e);

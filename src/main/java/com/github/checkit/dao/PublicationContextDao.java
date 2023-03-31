@@ -3,7 +3,6 @@ package com.github.checkit.dao;
 import com.github.checkit.exception.PersistenceException;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
-import com.github.checkit.model.Vocabulary;
 import com.github.checkit.persistence.DescriptorFactory;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
@@ -127,34 +126,6 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
             return find(uri);
         } catch (NoResultException nre) {
             return Optional.empty();
-        } catch (RuntimeException e) {
-            throw new PersistenceException(e);
-        }
-    }
-
-    /**
-     * Finds affected vocabularies of specified publication context.
-     *
-     * @param publicationContextUri URI identifier of publication context
-     * @return list of canonical vocabularies
-     */
-    public List<Vocabulary> findAffectedVocabularies(URI publicationContextUri) {
-        Objects.requireNonNull(publicationContextUri);
-        try {
-            return em.createNativeQuery("SELECT DISTINCT ?voc WHERE {"
-                    + "?pc a ?type ; "
-                    + "    ?hasChange ?change . "
-                    + "?change ?inContext ?ctx . "
-                    + "?ctx ?basedOn ?voc . "
-                    + "?voc a ?vocType . "
-                    + "}", Vocabulary.class)
-                .setParameter("pc", publicationContextUri)
-                .setParameter("type", typeUri)
-                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
-                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
-                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
-                .setParameter("vocType", URI.create(TermVocabulary.s_c_slovnik))
-                .getResultList();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
