@@ -6,6 +6,7 @@ import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.User;
 import java.net.URI;
+import java.util.Comparator;
 import lombok.Getter;
 
 @Getter
@@ -49,6 +50,11 @@ public class ChangeDto implements Comparable<ChangeDto> {
 
     @Override
     public int compareTo(ChangeDto o) {
-        return subject.compareTo(o.subject);
+        return Comparator
+            .comparing(ChangeDto::getSubject)
+            .thenComparing(ChangeDto::getState)
+            .thenComparing(ChangeDto::getType)
+            .thenComparing(ChangeDto::getPredicate)
+            .compare(this, o);
     }
 }
