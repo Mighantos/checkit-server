@@ -38,7 +38,7 @@ public class ChangeDao extends BaseDao<Change> {
         try {
             Descriptor descriptor = descriptorFactory.changeDescriptor(resolvePublicationContext(entity.getUri()));
             Change merged = em.merge(entity, descriptor);
-            em.getEntityManagerFactory().getCache().evict(Change.class);
+            em.getEntityManagerFactory().getCache().evict(entity.getUri());
             return merged;
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
