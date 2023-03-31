@@ -8,7 +8,6 @@ import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
 import com.github.checkit.dto.auxiliary.PublicationContextState;
-import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
@@ -54,12 +53,28 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     /**
+     * Get publication contexts that current user can't review.
+     *
+     * @return list of publication contexts
+     */
+    @Transactional
+    public List<PublicationContextDto> getReadonlyPublicationContexts() {
+        List<PublicationContext> allPublicationContexts = findAll();
+        URI userUri = userService.getCurrent().getUri();
+        allPublicationContexts.removeAll(publicationContextDao.findAllThatAffectVocabulariesGestoredBy(userUri));
+        return allPublicationContexts.stream().map(pc -> {
+            PublicationContextState state = getState(pc);
+            return new PublicationContextDto(pc, state);
+        }).toList();
+    }
+
+    /**
      * Gets list of publication contexts relevant to current user.
      *
      * @return list of publication contexts
      */
     @Transactional
-    public List<PublicationContextDto> getRelevantPublicationContexts() {
+    public List<PublicationContextDto> getReviewablePublicationContexts() {
         URI userUri = userService.getCurrent().getUri();
         List<PublicationContext> publicationContexts =
             publicationContextDao.findAllThatAffectVocabulariesGestoredBy(userUri);
@@ -79,7 +94,6 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     public PublicationContextDetailDto getPublicationContextDetail(String publicationContextId) {
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
-        checkUserCanViewPublicationContext(current.getUri(), publicationContextUri);
 
         PublicationContext pc = findRequired(publicationContextUri);
         PublicationContextState state = getState(pc);
@@ -101,7 +115,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     public ContextChangesDto getChangesInContextInPublicationContext(String publicationContextId, URI vocabularyUri) {
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
-        checkUserCanReviewContext(current.getUri(), publicationContextUri, vocabularyUri);
+        boolean allowedToReview =
+            publicationContextDao.doesUserHavePermissionToReviewVocabulary(current.getUri(), publicationContextUri,
+                vocabularyUri);
 
         PublicationContext pc = findRequired(publicationContextUri);
         String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
@@ -109,7 +125,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             pc.getChanges().stream().filter(change ->
                     ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
                 .map(change -> new ChangeDto(change, current)).sorted().toList();
-        return new ContextChangesDto(vocabularyUri, vocabularyLabel, changes);
+        return new ContextChangesDto(vocabularyUri, vocabularyLabel, allowedToReview, changes);
     }
 
     /**
@@ -143,19 +159,6 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             update(publicationContext);
         } else {
             persist(publicationContext);
-        }
-    }
-
-    private void checkUserCanViewPublicationContext(URI userUri, URI publicationContextUri) {
-        if (!publicationContextDao.doesUserHaveAnyChangesToReview(userUri, publicationContextUri)) {
-            throw new ForbiddenException();
-        }
-    }
-
-    private void checkUserCanReviewContext(URI userUri, URI publicationContextUri, URI vocabularyUri) {
-        if (!publicationContextDao.doesUserHavePermissionToReviewVocabulary(userUri, publicationContextUri,
-            vocabularyUri)) {
-            throw new ForbiddenException();
         }
     }
 

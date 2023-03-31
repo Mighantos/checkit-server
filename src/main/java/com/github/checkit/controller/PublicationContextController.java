@@ -27,9 +27,14 @@ public class PublicationContextController extends BaseController {
         this.publicationContextService = publicationContextService;
     }
 
-    @GetMapping
-    public List<PublicationContextDto> getRelevantPublicationContexts() {
-        return publicationContextService.getRelevantPublicationContexts();
+    @GetMapping("/readonly")
+    public List<PublicationContextDto> getReadonlyPublicationContexts() {
+        return publicationContextService.getReadonlyPublicationContexts();
+    }
+
+    @GetMapping("/reviewable")
+    public List<PublicationContextDto> getReviewablePublicationContexts() {
+        return publicationContextService.getReviewablePublicationContexts();
     }
 
     @GetMapping("/{publicationContextId}")
