@@ -1,6 +1,10 @@
 application:
   version: ${version}
 
+logging:
+  level:
+    root: info
+
 server:
   error:
     include-message: always

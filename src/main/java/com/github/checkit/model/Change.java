@@ -1,6 +1,8 @@
 package com.github.checkit.model;
 
+import com.github.checkit.model.convertor.ObjectResourceConvertor;
 import com.github.checkit.util.TermVocabulary;
+import cz.cvut.kbss.jopa.model.annotations.Convert;
 import cz.cvut.kbss.jopa.model.annotations.EnumType;
 import cz.cvut.kbss.jopa.model.annotations.Enumerated;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -51,11 +53,13 @@ public class Change extends AbstractEntity {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
-    @OWLAnnotationProperty(iri = RDF.OBJECT)
-    private String object;
+    @Convert(converter = ObjectResourceConvertor.class)
+    @OWLDataProperty(iri = RDF.OBJECT, simpleLiteral = true)
+    private ObjectResource object;
 
-    @OWLAnnotationProperty(iri = TermVocabulary.s_p_ma_novy_objekt)
-    private String newObject;
+    @Convert(converter = ObjectResourceConvertor.class)
+    @OWLAnnotationProperty(iri = TermVocabulary.s_p_ma_novy_objekt, simpleLiteral = true)
+    private ObjectResource newObject;
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)

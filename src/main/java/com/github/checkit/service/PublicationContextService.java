@@ -135,7 +135,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      * @param projectUri project URI identifier
      */
     @Transactional
-    public void createOrUpdatePublicationContext(URI projectUri) {
+    public URI createOrUpdatePublicationContext(URI projectUri) {
         ProjectContext project = projectContextService.findRequired(projectUri);
         List<Change> currentChanges = new ArrayList<>();
         for (VocabularyContext vocabularyContext : project.getVocabularyContexts()) {
@@ -156,9 +156,10 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         publicationContext.setChanges(newFormOfChanges);
 
         if (publicationContextExists) {
-            update(publicationContext);
+            return update(publicationContext).getUri();
         } else {
             persist(publicationContext);
+            return publicationContext.getUri();
         }
     }
 
