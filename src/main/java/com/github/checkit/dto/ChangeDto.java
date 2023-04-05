@@ -3,6 +3,7 @@ package com.github.checkit.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.checkit.dto.auxiliary.ChangeState;
 import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeSubjectType;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.User;
 import java.net.URI;
@@ -16,6 +17,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
     private final String id;
     private final URI uri;
     private final ChangeType type;
+    private final ChangeSubjectType subjectType;
     private final String label;
     private final URI subject;
     private final URI predicate;
@@ -31,6 +33,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.id = change.getId();
         this.uri = change.getUri();
         this.type = change.getChangeType();
+        this.subjectType = change.getSubjectType();
         this.label = change.getLabel();
         this.subject = change.getSubject();
         this.predicate = change.getPredicate();

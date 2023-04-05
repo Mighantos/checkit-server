@@ -41,6 +41,10 @@ public class Change extends AbstractEntity {
     @OWLDataProperty(iri = RDFS.LABEL)
     private String label;
 
+    @Enumerated
+    @OWLDataProperty(iri = TermVocabulary.s_p_ma_popis_typu_subjektu)
+    private ChangeSubjectType subjectType;
+
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
     @OWLAnnotationProperty(iri = RDF.SUBJECT)
