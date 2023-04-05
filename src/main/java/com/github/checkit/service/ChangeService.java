@@ -108,7 +108,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
     public List<Change> getChanges(Model canonicalGraph, Model draftGraph,
                                    AbstractChangeableContext abstractChangeableContext) {
         if (canonicalGraph.isIsomorphicWith(draftGraph)) {
-            throw new NoChangeException();
+            return new ArrayList<>();
         }
         HashMap<Resource, Model> canonicalSubGraphs = getSubGraphs(canonicalGraph);
         HashMap<Resource, Model> draftSubGraphs = getSubGraphs(draftGraph);

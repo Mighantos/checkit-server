@@ -48,7 +48,7 @@ public class PublicationContextController extends BaseController {
         return publicationContextService.getChangesInContextInPublicationContext(publicationContextId, vocabularyUri);
     }
 
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public URI submitProjectForReview(@RequestBody URI projectUri) {
         return publicationContextService.createOrUpdatePublicationContext(projectUri);
