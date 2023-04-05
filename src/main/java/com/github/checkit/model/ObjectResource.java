@@ -35,6 +35,10 @@ public class ObjectResource implements HasIdentifier {
     private String language;
 
     //TODO: remove
+
+    /**
+     * Constructor.
+     */
     public ObjectResource(String value, URI type, String language) {
         this.value = value;
         this.type = type;
