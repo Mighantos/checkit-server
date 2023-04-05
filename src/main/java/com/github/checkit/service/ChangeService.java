@@ -238,10 +238,14 @@ public class ChangeService extends BaseRepositoryService<Change> {
         if (object.isLiteral()) {
             Literal literal = object.asLiteral();
             URI type = null;
+            String language = null;
             if (!literal.getDatatype().equals(RDFLangString.rdfLangString)) {
                 type = URI.create(literal.getDatatypeURI());
             }
-            return new ObjectResource(literal.getString(), type, literal.getLanguage());
+            if (!literal.getLanguage().isEmpty()) {
+                language = literal.getLanguage();
+            }
+            return new ObjectResource(literal.getString(), type, language);
         }
         throw new NotImplemented();
     }
