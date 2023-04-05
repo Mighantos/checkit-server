@@ -21,7 +21,7 @@ public class ObjectResource implements HasIdentifier {
     static Logger logger = LoggerFactory.getLogger(ObjectResource.class);
 
     //TODO: remove OWLClass annotation after new JOPA is released
-    @Id(generated = true)
+    @Id(generated = false)
     private URI uri;
 
     public static String TYPE_SEPARATOR = "^^";
@@ -40,6 +40,7 @@ public class ObjectResource implements HasIdentifier {
      * Constructor.
      */
     public ObjectResource(String value, URI type, String language) {
+        this.uri = URI.create("http://random.com");
         this.value = value;
         this.type = type;
         this.language = language;
