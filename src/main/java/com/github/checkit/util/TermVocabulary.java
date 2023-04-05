@@ -42,6 +42,7 @@ public final class TermVocabulary {
     public static final String s_p_schvaleno = CHANGE_DESCRIPTION_NAMESPACE + "schváleno";
     public static final String s_p_zamitnuto = CHANGE_DESCRIPTION_NAMESPACE + "zamítnuto";
     public static final String s_p_je_typu = CHANGE_DESCRIPTION_NAMESPACE + "je-typu";
+    public static final String s_p_ma_popis_typu_subjektu = CHANGE_DESCRIPTION_NAMESPACE + "má-popis-typu-subjektu";
 
     /**
      * Other terms definition.

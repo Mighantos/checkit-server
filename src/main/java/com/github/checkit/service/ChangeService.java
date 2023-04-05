@@ -5,18 +5,27 @@ import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.model.AbstractChangeableContext;
 import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeSubjectType;
 import com.github.checkit.model.ChangeType;
+import com.github.checkit.model.ObjectResource;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.vocabulary.DC;
+import cz.cvut.kbss.jopa.vocabulary.OWL;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.SKOS;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.jena.atlas.lib.NotImplemented;
+import org.apache.jena.datatypes.xsd.impl.RDFLangString;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -101,6 +110,9 @@ public class ChangeService extends BaseRepositoryService<Change> {
      */
     public List<Change> getChanges(Model canonicalGraph, Model draftGraph,
                                    AbstractChangeableContext abstractChangeableContext) {
+        if (canonicalGraph.isIsomorphicWith(draftGraph)) {
+            return new ArrayList<>();
+        }
         HashMap<Resource, Model> canonicalSubGraphs = getSubGraphs(canonicalGraph);
         HashMap<Resource, Model> draftSubGraphs = getSubGraphs(draftGraph);
         HashMap<Resource, ArrayList<Resource>> canonicalTopLevelSubjectsSubGraphs =
@@ -140,6 +152,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
             canonicalTopLevelSubjectsSubGraphs.put(subject, canonicalResources);
             draftTopLevelSubjectsSubGraphs.put(subject, draftResources);
         }
+
         List<Resource> subjectsToRemove = canonicalTopLevelSubjectsSubGraphs.keySet().stream()
             .filter(s -> canonicalTopLevelSubjectsSubGraphs.get(s).isEmpty()).toList();
         for (Resource subject : subjectsToRemove) {
@@ -182,10 +195,11 @@ public class ChangeService extends BaseRepositoryService<Change> {
             for (Statement statement : newStatements.get(subject)) {
                 Change change = new Change(abstractChangeableContext);
                 change.setChangeType(ChangeType.CREATED);
+                change.setSubjectType(fetchSubjectType(statement.getSubject(), draftGraph));
                 change.setLabel(label);
                 change.setSubject(URI.create(statement.getSubject().getURI()));
                 change.setPredicate(URI.create(statement.getPredicate().getURI()));
-                change.setObject(statement.getObject().toString());
+                change.setObject(resolveObject(statement.getObject()));
                 changes.add(change);
             }
         }
@@ -201,19 +215,35 @@ public class ChangeService extends BaseRepositoryService<Change> {
             for (Statement statement : removedStatements.get(subject)) {
                 Change change = new Change(abstractChangeableContext);
                 change.setChangeType(changeType);
+                change.setSubjectType(fetchSubjectType(statement.getSubject(), draftGraph));
                 change.setLabel(label);
                 change.setSubject(URI.create(statement.getSubject().getURI()));
                 change.setPredicate(URI.create(statement.getPredicate().getURI()));
-                change.setObject(statement.getObject().toString());
+                change.setObject(resolveObject(statement.getObject()));
                 if (changeType == ChangeType.MODIFIED) {
                     Statement modifiedStatement =
                         draftGraph.getProperty(statement.getSubject(), statement.getPredicate());
-                    change.setNewObject(modifiedStatement.getObject().toString());
+                    change.setNewObject(resolveObject(modifiedStatement.getObject()));
                 }
                 changes.add(change);
             }
         }
         return changes;
+    }
+
+    private ObjectResource resolveObject(RDFNode object) {
+        if (object.isURIResource()) {
+            return new ObjectResource(object.asResource().getURI(), null, null);
+        }
+        if (object.isLiteral()) {
+            Literal literal = object.asLiteral();
+            URI type = null;
+            if (!literal.getDatatype().equals(RDFLangString.rdfLangString)) {
+                type = URI.create(literal.getDatatypeURI());
+            }
+            return new ObjectResource(literal.getString(), type, literal.getLanguage());
+        }
+        throw new NotImplemented();
     }
 
     private String fetchChangeLabel(Resource subject, Model graph) {
@@ -227,6 +257,18 @@ public class ChangeService extends BaseRepositoryService<Change> {
             label = labelStatement.getObject().asLiteral().getString();
         }
         return label;
+    }
+
+    private ChangeSubjectType fetchSubjectType(Resource subject, Model graph) {
+        Property type = graph.getProperty(RDF.TYPE);
+        String object = graph.getProperty(subject, type).getObject().asResource().getURI();
+        if (object.equals(SKOS.CONCEPT)) {
+            return ChangeSubjectType.TERM;
+        }
+        if (object.equals(OWL.ONTOLOGY)) {
+            return ChangeSubjectType.VOCABULARY;
+        }
+        return ChangeSubjectType.UNKNOWN;
     }
 
     private HashMap<Resource, ArrayList<Statement>> getChangedStatementsWithoutBlankNodes(Model base, Model modified) {

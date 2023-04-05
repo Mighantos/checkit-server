@@ -3,10 +3,12 @@ package com.github.checkit.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.checkit.dto.auxiliary.ChangeState;
 import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeSubjectType;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.User;
 import java.net.URI;
 import java.util.Comparator;
+import java.util.Objects;
 import lombok.Getter;
 
 @Getter
@@ -15,12 +17,13 @@ public class ChangeDto implements Comparable<ChangeDto> {
     private final String id;
     private final URI uri;
     private final ChangeType type;
+    private final ChangeSubjectType subjectType;
     private final String label;
     private final URI subject;
     private final URI predicate;
-    private final String object;
+    private final ObjectResourceDto object;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final String newObject;
+    private final ObjectResourceDto newObject;
     private final ChangeState state;
 
     /**
@@ -30,11 +33,16 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.id = change.getId();
         this.uri = change.getUri();
         this.type = change.getChangeType();
+        this.subjectType = change.getSubjectType();
         this.label = change.getLabel();
         this.subject = change.getSubject();
         this.predicate = change.getPredicate();
-        this.object = change.getObject();
-        this.newObject = change.getNewObject();
+        this.object = new ObjectResourceDto(change.getObject());
+        if (Objects.nonNull(change.getNewObject())) {
+            this.newObject = new ObjectResourceDto(change.getNewObject());
+        } else {
+            this.newObject = null;
+        }
         this.state = resolveChangeState(change, user);
     }
 

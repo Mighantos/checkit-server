@@ -8,6 +8,7 @@ import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
 import com.github.checkit.dto.auxiliary.PublicationContextState;
+import com.github.checkit.exception.NoChangeException;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
@@ -22,11 +23,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PublicationContextService extends BaseRepositoryService<PublicationContext> {
+
+    private final Logger logger = LoggerFactory.getLogger(PublicationContextService.class);
 
     private final PublicationContextDao publicationContextDao;
     private final ProjectContextService projectContextService;
@@ -135,7 +140,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      * @param projectUri project URI identifier
      */
     @Transactional
-    public void createOrUpdatePublicationContext(URI projectUri) {
+    public URI createOrUpdatePublicationContext(URI projectUri) {
         ProjectContext project = projectContextService.findRequired(projectUri);
         List<Change> currentChanges = new ArrayList<>();
         for (VocabularyContext vocabularyContext : project.getVocabularyContexts()) {
@@ -147,6 +152,11 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         if (publicationContextExists) {
             publicationContext = findRequiredFromProject(project);
         } else {
+            //Don't create publication context with no changes.
+            if (currentChanges.isEmpty()) {
+                throw new NoChangeException();
+            }
+
             publicationContext = new PublicationContext();
             publicationContext.setFromProject(project);
         }
@@ -155,11 +165,18 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             takeIntoConsiderationExistingChanges(currentChanges, publicationContext.getChanges());
         publicationContext.setChanges(newFormOfChanges);
 
+        URI publicationContextUri;
         if (publicationContextExists) {
-            update(publicationContext);
+            publicationContextUri = update(publicationContext).getUri();
+            logger.info("Changes in publication context \"{}\" were updated from project \"{}\".",
+                publicationContextUri, projectUri);
         } else {
             persist(publicationContext);
+            publicationContextUri = publicationContext.getUri();
+            logger.info("Publication context \"{}\" was created from project \"{}\".", publicationContextUri,
+                projectUri);
         }
+        return publicationContextUri;
     }
 
     private URI createPublicationContextUriFromId(String id) {

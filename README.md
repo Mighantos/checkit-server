@@ -119,19 +119,22 @@ Variables required to be set to start the application.
 
 Optional variables allowing more configuration.
 
-| Name                        | Description                                         |
-|-----------------------------|-----------------------------------------------------|
-| SERVER_PORT                 | Port the application is running on. *Default: 8080* |
-| SERVER_SERVLET_CONTEXT-PATH | Sets base URL path. *Default: /checkit-server*      |
-| KEYCLOAK_ISSUER-URL         | URL of Keycloak's issuer endpoint.                  |
-| KEYCLOAK_AUTHORIZATION-URL  | URL of Keycloak's authorization endpoint.           |
-| KEYCLOAK_TOKEN-URL          | URL of Keycloak's token endpoint.                   |
-| KEYCLOAK_USER-INFO-URL      | URL of Keycloak's user info endpoint.               |
-| KEYCLOAK_JWKS-URL           | Keycloak's JWK Set URL.                             |
-| KEYCLOAK_END_SESSION_URL    | URL of Keycloak's end session (logout) endpoint.    |
-| REPOSITORY_USER-ID-PREFIX   | Prefix for Keycloak user IDs used in Database.      |
-| REPOSITORY_DRIVER           | Database connection driver.                         |
-| REPOSITORY_LANGUAGE         | Default language tag for literals in Database.      |
+| Name                                      | Description                                                              |
+|-------------------------------------------|--------------------------------------------------------------------------|
+| SERVER_PORT                               | Port the application is running on. *Default: 8080*                      |
+| SERVER_SERVLET_CONTEXT-PATH               | Sets base URL path. *Default: /checkit-server*                           |
+| KEYCLOAK_ISSUER-URL                       | URL of Keycloak's issuer endpoint.                                       |
+| KEYCLOAK_AUTHORIZATION-URL                | URL of Keycloak's authorization endpoint.                                |
+| KEYCLOAK_TOKEN-URL                        | URL of Keycloak's token endpoint.                                        |
+| KEYCLOAK_USER-INFO-URL                    | URL of Keycloak's user info endpoint.                                    |
+| KEYCLOAK_JWKS-URL                         | Keycloak's JWK Set URL.                                                  |
+| KEYCLOAK_END_SESSION_URL                  | URL of Keycloak's end session (logout) endpoint.                         |
+| REPOSITORY_USER_ID-PREFIX                 | Prefix for Keycloak user IDs used in Database.                           |
+| REPOSITORY_USER_CONTEXT                   | Identifier of context (graph) users are stored in.                       |
+| REPOSITORY_USER_GESTORING-REQUEST_CONTEXT | Identifier of context (graph) where Gestoring requests should be stored. |
+| REPOSITORY_USER_COMMENT_CONTEXT           | Identifier of context (graph) where comments should be stored.           |
+| REPOSITORY_DRIVER                         | Database connection driver.                                              |
+| REPOSITORY_LANGUAGE                       | Default language tag for literals in Database.                           |
 
 You can find more optional variables
 in [Spring documentation](https://docs.spring.io/spring-boot/docs/3.0.4/reference/htmlsingle/).
