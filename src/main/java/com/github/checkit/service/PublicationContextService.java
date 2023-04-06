@@ -1,5 +1,6 @@
 package com.github.checkit.service;
 
+import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.PublicationContextDao;
 import com.github.checkit.dto.ChangeDto;
@@ -38,18 +39,21 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final ChangeService changeService;
     private final VocabularyService vocabularyService;
     private final UserService userService;
+    private final String defaultLanguageTag;
 
     /**
      * Construct.
      */
     public PublicationContextService(PublicationContextDao publicationContextDao,
                                      ProjectContextService projectContextService, ChangeService changeService,
-                                     VocabularyService vocabularyService, UserService userService) {
+                                     VocabularyService vocabularyService, UserService userService,
+                                     RepositoryConfigProperties repositoryConfigProperties) {
         this.publicationContextDao = publicationContextDao;
         this.projectContextService = projectContextService;
         this.changeService = changeService;
         this.vocabularyService = vocabularyService;
         this.userService = userService;
+        this.defaultLanguageTag = repositoryConfigProperties.getLanguage();
     }
 
     @Override
@@ -114,10 +118,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      *
      * @param publicationContextId identifier of publication context
      * @param vocabularyUri        URI identifier of vocabulary
+     * @param language             preferred language
      * @return basic information about context and changes made
      */
     @Transactional
-    public ContextChangesDto getChangesInContextInPublicationContext(String publicationContextId, URI vocabularyUri) {
+    public ContextChangesDto getChangesInContextInPublicationContext(String publicationContextId, URI vocabularyUri,
+                                                                     String language) {
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
         boolean allowedToReview =
@@ -129,7 +135,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         List<ChangeDto> changes =
             pc.getChanges().stream().filter(change ->
                     ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
-                .map(change -> new ChangeDto(change, current)).sorted().toList();
+                .map(change -> new ChangeDto(change, current, language, defaultLanguageTag)).sorted().toList();
         return new ContextChangesDto(vocabularyUri, vocabularyLabel, allowedToReview, changes);
     }
 
@@ -213,6 +219,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             Change existingChange = optExistingChange.get();
             existingChanges.remove(existingChange);
             if (currentChange.hasSameChangeAs(existingChange)) {
+                existingChange.setLabel(currentChange.getLabel());
                 newFormOfChanges.add(existingChange);
             } else {
                 newFormOfChanges.add(currentChange);

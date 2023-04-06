@@ -29,12 +29,12 @@ public class ChangeDto implements Comparable<ChangeDto> {
     /**
      * Constructor.
      */
-    public ChangeDto(Change change, User user) {
+    public ChangeDto(Change change, User user, String languageTag, String defaultLanguageTag) {
         this.id = change.getId();
         this.uri = change.getUri();
         this.type = change.getChangeType();
         this.subjectType = change.getSubjectType();
-        this.label = change.getLabel();
+        this.label = resolveLabel(change, languageTag, defaultLanguageTag);
         this.subject = change.getSubject();
         this.predicate = change.getPredicate();
         this.object = new ObjectResourceDto(change.getObject());
@@ -44,6 +44,16 @@ public class ChangeDto implements Comparable<ChangeDto> {
             this.newObject = null;
         }
         this.state = resolveChangeState(change, user);
+    }
+
+    private String resolveLabel(Change change, String languageTag, String defaultLanguageTag) {
+        if (change.getLabel().contains(languageTag)) {
+            return change.getLabel().get(languageTag);
+        }
+        if (change.getLabel().contains(defaultLanguageTag)) {
+            return change.getLabel().get(defaultLanguageTag);
+        }
+        return change.getLabel().get();
     }
 
     private ChangeState resolveChangeState(Change change, User user) {
