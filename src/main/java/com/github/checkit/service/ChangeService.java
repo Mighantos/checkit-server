@@ -3,6 +3,7 @@ package com.github.checkit.service;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.exception.ForbiddenException;
+import com.github.checkit.exception.WrongChangeTypeException;
 import com.github.checkit.model.AbstractChangeableContext;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeSubjectType;
@@ -206,14 +207,9 @@ public class ChangeService extends BaseRepositoryService<Change> {
         }
 
         for (Resource subject : removedStatements.keySet()) {
-            ChangeType changeType;
-            if (newStatements.containsKey(subject)) {
-                changeType = ChangeType.MODIFIED;
-            } else {
-                changeType = ChangeType.REMOVED;
-            }
             MultilingualString label = fetchChangeLabel(subject, canonicalGraph);
             for (Statement statement : removedStatements.get(subject)) {
+                ChangeType changeType = resolveChangeType(newStatements, statement);
                 Change change = new Change(abstractChangeableContext);
                 change.setChangeType(changeType);
                 change.setSubjectType(fetchSubjectType(statement.getSubject(), draftGraph));
@@ -222,14 +218,61 @@ public class ChangeService extends BaseRepositoryService<Change> {
                 change.setPredicate(URI.create(statement.getPredicate().getURI()));
                 change.setObject(resolveObject(statement.getObject()));
                 if (changeType == ChangeType.MODIFIED) {
-                    Statement modifiedStatement =
-                        draftGraph.getProperty(statement.getSubject(), statement.getPredicate());
+                    Statement modifiedStatement = resolveModifiedStatement(statement, newStatements);
                     change.setNewObject(resolveObject(modifiedStatement.getObject()));
                 }
                 changes.add(change);
             }
         }
         return changes;
+    }
+
+    private Statement resolveModifiedStatement(Statement oldStatement,
+                                               HashMap<Resource, ArrayList<Statement>> newStatements) {
+        Resource subject = oldStatement.getSubject();
+        List<Statement> potentialStatements = newStatements.get(subject).stream()
+            .filter(newStatement -> newStatement.getPredicate().equals(oldStatement.getPredicate())).toList();
+        RDFNode oldObject = oldStatement.getObject();
+        for (Statement potentialStatement : potentialStatements) {
+            RDFNode newObject = potentialStatement.getObject();
+            if (oldObject.isURIResource() && newObject.isURIResource()) {
+                return potentialStatement;
+            }
+            if (oldObject.isLiteral() && newObject.isLiteral()
+                && oldObject.asLiteral().getDatatype().equals(newObject.asLiteral().getDatatype())
+                && oldObject.asLiteral().getLanguage().equals(newObject.asLiteral().getLanguage())) {
+                return potentialStatement;
+            }
+        }
+        throw WrongChangeTypeException.create(oldStatement);
+    }
+
+    private ChangeType resolveChangeType(HashMap<Resource, ArrayList<Statement>> newSubjectsStatements,
+                                         Statement oldStatement) {
+        Resource subject = oldStatement.getSubject();
+        if (!newSubjectsStatements.containsKey(subject)) {
+            return ChangeType.REMOVED;
+        }
+        ArrayList<Statement> newStatements = newSubjectsStatements.get(subject);
+        for (Statement newStatement : newStatements) {
+            if (!newStatement.getPredicate().equals(oldStatement.getPredicate())) {
+                continue;
+            }
+            RDFNode newObject = newStatement.getObject();
+            RDFNode oldObject = oldStatement.getObject();
+            if (oldObject.isURIResource()) {
+                if (newObject.isURIResource()) {
+                    return ChangeType.MODIFIED;
+                }
+                continue;
+            }
+            if (oldObject.isLiteral() && newObject.isLiteral()
+                && oldObject.asLiteral().getDatatype().equals(newObject.asLiteral().getDatatype())
+                && oldObject.asLiteral().getLanguage().equals(newObject.asLiteral().getLanguage())) {
+                return ChangeType.MODIFIED;
+            }
+        }
+        return ChangeType.REMOVED;
     }
 
     private ObjectResource resolveObject(RDFNode object) {
