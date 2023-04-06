@@ -1,11 +1,13 @@
 package com.github.checkit.controller;
 
+import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.service.PublicationContextService;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,9 +24,12 @@ public class PublicationContextController extends BaseController {
 
     public static final String MAPPING = "/publication-contexts";
     private final PublicationContextService publicationContextService;
+    private final RepositoryConfigProperties repositoryConfigProperties;
 
-    public PublicationContextController(PublicationContextService publicationContextService) {
+    public PublicationContextController(PublicationContextService publicationContextService,
+                                        RepositoryConfigProperties repositoryConfigProperties) {
         this.publicationContextService = publicationContextService;
+        this.repositoryConfigProperties = repositoryConfigProperties;
     }
 
     @GetMapping("/readonly")
@@ -42,10 +47,23 @@ public class PublicationContextController extends BaseController {
         return publicationContextService.getPublicationContextDetail(publicationContextId);
     }
 
+    /**
+     * Get changes of specified vocabulary in specified publication context with labels in preferred language.
+     *
+     * @param publicationContextId identifier of publication context
+     * @param vocabularyUri        URI identifier of vocabulary
+     * @param language             preferred language tag
+     * @return Object with name of vocabulary a list of changes
+     */
     @GetMapping("/{publicationContextId}/vocabulary-changes")
     public ContextChangesDto getPublicationContextDetail(@PathVariable String publicationContextId,
-                                                         @RequestParam("vocabularyUri") URI vocabularyUri) {
-        return publicationContextService.getChangesInContextInPublicationContext(publicationContextId, vocabularyUri);
+                                                         @RequestParam("vocabularyUri") URI vocabularyUri,
+                                                         @RequestParam(required = false) String language) {
+        if (Objects.isNull(language) || language.isEmpty()) {
+            language = repositoryConfigProperties.getLanguage();
+        }
+        return publicationContextService.getChangesInContextInPublicationContext(publicationContextId, vocabularyUri,
+            language);
     }
 
     @ResponseStatus(HttpStatus.CREATED)

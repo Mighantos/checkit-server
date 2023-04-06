@@ -2,6 +2,7 @@ package com.github.checkit.model;
 
 import com.github.checkit.model.convertor.ObjectResourceConvertor;
 import com.github.checkit.util.TermVocabulary;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
 import cz.cvut.kbss.jopa.model.annotations.EnumType;
 import cz.cvut.kbss.jopa.model.annotations.Enumerated;
@@ -39,7 +40,7 @@ public class Change extends AbstractEntity {
     private ChangeType changeType;
 
     @OWLDataProperty(iri = RDFS.LABEL)
-    private String label;
+    private MultilingualString label;
 
     @Enumerated
     @OWLDataProperty(iri = TermVocabulary.s_p_ma_popis_typu_subjektu)

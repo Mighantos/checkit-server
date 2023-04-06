@@ -11,6 +11,7 @@ import com.github.checkit.model.ObjectResource;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
 import com.github.checkit.util.TermVocabulary;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -191,7 +192,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
             if (removedStatements.containsKey(subject)) {
                 continue;
             }
-            String label = fetchChangeLabel(subject, draftGraph);
+            MultilingualString label = fetchChangeLabel(subject, draftGraph);
             for (Statement statement : newStatements.get(subject)) {
                 Change change = new Change(abstractChangeableContext);
                 change.setChangeType(ChangeType.CREATED);
@@ -211,7 +212,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
             } else {
                 changeType = ChangeType.REMOVED;
             }
-            String label = fetchChangeLabel(subject, canonicalGraph);
+            MultilingualString label = fetchChangeLabel(subject, canonicalGraph);
             for (Statement statement : removedStatements.get(subject)) {
                 Change change = new Change(abstractChangeableContext);
                 change.setChangeType(changeType);
@@ -250,17 +251,19 @@ public class ChangeService extends BaseRepositoryService<Change> {
         throw new NotImplemented();
     }
 
-    private String fetchChangeLabel(Resource subject, Model graph) {
-        Statement labelStatement =
-            subject.getProperty(graph.getProperty(SKOS.PREF_LABEL));
-        String label = null;
-        if (labelStatement == null) {
-            labelStatement = subject.getProperty(graph.getProperty(DC.Terms.TITLE));
+    private MultilingualString fetchChangeLabel(Resource subject, Model graph) {
+        MultilingualString multilingualString = new MultilingualString();
+        StmtIterator labelStatementIterator =
+            subject.listProperties(graph.getProperty(SKOS.PREF_LABEL));
+        if (!labelStatementIterator.hasNext()) {
+            labelStatementIterator = subject.listProperties(graph.getProperty(DC.Terms.TITLE));
         }
-        if (labelStatement != null) {
-            label = labelStatement.getObject().asLiteral().getString();
+        while (labelStatementIterator.hasNext()) {
+            Statement statement = labelStatementIterator.nextStatement();
+            Literal literal = statement.getObject().asLiteral();
+            multilingualString.set(literal.getLanguage(), literal.getString());
         }
-        return label;
+        return multilingualString;
     }
 
     private ChangeSubjectType fetchSubjectType(Resource subject, Model graph) {
