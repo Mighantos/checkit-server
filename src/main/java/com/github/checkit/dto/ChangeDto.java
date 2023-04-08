@@ -69,7 +69,8 @@ public class ChangeDto implements Comparable<ChangeDto> {
     @Override
     public int compareTo(ChangeDto o) {
         return Comparator
-            .comparing(ChangeDto::getSubject)
+            .comparing(ChangeDto::getSubjectType)
+            .thenComparing(ChangeDto::getSubject)
             .thenComparing(ChangeDto::getState)
             .thenComparing(ChangeDto::getType)
             .thenComparing(ChangeDto::getPredicate)
