@@ -62,13 +62,8 @@ public class ChangeResolver {
             }
             MultilingualString label = fetchChangeLabel(subject, draftGraph);
             for (Statement statement : newStatements.get(subject)) {
-                Change change = new Change(draftContext);
-                change.setChangeType(ChangeType.CREATED);
-                change.setSubjectType(fetchSubjectType(statement.getSubject(), draftGraph));
-                change.setLabel(label);
-                change.setSubject(URI.create(statement.getSubject().getURI()));
-                change.setPredicate(URI.create(statement.getPredicate().getURI()));
-                change.setObject(resolveObject(statement.getObject()));
+                Change change = createChangeFromStatement(ChangeType.CREATED, label,
+                    fetchSubjectType(statement.getSubject(), draftGraph), statement);
                 changes.add(change);
             }
         }
@@ -77,13 +72,8 @@ public class ChangeResolver {
             MultilingualString label = fetchChangeLabel(subject, canonicalGraph);
             for (Statement statement : removedStatements.get(subject)) {
                 ChangeType changeType = resolveChangeType(newStatements, statement);
-                Change change = new Change(draftContext);
-                change.setChangeType(changeType);
-                change.setSubjectType(fetchSubjectType(statement.getSubject(), draftGraph));
-                change.setLabel(label);
-                change.setSubject(URI.create(statement.getSubject().getURI()));
-                change.setPredicate(URI.create(statement.getPredicate().getURI()));
-                change.setObject(resolveObject(statement.getObject()));
+                Change change = createChangeFromStatement(changeType, label,
+                    fetchSubjectType(statement.getSubject(), canonicalGraph), statement);
                 if (changeType == ChangeType.MODIFIED) {
                     Statement modifiedStatement = resolveModifiedStatement(statement, newStatements);
                     change.setNewObject(resolveObject(modifiedStatement.getObject()));
@@ -163,13 +153,8 @@ public class ChangeResolver {
         for (Resource subject : draftTopLevelSubjectsSubGraphs.keySet()) {
             MultilingualString label = fetchChangeLabel(subject, draftGraph);
             for (Statement statement : draftTopLevelSubjectsSubGraphs.get(subject)) {
-                Change change = new Change(draftContext);
-                change.setChangeType(ChangeType.CREATED);
-                change.setSubjectType(fetchSubjectType(statement.getSubject(), draftGraph));
-                change.setLabel(label);
-                change.setSubject(URI.create(statement.getSubject().getURI()));
-                change.setPredicate(URI.create(statement.getPredicate().getURI()));
-                change.setObject(resolveObject(statement.getObject()));
+                Change change = createChangeFromStatement(ChangeType.CREATED, label,
+                    fetchSubjectType(statement.getSubject(), draftGraph), statement);
                 change.setUri(changeDao.generateEntityUri());
                 changes.add(change);
                 Model subGraph = draftSubGraphs.get(statement.getObject().asResource());
@@ -179,13 +164,8 @@ public class ChangeResolver {
         for (Resource subject : canonicalTopLevelSubjectsSubGraphs.keySet()) {
             MultilingualString label = fetchChangeLabel(subject, canonicalGraph);
             for (Statement statement : canonicalTopLevelSubjectsSubGraphs.get(subject)) {
-                Change change = new Change(draftContext);
-                change.setChangeType(ChangeType.REMOVED);
-                change.setSubjectType(fetchSubjectType(statement.getSubject(), canonicalGraph));
-                change.setLabel(label);
-                change.setSubject(URI.create(statement.getSubject().getURI()));
-                change.setPredicate(URI.create(statement.getPredicate().getURI()));
-                change.setObject(resolveObject(statement.getObject()));
+                Change change = createChangeFromStatement(ChangeType.REMOVED, label,
+                    fetchSubjectType(statement.getSubject(), canonicalGraph), statement);
                 change.setUri(changeDao.generateEntityUri());
                 changes.add(change);
                 Model subGraph = canonicalSubGraphs.get(statement.getObject().asResource());
@@ -261,6 +241,19 @@ public class ChangeResolver {
             }
         }
         return ChangeType.REMOVED;
+    }
+
+    private Change createChangeFromStatement(ChangeType changeType, MultilingualString label,
+                                             ChangeSubjectType changeSubjectType, Statement statement) {
+
+        Change change = new Change(draftContext);
+        change.setChangeType(changeType);
+        change.setSubjectType(changeSubjectType);
+        change.setLabel(label);
+        change.setSubject(URI.create(statement.getSubject().getURI()));
+        change.setPredicate(URI.create(statement.getPredicate().getURI()));
+        change.setObject(resolveObject(statement.getObject()));
+        return change;
     }
 
     private ObjectResource resolveObject(RDFNode object) {
