@@ -52,7 +52,10 @@ public class ObjectResource implements HasIdentifier {
      * @return axiom string
      */
     public String toAxiom() {
-        StringBuilder sb = new StringBuilder(value);
+        StringBuilder sb = new StringBuilder();
+        if (Objects.nonNull(value)) {
+            sb.append(value);
+        }
         if (Objects.nonNull(type)) {
             sb.append(TYPE_SEPARATOR);
             sb.append(type);
