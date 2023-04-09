@@ -17,6 +17,7 @@ import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
+import com.github.checkit.service.auxiliary.ChangeDtoComposer;
 import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
 import java.util.ArrayList;
@@ -132,10 +133,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext pc = findRequired(publicationContextUri);
         String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
-        List<ChangeDto> changes =
-            pc.getChanges().stream().filter(change ->
-                    ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
-                .map(change -> new ChangeDto(change, current, language, defaultLanguageTag)).sorted().toList();
+        List<ChangeDto> changes = convertPublicationChangesToDtos(pc.getChanges(), current, language, vocabularyUri);
         return new ContextChangesDto(vocabularyUri, vocabularyLabel, allowedToReview, changes);
     }
 
@@ -183,6 +181,18 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                 projectUri);
         }
         return publicationContextUri;
+    }
+
+    private List<ChangeDto> convertPublicationChangesToDtos(Set<Change> changes, User current, String language,
+                                                            URI vocabularyUri) {
+        List<ChangeDto> changeDtos = new ArrayList<>(changes.stream().filter(change ->
+                ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
+            .map(change -> new ChangeDto(change, current, language, defaultLanguageTag)).toList());
+        ChangeDtoComposer changeDtoComposer = new ChangeDtoComposer(changeDtos);
+        changeDtoComposer.compose();
+        changeDtos.addAll(changeDtoComposer.getGroupChangeDtosOfRestrictions());
+
+        return changeDtos.stream().sorted().toList();
     }
 
     private URI createPublicationContextUriFromId(String id) {

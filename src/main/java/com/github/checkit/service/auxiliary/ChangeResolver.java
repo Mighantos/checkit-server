@@ -1,6 +1,7 @@
 package com.github.checkit.service.auxiliary;
 
 import com.github.checkit.dao.ChangeDao;
+import com.github.checkit.exception.UnexpectedRdfObjectException;
 import com.github.checkit.exception.WrongChangeTypeException;
 import com.github.checkit.model.AbstractChangeableContext;
 import com.github.checkit.model.Change;
@@ -273,9 +274,9 @@ public class ChangeResolver {
             return new ObjectResource(literal.getString(), type, language);
         }
         if (object.asNode().isBlank()) {
-            return new ObjectResource(object.asNode().getBlankNodeLabel(), null, null);
+            return new ObjectResource(null, null, null);
         }
-        return new ObjectResource(null, null, null);
+        throw new UnexpectedRdfObjectException();
     }
 
     private MultilingualString fetchChangeLabel(Resource subject, Model graph) {
@@ -294,11 +295,12 @@ public class ChangeResolver {
 
     private ChangeSubjectType fetchSubjectType(Resource subject, Model graph) {
         Property type = graph.getProperty(RDF.TYPE);
-        String object = graph.getProperty(subject, type).getObject().asResource().getURI();
-        if (object.equals(SKOS.CONCEPT)) {
+        List<String> object =
+            subject.listProperties(type).toList().stream().map(stm -> stm.getObject().asResource().getURI()).toList();
+        if (object.contains(SKOS.CONCEPT)) {
             return ChangeSubjectType.TERM;
         }
-        if (object.equals(OWL.ONTOLOGY)) {
+        if (object.contains(OWL.ONTOLOGY)) {
             return ChangeSubjectType.VOCABULARY;
         }
         return ChangeSubjectType.UNKNOWN;

@@ -13,7 +13,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Statement;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -116,13 +115,6 @@ public class ChangeService extends BaseRepositoryService<Change> {
         Model canonicalGraph =
             vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVocabulary().getUri());
         Model draftGraph = vocabularyContextService.getVocabularyContent(vocabularyContext.getUri());
-        //TODO: remove after ontographer update
-        String s =
-            "https://slovník.gov.cz/datový/pracovní-prostor/pojem/přílohový-kontext/";
-        List<Statement> statements = draftGraph.listStatements().toList().stream()
-            .filter(statement -> statement.getSubject().toString().startsWith(s)).toList();
-        draftGraph.remove(statements);
-
         return getChanges(canonicalGraph, draftGraph, vocabularyContext);
     }
 

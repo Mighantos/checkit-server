@@ -97,6 +97,14 @@ public class Change extends AbstractEntity {
         return rejectedBy;
     }
 
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
+    public MultilingualString getLabel() {
+        if (Objects.isNull(label)) {
+            label = new MultilingualString();
+        }
+        return label;
+    }
+
     public void addApprovedBy(User user) {
         getApprovedBy().add(user);
     }
