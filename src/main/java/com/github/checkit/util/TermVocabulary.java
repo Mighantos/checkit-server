@@ -11,6 +11,7 @@ public final class TermVocabulary {
     public static final String SLOVNIK_GOV_CZ = "https://slovník.gov.cz";
     public static final String WORKSPACE_NAMESPACE =
         "https://slovník.gov.cz/datový/pracovní-prostor/pojem/";
+    public static final String PRIMARY_VOCABULARY_NAMESPACE = "https://slovník.gov.cz/základní/pojem/";
     public static final String DATA_DESCRIPTION_NAMESPACE =
         "http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/";
     public static final String CHANGE_DESCRIPTION_NAMESPACE =
@@ -53,7 +54,6 @@ public final class TermVocabulary {
     public static final String s_c_slovnikovy_kontext = WORKSPACE_NAMESPACE + "slovníkový-kontext";
     public static final String s_c_prilohovy_kontext = WORKSPACE_NAMESPACE + "přílohový-kontext";
     public static final String s_c_slovnik = DATA_DESCRIPTION_NAMESPACE + "slovník";
-    public static final String s_c_Comment = SIOCT_NAMESPACE + "Comment";
     public static final String s_p_ma_krestni_jmeno = DATA_DESCRIPTION_NAMESPACE + "má-křestní-jméno";
     public static final String s_p_ma_prijmeni = DATA_DESCRIPTION_NAMESPACE + "má-příjmení";
     public static final String s_p_vychazi_z_verze = WORKSPACE_NAMESPACE + "vychází-z-verze";
@@ -63,7 +63,9 @@ public final class TermVocabulary {
     public static final String s_p_ma_datum_a_cas_vytvoreni = DATA_DESCRIPTION_NAMESPACE + "má-datum-a-čas-vytvoření";
     public static final String s_p_ma_datum_a_cas_posledni_modifikace = DATA_DESCRIPTION_NAMESPACE
         + "má-datum-a-čas-poslední-modifikace";
+    public static final String s_p_ma_vztazeny_prvek_1 = PRIMARY_VOCABULARY_NAMESPACE + "má-vztažený-prvek-1";
     public static final String s_p_has_creator = SIOC_NAMESPACE + "has_creator";
     public static final String s_p_topic = SIOC_NAMESPACE + "topic";
     public static final String s_p_content = SIOC_NAMESPACE + "content";
+    public static final String s_c_Comment = SIOCT_NAMESPACE + "Comment";
 }

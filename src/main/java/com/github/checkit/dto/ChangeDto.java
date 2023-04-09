@@ -10,11 +10,14 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class ChangeDto implements Comparable<ChangeDto> {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String id;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final URI uri;
     private final ChangeType type;
     private final ChangeSubjectType subjectType;
@@ -25,6 +28,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final ObjectResourceDto newObject;
     private final ChangeState state;
+    private boolean visible;
 
     /**
      * Constructor.
@@ -44,6 +48,24 @@ public class ChangeDto implements Comparable<ChangeDto> {
             this.newObject = null;
         }
         this.state = resolveChangeState(change, user);
+        this.visible = true;
+    }
+
+    /**
+     * Constructor for change with restriction.
+     */
+    public ChangeDto(ChangeDto changeDto, RestrictionDto restrictionDto, ChangeState changeState) {
+        this.id = null;
+        this.uri = null;
+        this.type = changeDto.getType();
+        this.subjectType = changeDto.getSubjectType();
+        this.label = changeDto.getLabel();
+        this.subject = changeDto.getSubject();
+        this.predicate = changeDto.getPredicate();
+        this.object = new ObjectResourceDto(restrictionDto);
+        this.newObject = null;
+        this.state = changeState;
+        this.visible = true;
     }
 
     private String resolveLabel(Change change, String languageTag, String defaultLanguageTag) {
@@ -66,10 +88,19 @@ public class ChangeDto implements Comparable<ChangeDto> {
         return ChangeState.NOT_REVIEWED;
     }
 
+    public void markNotVisible() {
+        this.visible = false;
+    }
+
+    private boolean isHidden() {
+        return !isVisible();
+    }
+
     @Override
     public int compareTo(ChangeDto o) {
         return Comparator
-            .comparing(ChangeDto::getSubjectType)
+            .comparing(ChangeDto::isHidden)
+            .thenComparing(ChangeDto::getSubjectType)
             .thenComparing(ChangeDto::getSubject)
             .thenComparing(ChangeDto::getState)
             .thenComparing(ChangeDto::getType)

@@ -13,7 +13,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Statement;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +56,23 @@ public class ChangeService extends BaseRepositoryService<Change> {
     }
 
     /**
+     * Marks specified list of changes as approved by current user.
+     *
+     * @param changes URI identifiers of changes
+     */
+    @Transactional
+    public void approveChanges(List<URI> changes) {
+        User current = userService.getCurrent();
+        changes.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
+        for (URI changeUri : changes) {
+            Change change = findRequired(changeUri);
+            change.addApprovedBy(current);
+            change.removeRejectedBy(current);
+            changeDao.update(change);
+        }
+    }
+
+    /**
      * Marks specified change as approved by current user.
      *
      * @param changeId identifier of change
@@ -73,6 +89,23 @@ public class ChangeService extends BaseRepositoryService<Change> {
     }
 
     /**
+     * Marks specified list of changes as rejected by current user.
+     *
+     * @param changes URI identifiers of changes
+     */
+    @Transactional
+    public void rejectChanges(List<URI> changes) {
+        User current = userService.getCurrent();
+        changes.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
+        for (URI changeUri : changes) {
+            Change change = findRequired(changeUri);
+            change.addRejectedBy(current);
+            change.removeApprovedBy(current);
+            changeDao.update(change);
+        }
+    }
+
+    /**
      * Returns list of changes made in specified vocabulary context compared to its canonical version.
      *
      * @param vocabularyContext {@link VocabularyContext} to find changes in
@@ -82,13 +115,6 @@ public class ChangeService extends BaseRepositoryService<Change> {
         Model canonicalGraph =
             vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVocabulary().getUri());
         Model draftGraph = vocabularyContextService.getVocabularyContent(vocabularyContext.getUri());
-        //TODO: remove after ontographer update
-        String s =
-            "https://slovník.gov.cz/datový/pracovní-prostor/pojem/přílohový-kontext/";
-        List<Statement> statements = draftGraph.listStatements().toList().stream()
-            .filter(statement -> statement.getSubject().toString().startsWith(s)).toList();
-        draftGraph.remove(statements);
-
         return getChanges(canonicalGraph, draftGraph, vocabularyContext);
     }
 
@@ -114,7 +140,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
 
     private void checkUserCanReviewChange(URI userUri, URI changeUri) {
         if (!changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
-            throw new ForbiddenException();
+            throw ForbiddenException.createForbiddenToReview(userUri, changeUri);
         }
     }
 
