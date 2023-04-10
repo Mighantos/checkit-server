@@ -54,7 +54,7 @@ public class ChangeDtoComposer {
             if (Objects.isNull(restrictionDto)) {
                 continue;
             }
-            changeDtos.removeAll(restrictionDto.getChanges());
+            changeDtos.removeAll(restrictionDto.getAffectedChanges());
             ChangeDto changeDto = new ChangeDto(subjectChangeDtosPointingAtBlankNode.get(0), restrictionDto,
                 resolveReviewState(restrictionDto));
             groupChangeDtosOfRestrictions.add(changeDto);
@@ -124,7 +124,7 @@ public class ChangeDtoComposer {
                 }
             }
         }
-        restrictionDto.setChanges(affectedChanges);
+        restrictionDto.setAffectedChanges(affectedChanges);
         return restrictionDto;
     }
 
@@ -160,7 +160,7 @@ public class ChangeDtoComposer {
     }
 
     private ChangeState resolveReviewState(RestrictionDto restrictionDto) {
-        List<ChangeDto> affectedChanges = restrictionDto.getChanges();
+        List<ChangeDto> affectedChanges = restrictionDto.getAffectedChanges();
         boolean potentiallyApproved = true;
         boolean potentiallyRejected = true;
         for (ChangeDto changeDto : affectedChanges) {
