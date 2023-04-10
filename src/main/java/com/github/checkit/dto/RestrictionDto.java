@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class RestrictionDto {
 
-    private List<URI> changes;
+    private List<ChangeDto> changes;
     private String startName;
     private URI startUri;
     private CardinalityDto cardinalityStart;
