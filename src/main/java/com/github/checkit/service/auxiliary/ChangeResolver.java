@@ -274,7 +274,7 @@ public class ChangeResolver {
             return new ObjectResource(literal.getString(), type, language);
         }
         if (object.asNode().isBlank()) {
-            return new ObjectResource(null, null, null);
+            return new ObjectResource();
         }
         throw new UnexpectedRdfObjectException();
     }

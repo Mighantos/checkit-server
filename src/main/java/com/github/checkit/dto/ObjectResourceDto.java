@@ -19,6 +19,8 @@ public class ObjectResourceDto {
     private final String languageTag;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final RestrictionDto restriction;
+    @JsonIgnore
+    private final boolean blankNode;
 
     /**
      * Constructor.
@@ -28,6 +30,7 @@ public class ObjectResourceDto {
         this.type = objectResource.getType();
         this.languageTag = objectResource.getLanguage();
         this.restriction = null;
+        this.blankNode = objectResource.getBlankNode();
     }
 
     /**
@@ -38,10 +41,6 @@ public class ObjectResourceDto {
         this.type = null;
         this.languageTag = null;
         this.restriction = restriction;
-    }
-
-    @JsonIgnore
-    public boolean isBlankNode() {
-        return (Objects.isNull(value) || value.isEmpty()) && Objects.isNull(type) && Objects.isNull(languageTag);
+        this.blankNode = false;
     }
 }
