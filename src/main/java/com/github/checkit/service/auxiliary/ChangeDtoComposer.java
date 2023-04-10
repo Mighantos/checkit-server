@@ -47,7 +47,6 @@ public class ChangeDtoComposer {
     }
 
     private void createGroupChangeDtosOfRestriction() {
-        List<URI> affectedChanges = new ArrayList<>();
         for (URI subject : subjectsChangeDtosPointingAtBlankNodeMap.keySet()) {
             List<ChangeDto> subjectChangeDtosPointingAtBlankNode =
                 subjectsChangeDtosPointingAtBlankNodeMap.get(subject);
@@ -55,23 +54,18 @@ public class ChangeDtoComposer {
             if (Objects.isNull(restrictionDto)) {
                 continue;
             }
-            affectedChanges.addAll(restrictionDto.getChanges());
+            changeDtos.removeAll(restrictionDto.getChanges());
             ChangeDto changeDto = new ChangeDto(subjectChangeDtosPointingAtBlankNode.get(0), restrictionDto,
                 resolveReviewState(restrictionDto));
             groupChangeDtosOfRestrictions.add(changeDto);
         }
-        changeDtos.forEach(changeDto -> {
-            if (affectedChanges.contains(changeDto.getUri())) {
-                changeDto.markNotVisible();
-            }
-        });
     }
 
     private RestrictionDto createRestrictionFromChanges(List<ChangeDto> subjectChangeDtosPointingAtBlankNode) {
         RestrictionDto restrictionDto = new RestrictionDto();
-        List<URI> affectedChanges = new ArrayList<>();
+        List<ChangeDto> affectedChanges = new ArrayList<>();
         for (ChangeDto topLevelChangeDto : subjectChangeDtosPointingAtBlankNode) {
-            affectedChanges.add(topLevelChangeDto.getUri());
+            affectedChanges.add(topLevelChangeDto);
             List<ChangeDto> blankNodeChanges = changeDtosInBlankNodes.stream()
                 .filter(changeDto -> changeDto.getSubject().equals(topLevelChangeDto.getUri())).toList();
             if (!isChangeOnRelation(blankNodeChanges) || !isRestriction(blankNodeChanges)) {
@@ -83,7 +77,7 @@ public class ChangeDtoComposer {
             }
             boolean start = isStart(blankNodeChanges);
             for (ChangeDto blankNodeChange : blankNodeChanges) {
-                affectedChanges.add(blankNodeChange.getUri());
+                affectedChanges.add(blankNodeChange);
                 String predicate = blankNodeChange.getPredicate().toString();
                 if (predicate.equals(OWL.MINQUALIFIEDCARDINALITY.toString())) {
                     int minCardinality = Integer.parseInt(blankNodeChange.getObject().getValue());
@@ -134,10 +128,10 @@ public class ChangeDtoComposer {
         return restrictionDto;
     }
 
-    private List<URI> traverseAffectedClass(URI onClass, URI relationUri) {
+    private List<ChangeDto> traverseAffectedClass(URI onClass, URI relationUri) {
         assert !onClass.equals(relationUri);
         List<ChangeDto> subjectChangeDtosPointingAtBlankNode = subjectsChangeDtosPointingAtBlankNodeMap.get(onClass);
-        List<URI> affectedChanges = new ArrayList<>();
+        List<ChangeDto> affectedChanges = new ArrayList<>();
         List<ChangeDto> affectedTopLevelChangeDtos = new ArrayList<>();
         for (ChangeDto topLevelChangeDto : subjectChangeDtosPointingAtBlankNode) {
             List<ChangeDto> blankNodeChanges = changeDtosInBlankNodes.stream()
@@ -146,17 +140,17 @@ public class ChangeDtoComposer {
                 continue;
             }
             affectedTopLevelChangeDtos.add(topLevelChangeDto);
-            affectedChanges.add(topLevelChangeDto.getUri());
+            affectedChanges.add(topLevelChangeDto);
             affectedChanges.addAll(recursiveTraverseOfAffectedChanges(blankNodeChanges));
         }
         subjectsChangeDtosPointingAtBlankNodeMap.get(onClass).removeAll(affectedTopLevelChangeDtos);
         return affectedChanges;
     }
 
-    private List<URI> recursiveTraverseOfAffectedChanges(List<ChangeDto> blankNodeChanges) {
-        List<URI> affectedChanges = new ArrayList<>();
+    private List<ChangeDto> recursiveTraverseOfAffectedChanges(List<ChangeDto> blankNodeChanges) {
+        List<ChangeDto> affectedChanges = new ArrayList<>();
         for (ChangeDto blankNodeChange : blankNodeChanges) {
-            affectedChanges.add(blankNodeChange.getUri());
+            affectedChanges.add(blankNodeChange);
             if (blankNodeChange.getObject().isBlankNode()) {
                 affectedChanges.addAll(recursiveTraverseOfAffectedChanges(changeDtosInBlankNodes.stream()
                     .filter(changeDto -> changeDto.getSubject().equals(blankNodeChange.getUri())).toList()));
@@ -166,12 +160,10 @@ public class ChangeDtoComposer {
     }
 
     private ChangeState resolveReviewState(RestrictionDto restrictionDto) {
-        List<URI> affectedChanges = restrictionDto.getChanges();
+        List<ChangeDto> affectedChanges = restrictionDto.getChanges();
         boolean potentiallyApproved = true;
         boolean potentiallyRejected = true;
-        for (URI affectedChangeUri : affectedChanges) {
-            ChangeDto changeDto =
-                changeDtos.stream().filter(chDto -> chDto.getUri().equals(affectedChangeUri)).findFirst().get();
+        for (ChangeDto changeDto : affectedChanges) {
             if ((!potentiallyApproved && !potentiallyRejected)
                 || changeDto.getState().equals(ChangeState.NOT_REVIEWED)) {
                 return ChangeState.NOT_REVIEWED;

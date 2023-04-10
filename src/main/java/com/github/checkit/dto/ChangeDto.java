@@ -10,7 +10,6 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.Objects;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class ChangeDto implements Comparable<ChangeDto> {
@@ -28,7 +27,6 @@ public class ChangeDto implements Comparable<ChangeDto> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final ObjectResourceDto newObject;
     private final ChangeState state;
-    private boolean visible;
 
     /**
      * Constructor.
@@ -48,7 +46,6 @@ public class ChangeDto implements Comparable<ChangeDto> {
             this.newObject = null;
         }
         this.state = resolveChangeState(change, user);
-        this.visible = true;
     }
 
     /**
@@ -65,7 +62,6 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.object = new ObjectResourceDto(restrictionDto);
         this.newObject = null;
         this.state = changeState;
-        this.visible = true;
     }
 
     private String resolveLabel(Change change, String languageTag, String defaultLanguageTag) {
@@ -88,19 +84,10 @@ public class ChangeDto implements Comparable<ChangeDto> {
         return ChangeState.NOT_REVIEWED;
     }
 
-    public void markNotVisible() {
-        this.visible = false;
-    }
-
-    private boolean isHidden() {
-        return !isVisible();
-    }
-
     @Override
     public int compareTo(ChangeDto o) {
         return Comparator
-            .comparing(ChangeDto::isHidden)
-            .thenComparing(ChangeDto::getSubjectType)
+            .comparing(ChangeDto::getSubjectType)
             .thenComparing(ChangeDto::getSubject)
             .thenComparing(ChangeDto::getState)
             .thenComparing(ChangeDto::getType)
