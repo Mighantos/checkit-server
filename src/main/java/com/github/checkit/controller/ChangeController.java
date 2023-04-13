@@ -4,6 +4,7 @@ import com.github.checkit.service.ChangeService;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,5 +45,17 @@ public class ChangeController extends BaseController {
     @PostMapping("/rejected")
     public void rejectChanges(@RequestBody List<URI> changes) {
         changeService.rejectChanges(changes);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{changeId}/review")
+    public void removeChangeReview(@PathVariable String changeId) {
+        changeService.removeChangeReview(changeId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/review")
+    public void removeChangesReview(@RequestBody List<URI> changes) {
+        changeService.removeChangesReview(changes);
     }
 }
