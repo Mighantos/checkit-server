@@ -3,6 +3,7 @@ package com.github.checkit.service;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.exception.ForbiddenException;
+import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.model.AbstractChangeableContext;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.User;
@@ -58,13 +59,13 @@ public class ChangeService extends BaseRepositoryService<Change> {
     /**
      * Marks specified list of changes as approved by current user.
      *
-     * @param changes URI identifiers of changes
+     * @param changeUris URI identifiers of changes
      */
     @Transactional
-    public void approveChanges(List<URI> changes) {
+    public void approveChanges(List<URI> changeUris) {
         User current = userService.getCurrent();
-        changes.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
-        for (URI changeUri : changes) {
+        changeUris.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
+        for (URI changeUri : changeUris) {
             Change change = findRequired(changeUri);
             change.addApprovedBy(current);
             change.removeRejectedBy(current);
@@ -91,15 +92,48 @@ public class ChangeService extends BaseRepositoryService<Change> {
     /**
      * Marks specified list of changes as rejected by current user.
      *
-     * @param changes URI identifiers of changes
+     * @param changeUris URI identifiers of changes
      */
     @Transactional
-    public void rejectChanges(List<URI> changes) {
+    public void rejectChanges(List<URI> changeUris) {
         User current = userService.getCurrent();
-        changes.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
-        for (URI changeUri : changes) {
+        changeUris.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
+        for (URI changeUri : changeUris) {
             Change change = findRequired(changeUri);
             change.addRejectedBy(current);
+            change.removeApprovedBy(current);
+            changeDao.update(change);
+        }
+    }
+
+    /**
+     * Clears current user's review on specified change.
+     *
+     * @param changeId identifier of change
+     */
+    @Transactional
+    public void removeChangeReview(String changeId) {
+        User current = userService.getCurrent();
+        URI changeUri = createChangeUriFromId(changeId);
+        checkUserCanReviewChange(current.getUri(), changeUri);
+        Change change = findRequired(changeUri);
+        change.removeRejectedBy(current);
+        change.removeApprovedBy(current);
+        changeDao.update(change);
+    }
+
+    /**
+     * Clears current user's review on specified list of changes.
+     *
+     * @param changeUris URI identifiers of changes
+     */
+    @Transactional
+    public void removeChangesReview(List<URI> changeUris) {
+        User current = userService.getCurrent();
+        changeUris.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
+        for (URI changeUri : changeUris) {
+            Change change = findRequired(changeUri);
+            change.removeRejectedBy(current);
             change.removeApprovedBy(current);
             changeDao.update(change);
         }
@@ -139,6 +173,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
     }
 
     private void checkUserCanReviewChange(URI userUri, URI changeUri) {
+        checkExists(changeUri);
         if (!changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
             throw ForbiddenException.createForbiddenToReview(userUri, changeUri);
         }
@@ -146,5 +181,11 @@ public class ChangeService extends BaseRepositoryService<Change> {
 
     private URI createChangeUriFromId(String id) {
         return URI.create(TermVocabulary.s_c_zmena + "/" + id);
+    }
+
+    private void checkExists(URI changeUri) {
+        if (!exists(changeUri)) {
+            throw NotFoundException.create(Change.class, changeUri);
+        }
     }
 }
