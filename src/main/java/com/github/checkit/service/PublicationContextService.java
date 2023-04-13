@@ -133,7 +133,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext pc = findRequired(publicationContextUri);
         String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
-        List<ChangeDto> changes = convertPublicationChangesToDtos(pc.getChanges(), current, language, vocabularyUri);
+        List<ChangeDto> changes = convertPublicationChangesToDtos(pc, current, language, vocabularyUri);
         return new ContextChangesDto(vocabularyUri, vocabularyLabel, allowedToReview, changes);
     }
 
@@ -183,11 +183,16 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         return publicationContextUri;
     }
 
-    private List<ChangeDto> convertPublicationChangesToDtos(Set<Change> changes, User current, String language,
+    private List<ChangeDto> convertPublicationChangesToDtos(PublicationContext pc, User current, String language,
                                                             URI vocabularyUri) {
+        Set<Change> changes = pc.getChanges();
         List<ChangeDto> changeDtos = new ArrayList<>(changes.stream().filter(change ->
                 ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
             .map(change -> new ChangeDto(change, current, language, defaultLanguageTag)).toList());
+        if (changeDtos.isEmpty()) {
+            throw new NotFoundException("No changes in vocabulary \"%s\" found in publication context \"%s\".",
+                vocabularyUri, pc.getUri());
+        }
         ChangeDtoComposer changeDtoComposer = new ChangeDtoComposer(changeDtos);
         changeDtoComposer.compose();
         changeDtos.addAll(changeDtoComposer.getGroupChangeDtosOfRestrictions());
