@@ -14,11 +14,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.rdf.model.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChangeService extends BaseRepositoryService<Change> {
+
+    private final Logger logger = LoggerFactory.getLogger(ChangeService.class);
+
     private final VocabularyService vocabularyService;
     private final VocabularyContextService vocabularyContextService;
     private final UserService userService;
@@ -54,6 +59,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
         change.addApprovedBy(current);
         change.removeRejectedBy(current);
         changeDao.update(change);
+        logger.info("User {} approved change \"{}\".", current.toSimpleString(), changeUri);
     }
 
     /**
@@ -71,6 +77,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
             change.removeRejectedBy(current);
             changeDao.update(change);
         }
+        logger.info("User {} approved changes: {}.", current.toSimpleString(), changeUris);
     }
 
     /**
@@ -87,6 +94,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
         change.addRejectedBy(current);
         change.removeApprovedBy(current);
         changeDao.update(change);
+        logger.info("User {} rejected change \"{}\".", current.toSimpleString(), changeUri);
     }
 
     /**
@@ -104,6 +112,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
             change.removeApprovedBy(current);
             changeDao.update(change);
         }
+        logger.info("User {} rejected changes: {}.", current.toSimpleString(), changeUris);
     }
 
     /**
@@ -120,6 +129,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
         change.removeRejectedBy(current);
         change.removeApprovedBy(current);
         changeDao.update(change);
+        logger.info("Review of user {} was cleared on change \"{}\".", current.toSimpleString(), changeUri);
     }
 
     /**
@@ -137,6 +147,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
             change.removeApprovedBy(current);
             changeDao.update(change);
         }
+        logger.info("Review of user {} was cleared on changes: {}.", current.toSimpleString(), changeUris);
     }
 
     /**

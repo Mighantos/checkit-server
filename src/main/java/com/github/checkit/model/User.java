@@ -20,4 +20,8 @@ public class User extends AbstractUser {
     @Inferred
     @OWLObjectProperty(iri = TermVocabulary.s_p_je_gestorem)
     private Set<URI> gestoredVocabularies = new HashSet<>();
+
+    public String toSimpleString() {
+        return String.format("{%s,  \"%s\"}", getFullName(), getUri());
+    }
 }
