@@ -113,7 +113,7 @@ public class KeycloakApiUtil {
         try {
             api.users().searchByUsername(keycloakConfigProperties.getApiAdmin().getUsername(), true);
         } catch (Exception e) {
-            if (e instanceof ProcessingException || e instanceof NotAuthorizedException) {
+            if (e.getCause() instanceof NotAuthorizedException) {
                 throw new KeycloakConfigurationException(
                     "HTTP 401 Unauthorized. Could not connect to Keycloak API with user \"%s\" and given password.",
                     keycloakConfigProperties.getApiAdmin().getUsername());
