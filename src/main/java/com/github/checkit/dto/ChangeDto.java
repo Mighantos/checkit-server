@@ -3,7 +3,7 @@ package com.github.checkit.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.checkit.dto.auxiliary.ChangeState;
 import com.github.checkit.model.Change;
-import com.github.checkit.model.ChangeSubjectType;
+import com.github.checkit.model.auxilary.ChangeSubjectType;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.User;
 import java.net.URI;

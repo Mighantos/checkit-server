@@ -3,7 +3,7 @@ package com.github.checkit.service.auxiliary;
 import com.github.checkit.dto.ChangeDto;
 import com.github.checkit.dto.RestrictionDto;
 import com.github.checkit.dto.auxiliary.ChangeState;
-import com.github.checkit.model.ChangeSubjectType;
+import com.github.checkit.model.auxilary.ChangeSubjectType;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import java.net.URI;

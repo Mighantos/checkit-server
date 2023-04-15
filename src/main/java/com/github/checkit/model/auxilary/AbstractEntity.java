@@ -1,5 +1,7 @@
-package com.github.checkit.model;
+package com.github.checkit.model.auxilary;
 
+import com.github.checkit.model.HasIdentifier;
+import com.github.checkit.model.HasTypes;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.Types;

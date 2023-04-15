@@ -1,5 +1,6 @@
 package com.github.checkit.model;
 
+import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
