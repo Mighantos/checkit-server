@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.checkit.model.ObjectResource;
 import java.net.URI;
-import java.util.Objects;
 import lombok.Getter;
 import lombok.ToString;
 

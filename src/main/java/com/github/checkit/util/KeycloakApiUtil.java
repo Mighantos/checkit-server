@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.ProcessingException;
 import lombok.Getter;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
