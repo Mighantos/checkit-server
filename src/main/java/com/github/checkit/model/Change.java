@@ -56,7 +56,7 @@ public class Change extends AbstractEntity {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = RDF.OBJECT, cascade = CascadeType.ALL)
+    @OWLObjectProperty(iri = RDF.OBJECT)
     private ChangeObject object;
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_ma_novy_objekt, cascade = CascadeType.ALL)

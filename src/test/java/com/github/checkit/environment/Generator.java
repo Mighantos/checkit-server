@@ -1,12 +1,14 @@
 package com.github.checkit.environment;
 
 import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeObject;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.model.VocabularyContext;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Random;
@@ -115,10 +117,10 @@ public class Generator {
         URI uri = generateUri(Change.class);
         change.setUri(uri);
         change.setChangeType(ChangeType.CREATED);
-        change.setLabel(uri.toString().substring(uri.toString().lastIndexOf("/") + 1));
+        change.setLabel(new MultilingualString().set(uri.toString().substring(uri.toString().lastIndexOf("/") + 1)));
         change.setSubject(Generator.generateUri());
         change.setPredicate(Generator.generateUri());
-        change.setObject(Generator.generateUri().toString());
+        change.setObject(new ChangeObject());
         return change;
     }
 }

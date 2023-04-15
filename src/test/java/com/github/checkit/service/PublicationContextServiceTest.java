@@ -3,6 +3,8 @@ package com.github.checkit.service;
 import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.environment.Generator;
+import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeObject;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
@@ -71,18 +73,12 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
     }
 
     @Test
-    void getReviewablePublicationContexts() {
-    }
-
-    @Test
-    void getPublicationContextDetail() {
-    }
-
-    @Test
-    void getChangesInContextInPublicationContext() {
-    }
-
-    @Test
-    void createOrUpdatePublicationContext() {
+    void forMartin() {
+        Change change = Generator.generateCreateChangeWitUri(vocabularyContext);
+        change.setObject(new ChangeObject("ChangeValue", null, null));
+        PublicationContext publicationContextWithRealChange = Generator.generatePublicationContextWithUri();
+        publicationContextWithRealChange.setFromProject(projectContext);
+        publicationContextWithRealChange.setChanges(Collections.singleton(change));
+        transactional(() -> em.persist(publicationContextWithRealChange));
     }
 }

@@ -20,5 +20,5 @@ public abstract class AbstractEntity implements HasIdentifier, HasTypes, Seriali
     private URI uri;
 
     @Types
-    private Set<String> types;
+    private Set<String> types; // = new HashSet<>(); shows correct exception
 }
