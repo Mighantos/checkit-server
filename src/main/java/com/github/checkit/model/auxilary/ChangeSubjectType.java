@@ -1,4 +1,4 @@
-package com.github.checkit.model;
+package com.github.checkit.model.auxilary;
 
 public enum ChangeSubjectType {
     VOCABULARY,

@@ -7,6 +7,7 @@ import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
@@ -19,6 +20,38 @@ public class ChangeDao extends BaseDao<Change> {
     protected ChangeDao(EntityManager em, DescriptorFactory descriptorFactory) {
         super(Change.class, em);
         this.descriptorFactory = descriptorFactory;
+    }
+
+    /**
+     * Finds all changes in specified publication context relevant to specified user.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param userUri               URI identifier of user
+     * @return list of changes
+     */
+    public List<Change> findAllInPublicationContextRelevantToUser(URI publicationContextUri, URI userUri) {
+        try {
+            Descriptor descriptor = descriptorFactory.changeDescriptor(publicationContextUri);
+            return em.createNativeQuery("SELECT ?change WHERE { "
+                    + "?pc ?hasChange ?change . "
+                    + "?change a ?type ; "
+                    + "        ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "?voc ?gestoredBy ?user ."
+                    + "}", type)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
+                .setParameter("user", userUri)
+                .setDescriptor(descriptor)
+                .getResultList();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
     }
 
     @Override
@@ -66,6 +99,29 @@ public class ChangeDao extends BaseDao<Change> {
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
                 .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
                 .setParameter("user", userUri)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Checks if publication context of specified change is not closed.
+     *
+     * @param changeUri URI identifier of change
+     * @return true of false
+     */
+    public boolean isChangesPublicationContextClosed(URI changeUri) {
+        try {
+            return em.createNativeQuery("ASK { "
+                    + "?change a ?type . "
+                    + "?pc ?hasChange ?change . "
+                    + "?comment ?hasTopic ?pc . "
+                    + "}", Boolean.class)
+                .setParameter("change", changeUri)
+                .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("hasTopic", URI.create(TermVocabulary.s_p_topic))
                 .getSingleResult();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);

@@ -1,4 +1,4 @@
-package com.github.checkit.model;
+package com.github.checkit.model.auxilary;
 
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;

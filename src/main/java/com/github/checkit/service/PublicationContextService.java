@@ -4,25 +4,36 @@ import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.PublicationContextDao;
 import com.github.checkit.dto.ChangeDto;
+import com.github.checkit.dto.CommentDto;
 import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
 import com.github.checkit.dto.auxiliary.PublicationContextState;
+import com.github.checkit.exception.AlreadyExistsException;
+import com.github.checkit.exception.FinalCommentTooShortException;
+import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NoChangeException;
+import com.github.checkit.exception.NotApprovableException;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
+import com.github.checkit.model.Comment;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
+import com.github.checkit.model.auxilary.AbstractChangeableContext;
+import com.github.checkit.model.auxilary.CommentTag;
 import com.github.checkit.service.auxiliary.ChangeDtoComposer;
 import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -40,7 +51,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final ChangeService changeService;
     private final VocabularyService vocabularyService;
     private final UserService userService;
+    private final CommentService commentService;
     private final String defaultLanguageTag;
+    private final int minimalRejectionCommentLength;
 
     /**
      * Construct.
@@ -48,13 +61,16 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     public PublicationContextService(PublicationContextDao publicationContextDao,
                                      ProjectContextService projectContextService, ChangeService changeService,
                                      VocabularyService vocabularyService, UserService userService,
+                                     CommentService commentService,
                                      RepositoryConfigProperties repositoryConfigProperties) {
         this.publicationContextDao = publicationContextDao;
         this.projectContextService = projectContextService;
         this.changeService = changeService;
         this.vocabularyService = vocabularyService;
         this.userService = userService;
+        this.commentService = commentService;
         this.defaultLanguageTag = repositoryConfigProperties.getLanguage();
+        this.minimalRejectionCommentLength = repositoryConfigProperties.getComment().getRejectionMinimalLength();
     }
 
     @Override
@@ -73,8 +89,13 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         URI userUri = userService.getCurrent().getUri();
         allPublicationContexts.removeAll(publicationContextDao.findAllThatAffectVocabulariesGestoredBy(userUri));
         return allPublicationContexts.stream().map(pc -> {
-            PublicationContextState state = getState(pc);
-            return new PublicationContextDto(pc, state);
+            PublicationContextState state = getState(pc, null);
+            CommentDto finalComment = null;
+            Optional<Comment> comment = commentService.findFinalComment(pc);
+            if (comment.isPresent()) {
+                finalComment = new CommentDto(comment.get());
+            }
+            return new PublicationContextDto(pc, state, finalComment);
         }).toList();
     }
 
@@ -85,12 +106,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      */
     @Transactional
     public List<PublicationContextDto> getReviewablePublicationContexts() {
-        URI userUri = userService.getCurrent().getUri();
+        User current = userService.getCurrent();
         List<PublicationContext> publicationContexts =
-            publicationContextDao.findAllThatAffectVocabulariesGestoredBy(userUri);
+            publicationContextDao.findAllThatAffectVocabulariesGestoredBy(current.getUri());
         return publicationContexts.stream().map(pc -> {
-            PublicationContextState state = getState(pc);
-            return new PublicationContextDto(pc, state);
+            PublicationContextState state = getState(pc, current);
+            return new PublicationContextDto(pc, state, resolveFinalComment(pc));
         }).toList();
     }
 
@@ -106,12 +127,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
 
         PublicationContext pc = findRequired(publicationContextUri);
-        PublicationContextState state = getState(pc);
+        PublicationContextState state = getState(pc, current);
         List<ReviewableVocabularyDto> affectedVocabularies =
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> new ReviewableVocabularyDto(vocabulary, vocabulary.getGestors().contains(current)))
                 .toList();
-        return new PublicationContextDetailDto(pc, state, affectedVocabularies);
+        return new PublicationContextDetailDto(pc, state, resolveFinalComment(pc), affectedVocabularies);
     }
 
     /**
@@ -127,14 +148,15 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                                                                      String language) {
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
-        boolean allowedToReview =
+        boolean isAllowedToReview =
             publicationContextDao.doesUserHavePermissionToReviewVocabulary(current.getUri(), publicationContextUri,
                 vocabularyUri);
 
         PublicationContext pc = findRequired(publicationContextUri);
         String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
         List<ChangeDto> changes = convertPublicationChangesToDtos(pc, current, language, vocabularyUri);
-        return new ContextChangesDto(vocabularyUri, vocabularyLabel, allowedToReview, changes);
+        return new ContextChangesDto(vocabularyUri, vocabularyLabel, isAllowedToReview, pc.getId(),
+            pc.getFromProject().getLabel(), getState(pc, null), changes);
     }
 
     /**
@@ -183,38 +205,166 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         return publicationContextUri;
     }
 
+    /**
+     * Creates an approval comment on Publication context.
+     *
+     * @param publicationContextId Identifier of publication context
+     * @param finalComment         Content of final comment
+     */
+    @Transactional
+    public void approvePublicationContext(String publicationContextId, String finalComment) {
+        User current = userService.getCurrent();
+        URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
+        PublicationContext publicationContext = findRequired(publicationContextUri);
+        checkNotAlreadyReviewed(publicationContext);
+        checkCanReview(publicationContext, current);
+        if (!isApprovable(publicationContext, current)) {
+            throw NotApprovableException.create(publicationContext.getUri());
+        }
+        Comment comment = new Comment();
+        comment.setTopic(publicationContext);
+        comment.setTag(CommentTag.APPROVAL);
+        comment.setAuthor(current);
+        comment.setContent(finalComment);
+        commentService.persist(comment);
+    }
+
+    /**
+     * Creates a rejection comment on Publication context.
+     *
+     * @param publicationContextId Identifier of publication context
+     * @param finalComment         Content of final comment
+     */
+    @Transactional
+    public void rejectPublicationContext(String publicationContextId, String finalComment) {
+        if (finalComment.length() < minimalRejectionCommentLength) {
+            throw FinalCommentTooShortException.create(minimalRejectionCommentLength);
+        }
+        User current = userService.getCurrent();
+        URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
+        PublicationContext publicationContext = findRequired(publicationContextUri);
+        checkNotAlreadyReviewed(publicationContext);
+        checkCanReview(publicationContext, current);
+        Comment comment = new Comment();
+        comment.setTopic(publicationContext);
+        comment.setTag(CommentTag.REJECTION);
+        comment.setAuthor(current);
+        comment.setContent(finalComment);
+        commentService.persist(comment);
+
+    }
+
     private List<ChangeDto> convertPublicationChangesToDtos(PublicationContext pc, User current, String language,
                                                             URI vocabularyUri) {
         Set<Change> changes = pc.getChanges();
-        List<ChangeDto> changeDtos = new ArrayList<>(changes.stream().filter(change ->
+        List<ChangeDto> changeDtos = new ArrayList<>(changes.stream()
+            .filter(change ->
                 ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
-            .map(change -> new ChangeDto(change, current, language, defaultLanguageTag)).toList());
+            .map(change ->
+                new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current)))
+            .toList());
         if (changeDtos.isEmpty()) {
             throw new NotFoundException("No changes in vocabulary \"%s\" found in publication context \"%s\".",
                 vocabularyUri, pc.getUri());
         }
         ChangeDtoComposer changeDtoComposer = new ChangeDtoComposer(changeDtos);
         changeDtoComposer.compose();
+        changeDtoComposer.selectCommentableChangeInGroups(commentService);
         changeDtos.addAll(changeDtoComposer.getGroupChangeDtosOfRestrictions());
 
         return changeDtos.stream().sorted().toList();
+    }
+
+    private void checkCanReview(PublicationContext pc, User user) {
+        if (!publicationContextDao.canUserReview(pc.getUri(), user.getUri())) {
+            throw ForbiddenException.createForbiddenToReviewPublicationContext(user.getUri(), pc.getUri());
+        }
+    }
+
+    private void checkNotAlreadyReviewed(PublicationContext pc) {
+        if (commentService.findFinalComment(pc).isPresent()) {
+            throw new AlreadyExistsException("Publication context \"%s\" was already reviewed.", pc.getUri());
+        }
+    }
+
+    private CommentDto resolveFinalComment(PublicationContext pc) {
+        CommentDto finalComment = null;
+        Optional<Comment> comment = commentService.findFinalComment(pc);
+        if (comment.isPresent()) {
+            finalComment = new CommentDto(comment.get());
+        }
+        return finalComment;
+    }
+
+    private CommentDto resolveRejectionComment(Change change, User current) {
+        CommentDto rejectionComment = null;
+        Optional<Comment> comment = commentService.findFinalComment(change, current);
+        if (comment.isPresent()) {
+            rejectionComment = new CommentDto(comment.get());
+        }
+        return rejectionComment;
     }
 
     private URI createPublicationContextUriFromId(String id) {
         return URI.create(TermVocabulary.s_c_publikacni_kontext + "/" + id);
     }
 
-    private PublicationContextState getState(PublicationContext pc) {
-        List<Change> changes = new ArrayList<>(pc.getChanges());
-        if (changes.stream().anyMatch(Change::isRejected)) {
+    private PublicationContextState getState(PublicationContext pc, User current) {
+        Optional<Comment> optComment = commentService.findFinalComment(pc);
+        if (optComment.isPresent()) {
+            if (optComment.get().getTag().equals(CommentTag.APPROVAL)) {
+                return PublicationContextState.APPROVED;
+            }
             return PublicationContextState.REJECTED;
         }
-        for (User user : changes.get(0).getApprovedBy()) {
-            if (changes.stream().allMatch(change -> change.getApprovedBy().contains(user))) {
-                return PublicationContextState.APPROVED;
+        if (Objects.nonNull(current)) {
+            if (userApprovedEverythingPossibleButNotAll(pc, current)) {
+                return PublicationContextState.WAITING_FOR_OTHERS;
+            }
+            if (isApprovable(pc, current)) {
+                return PublicationContextState.APPROVABLE;
             }
         }
         return PublicationContextState.CREATED;
+    }
+
+    private boolean userApprovedEverythingPossibleButNotAll(PublicationContext pc, User user) {
+        List<Change> allInPublicationContextRelevantToUser =
+            changeService.findAllInPublicationContextRelevantToUser(pc.getUri(), user.getUri());
+        if (allInPublicationContextRelevantToUser.size() == pc.getChanges().size()) {
+            return false;
+        }
+        return allInPublicationContextRelevantToUser.stream().allMatch(change -> change.getApprovedBy().contains(user));
+    }
+
+    private boolean isApprovable(PublicationContext pc, User user) {
+        boolean userReviewedAtLeastOneWholeContext = false;
+        Map<AbstractChangeableContext, List<Change>> contextChangesMap = new HashMap<>();
+        for (Change change : pc.getChanges()) {
+            if (change.notApproved()) {
+                return false;
+            }
+            AbstractChangeableContext context = change.getContext();
+            if (!contextChangesMap.containsKey(context)) {
+                contextChangesMap.put(context, new ArrayList<>());
+            }
+            contextChangesMap.get(context).add(change);
+        }
+        for (List<Change> contextChanges : contextChangesMap.values()) {
+            Set<User> approvedBy = new HashSet<>(contextChanges.get(0).getApprovedBy());
+            if (approvedBy.contains(user)) {
+                approvedBy.remove(user);
+                if (contextChanges.stream().allMatch(change -> change.isApproved(user))) {
+                    userReviewedAtLeastOneWholeContext = true;
+                    continue;
+                }
+            }
+            if (approvedBy.stream().noneMatch(
+                approvingUser -> contextChanges.stream().allMatch(change -> change.isApproved(approvingUser)))) {
+                return false;
+            }
+        }
+        return userReviewedAtLeastOneWholeContext;
     }
 
     private Set<Change> takeIntoConsiderationExistingChanges(List<Change> currentChanges, Set<Change> existingChanges) {
@@ -246,6 +396,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             if (rollbackedChange.hasBeenReviewed()) {
                 rollbackedChange.setChangeType(ChangeType.ROLLBACKED);
                 rollbackedChange.clearReviews();
+                commentService.removeAllFinalComments(rollbackedChange);
                 newFormOfChanges.add(rollbackedChange);
             } else {
                 changeService.remove(rollbackedChange);

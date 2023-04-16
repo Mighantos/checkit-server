@@ -1,5 +1,8 @@
 package com.github.checkit.model;
 
+import com.github.checkit.model.auxilary.AbstractChangeableContext;
+import com.github.checkit.model.auxilary.AbstractCommentableEntity;
+import com.github.checkit.model.auxilary.ChangeSubjectType;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
@@ -26,7 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @OWLClass(iri = TermVocabulary.s_c_zmena)
-public class Change extends AbstractEntity {
+public class Change extends AbstractCommentableEntity {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
@@ -151,7 +154,15 @@ public class Change extends AbstractEntity {
         getRejectedBy().clear();
     }
 
-    public boolean isRejected() {
-        return !getRejectedBy().isEmpty();
+    public boolean isApproved(User user) {
+        return getApprovedBy().contains(user);
+    }
+
+    public boolean isRejected(User user) {
+        return getRejectedBy().contains(user);
+    }
+
+    public boolean notApproved() {
+        return getApprovedBy().isEmpty();
     }
 }

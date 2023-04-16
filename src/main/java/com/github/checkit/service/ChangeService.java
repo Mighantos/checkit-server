@@ -2,12 +2,14 @@ package com.github.checkit.service;
 
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
+import com.github.checkit.dao.CommentDao;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
-import com.github.checkit.model.AbstractChangeableContext;
+import com.github.checkit.exception.PublicationContextIsClosedException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
+import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.service.auxiliary.ChangeResolver;
 import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
@@ -28,16 +30,18 @@ public class ChangeService extends BaseRepositoryService<Change> {
     private final VocabularyContextService vocabularyContextService;
     private final UserService userService;
     private final ChangeDao changeDao;
+    private final CommentDao commentDao;
 
     /**
      * Constructor.
      */
     public ChangeService(VocabularyService vocabularyService, VocabularyContextService vocabularyContextService,
-                         UserService userService, ChangeDao changeDao) {
+                         UserService userService, ChangeDao changeDao, CommentDao commentDao) {
         this.vocabularyService = vocabularyService;
         this.vocabularyContextService = vocabularyContextService;
         this.userService = userService;
         this.changeDao = changeDao;
+        this.commentDao = commentDao;
     }
 
     @Override
@@ -129,6 +133,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
         change.removeRejectedBy(current);
         change.removeApprovedBy(current);
         changeDao.update(change);
+        commentDao.findFinalComment(change, current).ifPresent(commentDao::remove);
         logger.info("Review of user {} was cleared on change \"{}\".", current.toSimpleString(), changeUri);
     }
 
@@ -146,6 +151,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
             change.removeRejectedBy(current);
             change.removeApprovedBy(current);
             changeDao.update(change);
+            commentDao.findFinalComment(change, current).ifPresent(commentDao::remove);
         }
         logger.info("Review of user {} was cleared on changes: {}.", current.toSimpleString(), changeUris);
     }
@@ -183,10 +189,23 @@ public class ChangeService extends BaseRepositoryService<Change> {
         return changeResolver.getChanges();
     }
 
-    private void checkUserCanReviewChange(URI userUri, URI changeUri) {
+    /**
+     * Check if specified user can review specified change.
+     *
+     * @param userUri   URI identifier of user
+     * @param changeUri URI identifier of change
+     */
+    public void checkUserCanReviewChange(URI userUri, URI changeUri) {
         checkExists(changeUri);
+        checkNotInClosedPublicationContext(changeUri);
         if (!changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
-            throw ForbiddenException.createForbiddenToReview(userUri, changeUri);
+            throw ForbiddenException.createForbiddenToReviewChange(userUri, changeUri);
+        }
+    }
+
+    private void checkNotInClosedPublicationContext(URI changeUri) {
+        if (changeDao.isChangesPublicationContextClosed(changeUri)) {
+            throw PublicationContextIsClosedException.create(changeUri);
         }
     }
 
@@ -198,5 +217,9 @@ public class ChangeService extends BaseRepositoryService<Change> {
         if (!exists(changeUri)) {
             throw NotFoundException.create(Change.class, changeUri);
         }
+    }
+
+    public List<Change> findAllInPublicationContextRelevantToUser(URI publicationContextUri, URI userUri) {
+        return changeDao.findAllInPublicationContextRelevantToUser(publicationContextUri, userUri);
     }
 }

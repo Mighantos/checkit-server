@@ -1,7 +1,7 @@
 package com.github.checkit.dao;
 
 import com.github.checkit.exception.PersistenceException;
-import com.github.checkit.model.HasIdentifier;
+import com.github.checkit.model.auxilary.HasIdentifier;
 import com.github.checkit.util.EntityToOwlClassMapper;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.ontodriver.Connection;

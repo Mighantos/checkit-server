@@ -3,7 +3,8 @@ package com.github.checkit.service.auxiliary;
 import com.github.checkit.dto.ChangeDto;
 import com.github.checkit.dto.RestrictionDto;
 import com.github.checkit.dto.auxiliary.ChangeState;
-import com.github.checkit.model.ChangeSubjectType;
+import com.github.checkit.model.auxilary.ChangeSubjectType;
+import com.github.checkit.service.CommentService;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import java.net.URI;
@@ -44,6 +45,22 @@ public class ChangeDtoComposer {
             subjectsChangeDtosPointingAtBlankNodeMap.get(subject).add(changePointingAtBlankNode);
         }
         createGroupChangeDtosOfRestriction();
+    }
+
+    /**
+     * Sets commentable changeDto in all created restrictions.
+     *
+     * @param commentService comment service
+     */
+    public void selectCommentableChangeInGroups(CommentService commentService) {
+        for (ChangeDto groupChangeDtosOfRestriction : groupChangeDtosOfRestrictions) {
+            RestrictionDto restriction = groupChangeDtosOfRestriction.getObject().getRestriction();
+            List<ChangeDto> affectedChanges = restriction.getAffectedChanges();
+            ChangeDto commentableChangeDto = affectedChanges.stream()
+                .filter(changeDto -> !commentService.getAllRelatedToChange(changeDto.getUri()).isEmpty()).findFirst()
+                .orElse(affectedChanges.iterator().next());
+            restriction.setCommentableChange(commentableChangeDto.getUri());
+        }
     }
 
     private void createGroupChangeDtosOfRestriction() {

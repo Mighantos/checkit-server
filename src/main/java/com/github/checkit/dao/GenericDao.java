@@ -1,6 +1,6 @@
 package com.github.checkit.dao;
 
-import com.github.checkit.model.HasIdentifier;
+import com.github.checkit.model.auxilary.HasIdentifier;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;

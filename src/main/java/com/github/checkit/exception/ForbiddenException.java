@@ -11,7 +11,12 @@ public class ForbiddenException extends BaseException {
         super(message, args);
     }
 
-    public static ForbiddenException createForbiddenToReview(URI userUri, URI changeUri) {
+    public static ForbiddenException createForbiddenToReviewPublicationContext(URI userUri, URI publicationContextUri) {
+        return new ForbiddenException("User \"%s\" can't review publication context \"%s\".", userUri,
+            publicationContextUri);
+    }
+
+    public static ForbiddenException createForbiddenToReviewChange(URI userUri, URI changeUri) {
         return new ForbiddenException("User \"%s\" can't review change \"%s\".", userUri, changeUri);
     }
 }

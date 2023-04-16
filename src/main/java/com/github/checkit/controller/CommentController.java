@@ -25,7 +25,7 @@ public class CommentController extends BaseController {
         this.commentService = commentService;
     }
 
-    @GetMapping("/related-to-change")
+    @GetMapping("/discussion-on-change")
     public List<CommentDto> getAllRelatedToChange(@RequestParam URI changeUri) {
         return commentService.getAllRelatedToChange(changeUri);
     }
@@ -34,5 +34,11 @@ public class CommentController extends BaseController {
     @PostMapping
     public void createComment(@RequestParam URI changeUri, @RequestBody String content) {
         commentService.createComment(changeUri, content);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/rejection-on-change")
+    public void createRejectionComment(@RequestParam URI changeUri, @RequestBody String content) {
+        commentService.createRejectionComment(changeUri, content);
     }
 }
