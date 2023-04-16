@@ -149,7 +149,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         PublicationContext pc = findRequired(publicationContextUri);
         String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
         List<ChangeDto> changes = convertPublicationChangesToDtos(pc, current, language, vocabularyUri);
-        return new ContextChangesDto(vocabularyUri, vocabularyLabel, allowedToReview, changes);
+        return new ContextChangesDto(vocabularyUri, vocabularyLabel, allowedToReview, pc.getId(),
+            pc.getFromProject().getLabel(), getState(pc, null), changes);
     }
 
     /**
