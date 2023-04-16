@@ -259,6 +259,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         }
         ChangeDtoComposer changeDtoComposer = new ChangeDtoComposer(changeDtos);
         changeDtoComposer.compose();
+        changeDtoComposer.selectCommentableChangeInGroups(commentService);
         changeDtos.addAll(changeDtoComposer.getGroupChangeDtosOfRestrictions());
 
         return changeDtos.stream().sorted().toList();

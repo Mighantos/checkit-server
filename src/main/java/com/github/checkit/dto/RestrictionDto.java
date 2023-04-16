@@ -10,6 +10,7 @@ import lombok.Setter;
 public class RestrictionDto {
 
     private List<ChangeDto> affectedChanges;
+    private URI commentableChange;
     private String startName;
     private URI startUri;
     private CardinalityDto cardinalityStart;
