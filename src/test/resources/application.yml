@@ -26,5 +26,13 @@ repository:
   url: memcheckit
   driver: cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource
   language: cs
-  userIdPrefix: https://slovník.gov.cz/uživatel/
+  user:
+    idPrefix: https://slovník.gov.cz/uživatel/
+    context: https://slovník.gov.cz/uživatel
+  gestoringRequest:
+    context: https://slovník.gov.cz/datový/popis-zmen/pozadavky-na-gestorovani
+  comment:
+    context: https://slovník.gov.cz/datový/popis-zmen/komentare
+    rejectionMinimalLength: 10
+
 
