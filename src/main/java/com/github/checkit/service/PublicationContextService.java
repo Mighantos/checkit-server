@@ -10,6 +10,7 @@ import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
 import com.github.checkit.dto.auxiliary.PublicationContextState;
 import com.github.checkit.exception.AlreadyExistsException;
+import com.github.checkit.exception.FinalCommentTooShortException;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NoChangeException;
 import com.github.checkit.exception.NotApprovableException;
@@ -51,6 +52,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final UserService userService;
     private final CommentService commentService;
     private final String defaultLanguageTag;
+    private final int minimalRejectionCommentLength;
 
     /**
      * Construct.
@@ -67,6 +69,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         this.userService = userService;
         this.commentService = commentService;
         this.defaultLanguageTag = repositoryConfigProperties.getLanguage();
+        this.minimalRejectionCommentLength = repositoryConfigProperties.getComment().getRejectionMinimalLength();
     }
 
     @Override
@@ -227,6 +230,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      */
     @Transactional
     public void rejectPublicationContext(String publicationContextId, String finalComment) {
+        if (finalComment.length() < minimalRejectionCommentLength) {
+            throw FinalCommentTooShortException.create(minimalRejectionCommentLength);
+        }
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
         PublicationContext publicationContext = findRequired(publicationContextUri);

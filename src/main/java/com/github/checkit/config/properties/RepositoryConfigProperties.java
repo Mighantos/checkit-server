@@ -67,5 +67,8 @@ public class RepositoryConfigProperties {
 
         @Nonnull
         private String context;
+
+        @Nonnull
+        private int rejectionMinimalLength;
     }
 }
