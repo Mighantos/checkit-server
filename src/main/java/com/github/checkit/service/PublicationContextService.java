@@ -111,12 +111,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContextDao.findAllThatAffectVocabulariesGestoredBy(current.getUri());
         return publicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, current);
-            CommentDto finalComment = null;
-            Optional<Comment> comment = commentService.findFinalComment(pc);
-            if (comment.isPresent()) {
-                finalComment = new CommentDto(comment.get());
-            }
-            return new PublicationContextDto(pc, state, finalComment);
+            return new PublicationContextDto(pc, state, resolveFinalComment(pc));
         }).toList();
     }
 
@@ -137,12 +132,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> new ReviewableVocabularyDto(vocabulary, vocabulary.getGestors().contains(current)))
                 .toList();
-        CommentDto finalComment = null;
-        Optional<Comment> comment = commentService.findFinalComment(pc);
-        if (comment.isPresent()) {
-            finalComment = new CommentDto(comment.get());
-        }
-        return new PublicationContextDetailDto(pc, state, finalComment, affectedVocabularies);
+        return new PublicationContextDetailDto(pc, state, resolveFinalComment(pc), affectedVocabularies);
     }
 
     /**
@@ -158,14 +148,14 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                                                                      String language) {
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
-        boolean allowedToReview =
+        boolean isAllowedToReview =
             publicationContextDao.doesUserHavePermissionToReviewVocabulary(current.getUri(), publicationContextUri,
                 vocabularyUri);
 
         PublicationContext pc = findRequired(publicationContextUri);
         String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
         List<ChangeDto> changes = convertPublicationChangesToDtos(pc, current, language, vocabularyUri);
-        return new ContextChangesDto(vocabularyUri, vocabularyLabel, allowedToReview, pc.getId(),
+        return new ContextChangesDto(vocabularyUri, vocabularyLabel, isAllowedToReview, pc.getId(),
             pc.getFromProject().getLabel(), getState(pc, null), changes);
     }
 
@@ -267,9 +257,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private List<ChangeDto> convertPublicationChangesToDtos(PublicationContext pc, User current, String language,
                                                             URI vocabularyUri) {
         Set<Change> changes = pc.getChanges();
-        List<ChangeDto> changeDtos = new ArrayList<>(changes.stream().filter(change ->
+        List<ChangeDto> changeDtos = new ArrayList<>(changes.stream()
+            .filter(change ->
                 ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
-            .map(change -> new ChangeDto(change, current, language, defaultLanguageTag)).toList());
+            .map(change ->
+                new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current)))
+            .toList());
         if (changeDtos.isEmpty()) {
             throw new NotFoundException("No changes in vocabulary \"%s\" found in publication context \"%s\".",
                 vocabularyUri, pc.getUri());
@@ -292,6 +285,24 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         if (commentService.findFinalComment(pc).isPresent()) {
             throw new AlreadyExistsException("Publication context \"%s\" was already reviewed.", pc.getUri());
         }
+    }
+
+    private CommentDto resolveFinalComment(PublicationContext pc) {
+        CommentDto finalComment = null;
+        Optional<Comment> comment = commentService.findFinalComment(pc);
+        if (comment.isPresent()) {
+            finalComment = new CommentDto(comment.get());
+        }
+        return finalComment;
+    }
+
+    private CommentDto resolveRejectionComment(Change change, User current) {
+        CommentDto rejectionComment = null;
+        Optional<Comment> comment = commentService.findFinalComment(change, current);
+        if (comment.isPresent()) {
+            rejectionComment = new CommentDto(comment.get());
+        }
+        return rejectionComment;
     }
 
     private URI createPublicationContextUriFromId(String id) {

@@ -27,11 +27,14 @@ public class ChangeDto implements Comparable<ChangeDto> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final ChangeObjectDto newObject;
     private final ChangeState state;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final CommentDto rejectionComment;
 
     /**
      * Constructor.
      */
-    public ChangeDto(Change change, User user, String languageTag, String defaultLanguageTag) {
+    public ChangeDto(Change change, User user, String languageTag, String defaultLanguageTag,
+                     CommentDto rejectionComment) {
         this.id = change.getId();
         this.uri = change.getUri();
         this.type = change.getChangeType();
@@ -46,6 +49,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
             this.newObject = null;
         }
         this.state = resolveChangeState(change, user);
+        this.rejectionComment = rejectionComment;
     }
 
     /**
@@ -62,6 +66,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.object = new ChangeObjectDto(restrictionDto);
         this.newObject = null;
         this.state = changeState;
+        this.rejectionComment = null;
     }
 
     private String resolveLabel(Change change, String languageTag, String defaultLanguageTag) {
