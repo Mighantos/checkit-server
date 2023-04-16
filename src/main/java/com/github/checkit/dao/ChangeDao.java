@@ -105,6 +105,29 @@ public class ChangeDao extends BaseDao<Change> {
         }
     }
 
+    /**
+     * Checks if publication context of specified change is not closed.
+     *
+     * @param changeUri URI identifier of change
+     * @return true of false
+     */
+    public boolean isChangesPublicationContextClosed(URI changeUri) {
+        try {
+            return em.createNativeQuery("ASK { "
+                    + "?change a ?type . "
+                    + "?pc ?hasChange ?change . "
+                    + "?comment ?hasTopic ?pc . "
+                    + "}", Boolean.class)
+                .setParameter("change", changeUri)
+                .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("hasTopic", URI.create(TermVocabulary.s_p_topic))
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
     private URI resolvePublicationContext(URI changeUri) {
         try {
             return em.createNativeQuery("SELECT ?pc WHERE {"

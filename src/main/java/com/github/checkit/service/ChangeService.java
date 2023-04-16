@@ -5,6 +5,7 @@ import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.dao.CommentDao;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
+import com.github.checkit.exception.PublicationContextIsClosedException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
@@ -196,8 +197,15 @@ public class ChangeService extends BaseRepositoryService<Change> {
      */
     public void checkUserCanReviewChange(URI userUri, URI changeUri) {
         checkExists(changeUri);
+        checkNotInClosedPublicationContext(changeUri);
         if (!changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
             throw ForbiddenException.createForbiddenToReviewChange(userUri, changeUri);
+        }
+    }
+
+    private void checkNotInClosedPublicationContext(URI changeUri) {
+        if (changeDao.isChangesPublicationContextClosed(changeUri)) {
+            throw PublicationContextIsClosedException.create(changeUri);
         }
     }
 
