@@ -1,7 +1,10 @@
 package com.github.checkit.model;
 
+import com.github.checkit.model.auxilary.AbstractCommentableEntity;
 import com.github.checkit.model.auxilary.AbstractEntity;
+import com.github.checkit.model.auxilary.CommentTag;
 import com.github.checkit.util.TermVocabulary;
+import cz.cvut.kbss.jopa.model.annotations.Enumerated;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -22,12 +25,18 @@ public class Comment extends AbstractEntity implements Comparable<Comment> {
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
     @OWLObjectProperty(iri = TermVocabulary.s_p_topic)
-    private Change topic;
+    private AbstractCommentableEntity topic;
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
     @OWLObjectProperty(iri = TermVocabulary.s_p_has_creator)
     private User author;
+
+    @NotBlank
+    @ParticipationConstraints(nonEmpty = true)
+    @Enumerated
+    @OWLDataProperty(iri = TermVocabulary.s_p_ma_stitek)
+    private CommentTag tag;
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)

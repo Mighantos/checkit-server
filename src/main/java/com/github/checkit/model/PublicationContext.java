@@ -1,6 +1,6 @@
 package com.github.checkit.model;
 
-import com.github.checkit.model.auxilary.AbstractEntity;
+import com.github.checkit.model.auxilary.AbstractCommentableEntity;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -21,7 +21,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @OWLClass(iri = TermVocabulary.s_c_publikacni_kontext)
-public class PublicationContext extends AbstractEntity {
+public class PublicationContext extends AbstractCommentableEntity {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)

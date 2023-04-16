@@ -134,11 +134,11 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     /**
      * Checks if specified publication context has some change that is in vocabulary gestored by specified user.
      *
-     * @param userUri               URI identifier of user
      * @param publicationContextUri URI identifier of publication context
+     * @param userUri               URI identifier of user
      * @return true or false
      */
-    public boolean doesUserHaveAnyChangesToReview(URI userUri, URI publicationContextUri) {
+    public boolean canUserReview(URI publicationContextUri, URI userUri) {
         try {
             return em.createNativeQuery("ASK {"
                     + "?pc a ?type ; "

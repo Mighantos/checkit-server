@@ -48,6 +48,7 @@ public final class TermVocabulary {
     public static final String s_p_ma_popis_typu_subjektu = CHANGE_DESCRIPTION_NAMESPACE + "má-popis-typu-subjektu";
     public static final String s_p_ma_hodnotu = CHANGE_DESCRIPTION_NAMESPACE + "má-hodnotu";
     public static final String s_p_ma_typ_hodnoty = CHANGE_DESCRIPTION_NAMESPACE + "má-typ-hodnoty";
+    public static final String s_p_ma_stitek = CHANGE_DESCRIPTION_NAMESPACE + "má-štítek";
 
     /**
      * Other terms definition.

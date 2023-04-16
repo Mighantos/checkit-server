@@ -71,4 +71,18 @@ public class PublicationContextController extends BaseController {
     public URI submitProjectForReview(@RequestBody URI projectUri) {
         return publicationContextService.createOrUpdatePublicationContext(projectUri);
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/{publicationContextId}/approved")
+    public void approvePublicationContext(@PathVariable String publicationContextId,
+                                          @RequestBody String finalComment) {
+        publicationContextService.approvePublicationContext(publicationContextId, finalComment);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/{publicationContextId}/rejected")
+    public void rejectPublicationContext(@PathVariable String publicationContextId,
+                                         @RequestBody String finalComment) {
+        publicationContextService.rejectPublicationContext(publicationContextId, finalComment);
+    }
 }

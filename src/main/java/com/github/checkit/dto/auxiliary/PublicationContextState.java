@@ -2,7 +2,8 @@ package com.github.checkit.dto.auxiliary;
 
 public enum PublicationContextState {
     CREATED,
-    APPROVED,
+    WAITING_FOR_OTHERS,
+    APPROVABLE,
     REJECTED,
-    WAITING_FOR_OTHERS
+    APPROVED
 }

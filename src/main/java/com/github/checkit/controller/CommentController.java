@@ -25,7 +25,7 @@ public class CommentController extends BaseController {
         this.commentService = commentService;
     }
 
-    @GetMapping("/related-to-change")
+    @GetMapping("/discussion-on-change")
     public List<CommentDto> getAllRelatedToChange(@RequestParam URI changeUri) {
         return commentService.getAllRelatedToChange(changeUri);
     }

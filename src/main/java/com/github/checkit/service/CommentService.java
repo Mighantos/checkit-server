@@ -5,8 +5,11 @@ import com.github.checkit.dao.CommentDao;
 import com.github.checkit.dto.CommentDto;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.Comment;
+import com.github.checkit.model.PublicationContext;
+import com.github.checkit.model.auxilary.CommentTag;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,9 +50,14 @@ public class CommentService extends BaseRepositoryService<Comment> {
     public void createComment(URI changeUri, String content) {
         Change change = changeService.getRequiredReference(changeUri);
         Comment comment = new Comment();
+        comment.setTag(CommentTag.DISCUSSION);
         comment.setAuthor(userService.getCurrent());
         comment.setContent(content);
         comment.setTopic(change);
         persist(comment);
+    }
+
+    public Optional<Comment> findFinalComment(PublicationContext pc) {
+        return commentDao.findFinalComment(pc.getUri());
     }
 }

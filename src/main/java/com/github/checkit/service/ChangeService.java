@@ -4,10 +4,10 @@ import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
-import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
+import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.service.auxiliary.ChangeResolver;
 import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
@@ -186,7 +186,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
     private void checkUserCanReviewChange(URI userUri, URI changeUri) {
         checkExists(changeUri);
         if (!changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
-            throw ForbiddenException.createForbiddenToReview(userUri, changeUri);
+            throw ForbiddenException.createForbiddenToReviewChange(userUri, changeUri);
         }
     }
 
@@ -198,5 +198,9 @@ public class ChangeService extends BaseRepositoryService<Change> {
         if (!exists(changeUri)) {
             throw NotFoundException.create(Change.class, changeUri);
         }
+    }
+
+    public List<Change> findAllInPublicationContextRelevantToUser(URI publicationContextUri, URI userUri) {
+        return changeDao.findAllInPublicationContextRelevantToUser(publicationContextUri, userUri);
     }
 }
