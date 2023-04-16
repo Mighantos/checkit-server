@@ -4,6 +4,7 @@ import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.PublicationContextDao;
 import com.github.checkit.dto.ChangeDto;
+import com.github.checkit.dto.CommentDto;
 import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
@@ -89,7 +90,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         allPublicationContexts.removeAll(publicationContextDao.findAllThatAffectVocabulariesGestoredBy(userUri));
         return allPublicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, null);
-            return new PublicationContextDto(pc, state);
+            CommentDto finalComment = null;
+            Optional<Comment> comment = commentService.findFinalComment(pc);
+            if (comment.isPresent()) {
+                finalComment = new CommentDto(comment.get());
+            }
+            return new PublicationContextDto(pc, state, finalComment);
         }).toList();
     }
 
@@ -105,7 +111,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContextDao.findAllThatAffectVocabulariesGestoredBy(current.getUri());
         return publicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, current);
-            return new PublicationContextDto(pc, state);
+            CommentDto finalComment = null;
+            Optional<Comment> comment = commentService.findFinalComment(pc);
+            if (comment.isPresent()) {
+                finalComment = new CommentDto(comment.get());
+            }
+            return new PublicationContextDto(pc, state, finalComment);
         }).toList();
     }
 
@@ -126,7 +137,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> new ReviewableVocabularyDto(vocabulary, vocabulary.getGestors().contains(current)))
                 .toList();
-        return new PublicationContextDetailDto(pc, state, affectedVocabularies);
+        CommentDto finalComment = null;
+        Optional<Comment> comment = commentService.findFinalComment(pc);
+        if (comment.isPresent()) {
+            finalComment = new CommentDto(comment.get());
+        }
+        return new PublicationContextDetailDto(pc, state, finalComment, affectedVocabularies);
     }
 
     /**
