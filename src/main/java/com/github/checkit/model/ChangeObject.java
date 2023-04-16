@@ -1,5 +1,6 @@
 package com.github.checkit.model;
 
+import com.github.checkit.model.auxilary.AbstractEntity;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;

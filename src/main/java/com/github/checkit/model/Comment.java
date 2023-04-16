@@ -1,5 +1,6 @@
 package com.github.checkit.model;
 
+import com.github.checkit.model.auxilary.AbstractEntity;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -28,9 +29,13 @@ public class Comment extends AbstractEntity implements Comparable<Comment> {
     @OWLObjectProperty(iri = TermVocabulary.s_p_has_creator)
     private User author;
 
+    @NotBlank
+    @ParticipationConstraints(nonEmpty = true)
     @OWLDataProperty(iri = TermVocabulary.s_p_ma_datum_a_cas_vytvoreni)
     private Instant created;
 
+    @NotBlank
+    @ParticipationConstraints(nonEmpty = true)
     @OWLDataProperty(iri = TermVocabulary.s_p_ma_datum_a_cas_posledni_modifikace)
     private Instant modified;
 

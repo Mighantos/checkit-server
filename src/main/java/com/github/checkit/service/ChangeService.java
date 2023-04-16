@@ -4,7 +4,7 @@ import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
-import com.github.checkit.model.AbstractChangeableContext;
+import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;

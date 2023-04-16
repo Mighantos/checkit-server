@@ -4,7 +4,7 @@ import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.exception.NotFoundException;
-import com.github.checkit.model.HasIdentifier;
+import com.github.checkit.model.auxilary.HasIdentifier;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;

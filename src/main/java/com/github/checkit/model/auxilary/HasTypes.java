@@ -1,4 +1,4 @@
-package com.github.checkit.model;
+package com.github.checkit.model.auxilary;
 
 import java.util.HashSet;
 import java.util.Objects;
