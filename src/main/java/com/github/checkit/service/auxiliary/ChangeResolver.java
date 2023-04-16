@@ -5,9 +5,9 @@ import com.github.checkit.exception.UnexpectedRdfObjectException;
 import com.github.checkit.exception.WrongChangeTypeException;
 import com.github.checkit.model.AbstractChangeableContext;
 import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeObject;
 import com.github.checkit.model.ChangeSubjectType;
 import com.github.checkit.model.ChangeType;
-import com.github.checkit.model.ObjectResource;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
@@ -257,9 +257,9 @@ public class ChangeResolver {
         return change;
     }
 
-    private ObjectResource resolveObject(RDFNode object) {
+    private ChangeObject resolveObject(RDFNode object) {
         if (object.isURIResource()) {
-            return new ObjectResource(object.asResource().getURI(), null, null);
+            return new ChangeObject(object.asResource().getURI(), null, null);
         }
         if (object.isLiteral()) {
             Literal literal = object.asLiteral();
@@ -271,10 +271,10 @@ public class ChangeResolver {
             if (!literal.getLanguage().isEmpty()) {
                 language = literal.getLanguage();
             }
-            return new ObjectResource(literal.getString(), type, language);
+            return new ChangeObject(literal.getString(), type, language);
         }
         if (object.asNode().isBlank()) {
-            return new ObjectResource();
+            return new ChangeObject();
         }
         throw new UnexpectedRdfObjectException();
     }

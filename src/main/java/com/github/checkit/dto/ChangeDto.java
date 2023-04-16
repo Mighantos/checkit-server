@@ -23,9 +23,9 @@ public class ChangeDto implements Comparable<ChangeDto> {
     private final String label;
     private final URI subject;
     private final URI predicate;
-    private final ObjectResourceDto object;
+    private final ChangeObjectDto object;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final ObjectResourceDto newObject;
+    private final ChangeObjectDto newObject;
     private final ChangeState state;
 
     /**
@@ -39,9 +39,9 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.label = resolveLabel(change, languageTag, defaultLanguageTag);
         this.subject = change.getSubject();
         this.predicate = change.getPredicate();
-        this.object = new ObjectResourceDto(change.getObject());
+        this.object = new ChangeObjectDto(change.getObject());
         if (Objects.nonNull(change.getNewObject())) {
-            this.newObject = new ObjectResourceDto(change.getNewObject());
+            this.newObject = new ChangeObjectDto(change.getNewObject());
         } else {
             this.newObject = null;
         }
@@ -59,7 +59,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.label = changeDto.getLabel();
         this.subject = changeDto.getSubject();
         this.predicate = changeDto.getPredicate();
-        this.object = new ObjectResourceDto(restrictionDto);
+        this.object = new ChangeObjectDto(restrictionDto);
         this.newObject = null;
         this.state = changeState;
     }

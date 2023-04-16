@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.ProcessingException;
 import lombok.Getter;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -113,7 +112,7 @@ public class KeycloakApiUtil {
         try {
             api.users().searchByUsername(keycloakConfigProperties.getApiAdmin().getUsername(), true);
         } catch (Exception e) {
-            if (e instanceof ProcessingException || e instanceof NotAuthorizedException) {
+            if (e.getCause() instanceof NotAuthorizedException) {
                 throw new KeycloakConfigurationException(
                     "HTTP 401 Unauthorized. Could not connect to Keycloak API with user \"%s\" and given password.",
                     keycloakConfigProperties.getApiAdmin().getUsername());

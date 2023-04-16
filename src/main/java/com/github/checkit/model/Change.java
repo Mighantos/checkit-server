@@ -1,9 +1,8 @@
 package com.github.checkit.model;
 
-import com.github.checkit.model.convertor.ObjectResourceConvertor;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.MultilingualString;
-import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.EnumType;
 import cz.cvut.kbss.jopa.model.annotations.Enumerated;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -28,10 +27,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @OWLClass(iri = TermVocabulary.s_c_zmena)
 public class Change extends AbstractEntity {
-
-    public Change(AbstractChangeableContext context) {
-        this.context = context;
-    }
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
@@ -58,13 +53,11 @@ public class Change extends AbstractEntity {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
-    @Convert(converter = ObjectResourceConvertor.class)
-    @OWLDataProperty(iri = RDF.OBJECT, simpleLiteral = true)
-    private ObjectResource object;
+    @OWLObjectProperty(iri = RDF.OBJECT, cascade = CascadeType.ALL)
+    private ChangeObject object;
 
-    @Convert(converter = ObjectResourceConvertor.class)
-    @OWLAnnotationProperty(iri = TermVocabulary.s_p_ma_novy_objekt, simpleLiteral = true)
-    private ObjectResource newObject;
+    @OWLObjectProperty(iri = TermVocabulary.s_p_ma_novy_objekt, cascade = CascadeType.ALL)
+    private ChangeObject newObject;
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
@@ -76,6 +69,10 @@ public class Change extends AbstractEntity {
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_zamitnuto, fetch = FetchType.EAGER)
     private Set<User> rejectedBy;
+
+    public Change(AbstractChangeableContext context) {
+        this.context = context;
+    }
 
     public String getId() {
         return getUri().toString().substring(getUri().toString().lastIndexOf("/") + 1);

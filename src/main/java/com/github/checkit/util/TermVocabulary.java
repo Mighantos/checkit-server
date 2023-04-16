@@ -30,6 +30,7 @@ public final class TermVocabulary {
     public static final String s_c_upraveno = CHANGE_DESCRIPTION_NAMESPACE + "upraveno";
     public static final String s_c_odstraneno = CHANGE_DESCRIPTION_NAMESPACE + "odstraněno";
     public static final String s_c_vraceno_zpet = CHANGE_DESCRIPTION_NAMESPACE + "vráceno-zpět";
+    public static final String s_c_objekt_zmeny = CHANGE_DESCRIPTION_NAMESPACE + "objekt-změny";
     public static final String s_p_ma_gestora = CHANGE_DESCRIPTION_NAMESPACE + "má-gestora";
     public static final String s_p_je_gestorem = CHANGE_DESCRIPTION_NAMESPACE + "je-gestorem";
     public static final String s_p_ma_zadatele = CHANGE_DESCRIPTION_NAMESPACE + "má-žadatele";
@@ -44,6 +45,8 @@ public final class TermVocabulary {
     public static final String s_p_zamitnuto = CHANGE_DESCRIPTION_NAMESPACE + "zamítnuto";
     public static final String s_p_je_typu = CHANGE_DESCRIPTION_NAMESPACE + "je-typu";
     public static final String s_p_ma_popis_typu_subjektu = CHANGE_DESCRIPTION_NAMESPACE + "má-popis-typu-subjektu";
+    public static final String s_p_ma_hodnotu = CHANGE_DESCRIPTION_NAMESPACE + "má-hodnotu";
+    public static final String s_p_ma_typ_hodnoty = CHANGE_DESCRIPTION_NAMESPACE + "má-typ-hodnoty";
 
     /**
      * Other terms definition.

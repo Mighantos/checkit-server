@@ -2,15 +2,14 @@ package com.github.checkit.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.github.checkit.model.ObjectResource;
+import com.github.checkit.model.ChangeObject;
 import java.net.URI;
-import java.util.Objects;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 @ToString
-public class ObjectResourceDto {
+public class ChangeObjectDto {
 
     private final String value;
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -25,18 +24,18 @@ public class ObjectResourceDto {
     /**
      * Constructor.
      */
-    public ObjectResourceDto(ObjectResource objectResource) {
+    public ChangeObjectDto(ChangeObject objectResource) {
         this.value = objectResource.getValue();
         this.type = objectResource.getType();
         this.languageTag = objectResource.getLanguage();
         this.restriction = null;
-        this.blankNode = objectResource.getBlankNode();
+        this.blankNode = objectResource.isBlankNode();
     }
 
     /**
      * Constructor.
      */
-    public ObjectResourceDto(RestrictionDto restriction) {
+    public ChangeObjectDto(RestrictionDto restriction) {
         this.value = null;
         this.type = null;
         this.languageTag = null;
