@@ -35,4 +35,10 @@ public class CommentController extends BaseController {
     public void createComment(@RequestParam URI changeUri, @RequestBody String content) {
         commentService.createComment(changeUri, content);
     }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/rejection-on-change")
+    public void createRejectionComment(@RequestParam URI changeUri, @RequestBody String content) {
+        commentService.createRejectionComment(changeUri, content);
+    }
 }
