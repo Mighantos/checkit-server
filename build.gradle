@@ -44,10 +44,10 @@ repositories {
 }
 
 ext {
-    jopaVersion = '0.21.0'
+    jopaVersion = '0.21.1'
     jopaSpringTransactionVersion = '0.1.5'
-    springVersion = '3.0.4'
-    keycloakVersion = '21.0.1'
+    springVersion = '3.0.5'
+    keycloakVersion = '21.0.2'
     jenaVersion = '4.7.0'
 }
 
