@@ -1,5 +1,6 @@
 package com.github.checkit.service;
 
+import com.github.checkit.config.properties.ApplicationConfigProperties;
 import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.PublicationContextDao;
@@ -11,11 +12,11 @@ import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
 import com.github.checkit.dto.auxiliary.PublicationContextState;
 import com.github.checkit.exception.AlreadyExistsException;
-import com.github.checkit.exception.FinalCommentTooShortException;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NoChangeException;
 import com.github.checkit.exception.NotApprovableException;
 import com.github.checkit.exception.NotFoundException;
+import com.github.checkit.exception.RejectionCommentTooShortException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.Comment;
@@ -54,6 +55,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final CommentService commentService;
     private final String defaultLanguageTag;
     private final int minimalRejectionCommentLength;
+    private final int pageSize;
 
     /**
      * Construct.
@@ -62,7 +64,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                                      ProjectContextService projectContextService, ChangeService changeService,
                                      VocabularyService vocabularyService, UserService userService,
                                      CommentService commentService,
-                                     RepositoryConfigProperties repositoryConfigProperties) {
+                                     RepositoryConfigProperties repositoryConfigProperties,
+                                     ApplicationConfigProperties applicationConfigProperties) {
         this.publicationContextDao = publicationContextDao;
         this.projectContextService = projectContextService;
         this.changeService = changeService;
@@ -70,7 +73,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         this.userService = userService;
         this.commentService = commentService;
         this.defaultLanguageTag = repositoryConfigProperties.getLanguage();
-        this.minimalRejectionCommentLength = repositoryConfigProperties.getComment().getRejectionMinimalLength();
+        this.minimalRejectionCommentLength =
+            applicationConfigProperties.getComment().getRejectionMinimalContentLength();
+        this.pageSize = applicationConfigProperties.getPublicationContext().getPageSize();
     }
 
     @Override
@@ -79,16 +84,17 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     /**
-     * Get publication contexts that current user can't review.
+     * Gets open publication contexts that current user can't review.
      *
      * @return list of publication contexts
      */
     @Transactional
     public List<PublicationContextDto> getReadonlyPublicationContexts() {
-        List<PublicationContext> allPublicationContexts = findAll();
+        List<PublicationContext> allOpenPublicationContexts = publicationContextDao.findAllOpen();
         URI userUri = userService.getCurrent().getUri();
-        allPublicationContexts.removeAll(publicationContextDao.findAllThatAffectVocabulariesGestoredBy(userUri));
-        return allPublicationContexts.stream().map(pc -> {
+        allOpenPublicationContexts.removeAll(
+            publicationContextDao.findAllOpenThatAffectVocabulariesGestoredBy(userUri));
+        return allOpenPublicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, null);
             CommentDto finalComment = null;
             Optional<Comment> comment = commentService.findFinalComment(pc);
@@ -100,7 +106,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     /**
-     * Gets list of publication contexts relevant to current user.
+     * Gets list of open publication contexts reviewable by current user.
      *
      * @return list of publication contexts
      */
@@ -108,11 +114,36 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     public List<PublicationContextDto> getReviewablePublicationContexts() {
         User current = userService.getCurrent();
         List<PublicationContext> publicationContexts =
-            publicationContextDao.findAllThatAffectVocabulariesGestoredBy(current.getUri());
+            publicationContextDao.findAllOpenThatAffectVocabulariesGestoredBy(current.getUri());
         return publicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, current);
             return new PublicationContextDto(pc, state, resolveFinalComment(pc));
         }).toList();
+    }
+
+    /**
+     * Gets list of closed publication contexts.
+     *
+     * @param pageNumber page number
+     * @return list of publication contexts
+     */
+    @Transactional
+    public List<PublicationContextDto> getClosedPublicationContexts(int pageNumber) {
+        return publicationContextDao.findAllClosed(pageNumber, pageSize).stream().map(pc -> {
+            CommentDto finalComment = null;
+            Optional<Comment> comment = commentService.findFinalComment(pc);
+            if (comment.isPresent()) {
+                finalComment = new CommentDto(comment.get());
+            }
+            return new PublicationContextDto(pc, getState(pc, null), finalComment);
+        }).toList();
+    }
+
+    /**
+     * Returns how many mages are available to show of closed publication contexts.
+     */
+    public int getPageCountOfClosedPublicationContexts() {
+        return (int) Math.ceil((double) publicationContextDao.countAllClosed() / pageSize);
     }
 
     /**
@@ -194,6 +225,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         URI publicationContextUri;
         if (publicationContextExists) {
             publicationContextUri = update(publicationContext).getUri();
+            commentService.removeFinalComment(publicationContext);
             logger.info("Changes in publication context \"{}\" were updated from project \"{}\".",
                 publicationContextUri, projectUri);
         } else {
@@ -238,7 +270,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     @Transactional
     public void rejectPublicationContext(String publicationContextId, String finalComment) {
         if (finalComment.length() < minimalRejectionCommentLength) {
-            throw FinalCommentTooShortException.create(minimalRejectionCommentLength);
+            throw RejectionCommentTooShortException.create(minimalRejectionCommentLength);
         }
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
