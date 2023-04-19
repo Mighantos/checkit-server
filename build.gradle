@@ -16,7 +16,7 @@ plugins {
 }
 
 group = 'com.github'
-version = "0.3.6"
+version = "0.3.7"
 
 compileJava {
     sourceCompatibility = '17'
