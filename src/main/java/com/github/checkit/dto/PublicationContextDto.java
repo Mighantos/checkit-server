@@ -16,6 +16,8 @@ public class PublicationContextDto {
     private final PublicationContextState state;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final CommentDto finalComment;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private PublicationContextStatisticsDto statistics;
 
     /**
      * Constructor.
@@ -28,5 +30,15 @@ public class PublicationContextDto {
         this.projectContext = publicationContext.getFromProject().getUri();
         this.state = state;
         this.finalComment = finalComment;
+    }
+
+    /**
+     * Constructor.
+     */
+    public PublicationContextDto(PublicationContext publicationContext, PublicationContextState state,
+                                 CommentDto finalComment,
+                                 PublicationContextStatisticsDto statistics) {
+        this(publicationContext, state, finalComment);
+        this.statistics = statistics;
     }
 }

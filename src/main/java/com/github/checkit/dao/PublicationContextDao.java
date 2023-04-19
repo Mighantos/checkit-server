@@ -290,4 +290,138 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
             throw new PersistenceException(e);
         }
     }
+
+    /**
+     * Counts changes in specified publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @return number of changes
+     */
+    public Integer countChanges(URI publicationContextUri) {
+        Objects.requireNonNull(publicationContextUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Counts changes reviewable by specified user in specified publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param userUri               URI identifier of user
+     * @return number of changes
+     */
+    public Integer countReviewableChanges(URI publicationContextUri, URI userUri) {
+
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "?voc ?gestoredBy ?user . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
+                .setParameter("user", userUri)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Counts approved changes in specified publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @return number of changes
+     */
+    public Integer countApprovedChanges(URI publicationContextUri) {
+        Objects.requireNonNull(publicationContextUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?approvedBy ?user . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("approvedBy", URI.create(TermVocabulary.s_p_schvaleno))
+                .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Counts changes approved by specified user in specified publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param userUri               URI identifier of user
+     * @return number of changes
+     */
+    public Integer countApprovedChanges(URI publicationContextUri, URI userUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(userUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?approvedBy ?user . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("approvedBy", URI.create(TermVocabulary.s_p_schvaleno))
+                .setParameter("user", userUri)
+                .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Counts changes rejected by specified user in specified publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param userUri               URI identifier of user
+     * @return number of changes
+     */
+    public Integer countRejectedChanges(URI publicationContextUri, URI userUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(userUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?rejectedBy ?user . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("rejectedBy", URI.create(TermVocabulary.s_p_zamitnuto))
+                .setParameter("user", userUri)
+                .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
 }

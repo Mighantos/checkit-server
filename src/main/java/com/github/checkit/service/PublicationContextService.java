@@ -9,6 +9,7 @@ import com.github.checkit.dto.CommentDto;
 import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
+import com.github.checkit.dto.PublicationContextStatisticsDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
 import com.github.checkit.dto.auxiliary.PublicationContextState;
 import com.github.checkit.exception.AlreadyExistsException;
@@ -96,12 +97,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContextDao.findAllOpenThatAffectVocabulariesGestoredBy(userUri));
         return allOpenPublicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, null);
-            CommentDto finalComment = null;
-            Optional<Comment> comment = commentService.findFinalComment(pc);
-            if (comment.isPresent()) {
-                finalComment = new CommentDto(comment.get());
-            }
-            return new PublicationContextDto(pc, state, finalComment);
+            return new PublicationContextDto(pc, state, resolveFinalComment(pc));
         }).toList();
     }
 
@@ -117,7 +113,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContextDao.findAllOpenThatAffectVocabulariesGestoredBy(current.getUri());
         return publicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, current);
-            return new PublicationContextDto(pc, state, resolveFinalComment(pc));
+            return new PublicationContextDto(pc, state, resolveFinalComment(pc), getStatistics(pc, current));
         }).toList();
     }
 
@@ -341,6 +337,15 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         return URI.create(TermVocabulary.s_c_publikacni_kontext + "/" + id);
     }
 
+    private PublicationContextStatisticsDto getStatistics(PublicationContext pc, User user) {
+        int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
+        int reviewableChangesCount = publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
+        int approvedChangesCount = publicationContextDao.countApprovedChanges(pc.getUri(), user.getUri());
+        int rejectedChangesCount = publicationContextDao.countRejectedChanges(pc.getUri(), user.getUri());
+        return new PublicationContextStatisticsDto(totalChangesCount, reviewableChangesCount, approvedChangesCount,
+            rejectedChangesCount);
+    }
+
     private PublicationContextState getState(PublicationContext pc, User current) {
         Optional<Comment> optComment = commentService.findFinalComment(pc);
         if (optComment.isPresent()) {
@@ -361,21 +366,25 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private boolean userApprovedEverythingPossibleButNotAll(PublicationContext pc, User user) {
-        List<Change> allInPublicationContextRelevantToUser =
-            changeService.findAllInPublicationContextRelevantToUser(pc.getUri(), user.getUri());
-        if (allInPublicationContextRelevantToUser.size() == pc.getChanges().size()) {
+        int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
+        int countReviewableChanges = publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
+        if (countReviewableChanges == totalChangesCount) {
             return false;
         }
-        return allInPublicationContextRelevantToUser.stream().allMatch(change -> change.getApprovedBy().contains(user));
+        int countApprovedChanges = publicationContextDao.countApprovedChanges(pc.getUri(), user.getUri());
+        return countReviewableChanges == countApprovedChanges;
     }
 
     private boolean isApprovable(PublicationContext pc, User user) {
-        boolean userReviewedAtLeastOneWholeContext = false;
         Map<AbstractChangeableContext, List<Change>> contextChangesMap = new HashMap<>();
+        int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
+        int totalApprovedChangesCount = publicationContextDao.countApprovedChanges(pc.getUri());
+        if (totalChangesCount != totalApprovedChangesCount) {
+            return false;
+        }
+        //check that every vocabulary was reviewed in whole by someone
+        boolean userReviewedAtLeastOneWholeContext = false;
         for (Change change : pc.getChanges()) {
-            if (change.notApproved()) {
-                return false;
-            }
             AbstractChangeableContext context = change.getContext();
             if (!contextChangesMap.containsKey(context)) {
                 contextChangesMap.put(context, new ArrayList<>());
