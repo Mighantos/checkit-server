@@ -9,7 +9,9 @@ import com.github.checkit.dto.CommentDto;
 import com.github.checkit.dto.ContextChangesDto;
 import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
+import com.github.checkit.dto.PublicationContextStatisticsDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
+import com.github.checkit.dto.VocabularyStatisticsDto;
 import com.github.checkit.dto.auxiliary.PublicationContextState;
 import com.github.checkit.exception.AlreadyExistsException;
 import com.github.checkit.exception.ForbiddenException;
@@ -23,6 +25,7 @@ import com.github.checkit.model.Comment;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
+import com.github.checkit.model.Vocabulary;
 import com.github.checkit.model.VocabularyContext;
 import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.auxilary.CommentTag;
@@ -96,12 +99,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContextDao.findAllOpenThatAffectVocabulariesGestoredBy(userUri));
         return allOpenPublicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, null);
-            CommentDto finalComment = null;
-            Optional<Comment> comment = commentService.findFinalComment(pc);
-            if (comment.isPresent()) {
-                finalComment = new CommentDto(comment.get());
-            }
-            return new PublicationContextDto(pc, state, finalComment);
+            return new PublicationContextDto(pc, state, resolveFinalComment(pc));
         }).toList();
     }
 
@@ -117,7 +115,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContextDao.findAllOpenThatAffectVocabulariesGestoredBy(current.getUri());
         return publicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, current);
-            return new PublicationContextDto(pc, state, resolveFinalComment(pc));
+            return new PublicationContextDto(pc, state, resolveFinalComment(pc), getStatistics(pc, current));
         }).toList();
     }
 
@@ -159,11 +157,19 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext pc = findRequired(publicationContextUri);
         PublicationContextState state = getState(pc, current);
+        PublicationContextStatisticsDto statistics = null;
         List<ReviewableVocabularyDto> affectedVocabularies =
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
-                .map(vocabulary -> new ReviewableVocabularyDto(vocabulary, vocabulary.getGestors().contains(current)))
-                .toList();
-        return new PublicationContextDetailDto(pc, state, resolveFinalComment(pc), affectedVocabularies);
+                .map(vocabulary -> {
+                    boolean gestored = vocabulary.getGestors().contains(current);
+                    VocabularyStatisticsDto vocStatistics =
+                        gestored ? getVocabularyChanges(pc, vocabulary, current) : null;
+                    return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics);
+                }).toList();
+        if (affectedVocabularies.stream().anyMatch(ReviewableVocabularyDto::isGestored)) {
+            statistics = getStatistics(pc, current);
+        }
+        return new PublicationContextDetailDto(pc, state, resolveFinalComment(pc), statistics, affectedVocabularies);
     }
 
     /**
@@ -180,7 +186,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
         boolean isAllowedToReview =
-            publicationContextDao.doesUserHavePermissionToReviewVocabulary(current.getUri(), publicationContextUri,
+            publicationContextDao.isUserHavePermittedToReviewVocabulary(current.getUri(), publicationContextUri,
                 vocabularyUri);
 
         PublicationContext pc = findRequired(publicationContextUri);
@@ -341,6 +347,24 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         return URI.create(TermVocabulary.s_c_publikacni_kontext + "/" + id);
     }
 
+    private PublicationContextStatisticsDto getStatistics(PublicationContext pc, User user) {
+        int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
+        int reviewableChangesCount = publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
+        int approvedChangesCount = publicationContextDao.countApprovedChanges(pc.getUri(), user.getUri());
+        int rejectedChangesCount = publicationContextDao.countRejectedChanges(pc.getUri(), user.getUri());
+        return new PublicationContextStatisticsDto(totalChangesCount, reviewableChangesCount, approvedChangesCount,
+            rejectedChangesCount);
+    }
+
+    private VocabularyStatisticsDto getVocabularyChanges(PublicationContext pc, Vocabulary vocabulary, User current) {
+        int totalChanges = publicationContextDao.countChangesInVocabulary(pc.getUri(), vocabulary.getUri());
+        int totalApprovedChanges =
+            publicationContextDao.countApprovedChangesInVocabulary(pc.getUri(), current.getUri(), vocabulary.getUri());
+        int totalRejectedChanges =
+            publicationContextDao.countRejectedChangesInVocabulary(pc.getUri(), current.getUri(), vocabulary.getUri());
+        return new VocabularyStatisticsDto(totalChanges, totalApprovedChanges, totalRejectedChanges);
+    }
+
     private PublicationContextState getState(PublicationContext pc, User current) {
         Optional<Comment> optComment = commentService.findFinalComment(pc);
         if (optComment.isPresent()) {
@@ -361,21 +385,25 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private boolean userApprovedEverythingPossibleButNotAll(PublicationContext pc, User user) {
-        List<Change> allInPublicationContextRelevantToUser =
-            changeService.findAllInPublicationContextRelevantToUser(pc.getUri(), user.getUri());
-        if (allInPublicationContextRelevantToUser.size() == pc.getChanges().size()) {
+        int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
+        int countReviewableChanges = publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
+        if (countReviewableChanges == totalChangesCount) {
             return false;
         }
-        return allInPublicationContextRelevantToUser.stream().allMatch(change -> change.getApprovedBy().contains(user));
+        int countApprovedChanges = publicationContextDao.countApprovedChanges(pc.getUri(), user.getUri());
+        return countReviewableChanges == countApprovedChanges;
     }
 
     private boolean isApprovable(PublicationContext pc, User user) {
-        boolean userReviewedAtLeastOneWholeContext = false;
         Map<AbstractChangeableContext, List<Change>> contextChangesMap = new HashMap<>();
+        int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
+        int totalApprovedChangesCount = publicationContextDao.countApprovedChanges(pc.getUri());
+        if (totalChangesCount != totalApprovedChangesCount) {
+            return false;
+        }
+        //check that every vocabulary was reviewed in whole by someone
+        boolean userReviewedAtLeastOneWholeContext = false;
         for (Change change : pc.getChanges()) {
-            if (change.notApproved()) {
-                return false;
-            }
             AbstractChangeableContext context = change.getContext();
             if (!contextChangesMap.containsKey(context)) {
                 contextChangesMap.put(context, new ArrayList<>());
