@@ -40,7 +40,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
     @Transactional
     public List<CommentDto> getAllRelatedToChange(URI changeUri) {
         changeService.getRequiredReference(changeUri);
-        return commentDao.findAllRelatedToChange(changeUri).stream().sorted().map(CommentDto::new).toList();
+        return commentDao.findAllRelatedToChange(changeUri).stream().map(CommentDto::new).toList();
     }
 
     /**
@@ -100,5 +100,9 @@ public class CommentService extends BaseRepositoryService<Comment> {
 
     public void removeAllFinalComments(Change change) {
         findAllFinalComments(change).forEach(this::remove);
+    }
+
+    public void removeFinalComment(PublicationContext publicationContext) {
+        findFinalComment(publicationContext).ifPresent(this::remove);
     }
 }
