@@ -186,7 +186,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
         boolean isAllowedToReview =
-            publicationContextDao.doesUserHavePermissionToReviewVocabulary(current.getUri(), publicationContextUri,
+            publicationContextDao.isUserHavePermittedToReviewVocabulary(current.getUri(), publicationContextUri,
                 vocabularyUri);
 
         PublicationContext pc = findRequired(publicationContextUri);

@@ -247,7 +247,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @param vocabularyUri         URI identifier of vocabulary
      * @return true or false
      */
-    public boolean doesUserHavePermissionToReviewVocabulary(URI userUri, URI publicationContextUri, URI vocabularyUri) {
+    public boolean isUserHavePermittedToReviewVocabulary(URI userUri, URI publicationContextUri, URI vocabularyUri) {
         try {
             return em.createNativeQuery("ASK { "
                     + "?pc a ?type ; "
@@ -407,24 +407,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @return number of changes
      */
     public Integer countApprovedChanges(URI publicationContextUri, URI userUri) {
-        Objects.requireNonNull(publicationContextUri);
-        Objects.requireNonNull(userUri);
-        try {
-            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
-                    + "?pc a ?type ; "
-                    + "    ?hasChange ?change . "
-                    + "?change ?approvedBy ?user . "
-                    + "}", Integer.class)
-                .setParameter("type", typeUri)
-                .setParameter("pc", publicationContextUri)
-                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
-                .setParameter("approvedBy", URI.create(TermVocabulary.s_p_schvaleno))
-                .setParameter("user", userUri)
-                .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
-                .getSingleResult();
-        } catch (RuntimeException e) {
-            throw new PersistenceException(e);
-        }
+        return countReviewedChanges(publicationContextUri, userUri, URI.create(TermVocabulary.s_p_schvaleno));
     }
 
     /**
@@ -436,29 +419,8 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @return number of changes
      */
     public Integer countApprovedChangesInVocabulary(URI publicationContextUri, URI userUri, URI vocabularyUri) {
-        Objects.requireNonNull(publicationContextUri);
-        Objects.requireNonNull(userUri);
-        Objects.requireNonNull(vocabularyUri);
-        try {
-            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
-                    + "?pc a ?type ; "
-                    + "    ?hasChange ?change . "
-                    + "?change ?approvedBy ?user ; "
-                    + "        ?inContext ?ctx . "
-                    + "?ctx ?basedOn ?voc . "
-                    + "}", Integer.class)
-                .setParameter("type", typeUri)
-                .setParameter("pc", publicationContextUri)
-                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
-                .setParameter("approvedBy", URI.create(TermVocabulary.s_p_schvaleno))
-                .setParameter("user", userUri)
-                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
-                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
-                .setParameter("voc", vocabularyUri)
-                .getSingleResult();
-        } catch (RuntimeException e) {
-            throw new PersistenceException(e);
-        }
+        return countReviewedChangesInVocabulary(publicationContextUri, userUri, vocabularyUri,
+            URI.create(TermVocabulary.s_p_schvaleno));
     }
 
     /**
@@ -469,24 +431,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @return number of changes
      */
     public Integer countRejectedChanges(URI publicationContextUri, URI userUri) {
-        Objects.requireNonNull(publicationContextUri);
-        Objects.requireNonNull(userUri);
-        try {
-            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
-                    + "?pc a ?type ; "
-                    + "    ?hasChange ?change . "
-                    + "?change ?rejectedBy ?user . "
-                    + "}", Integer.class)
-                .setParameter("type", typeUri)
-                .setParameter("pc", publicationContextUri)
-                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
-                .setParameter("rejectedBy", URI.create(TermVocabulary.s_p_zamitnuto))
-                .setParameter("user", userUri)
-                .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
-                .getSingleResult();
-        } catch (RuntimeException e) {
-            throw new PersistenceException(e);
-        }
+        return countReviewedChanges(publicationContextUri, userUri, URI.create(TermVocabulary.s_p_zamitnuto));
     }
 
     /**
@@ -498,21 +443,50 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @return number of changes
      */
     public Integer countRejectedChangesInVocabulary(URI publicationContextUri, URI userUri, URI vocabularyUri) {
+        return countReviewedChangesInVocabulary(publicationContextUri, userUri, vocabularyUri,
+            URI.create(TermVocabulary.s_p_zamitnuto));
+    }
+
+    private Integer countReviewedChanges(URI publicationContextUri, URI userUri, URI reviewRelationUri) {
         Objects.requireNonNull(publicationContextUri);
         Objects.requireNonNull(userUri);
-        Objects.requireNonNull(vocabularyUri);
+        Objects.requireNonNull(reviewRelationUri);
         try {
             return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
-                    + "?change ?rejectedBy ?user ; "
+                    + "?change ?reviewedBy ?user . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("reviewedBy", reviewRelationUri)
+                .setParameter("user", userUri)
+                .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    private Integer countReviewedChangesInVocabulary(URI publicationContextUri, URI userUri, URI vocabularyUri,
+                                                     URI reviewRelationUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(userUri);
+        Objects.requireNonNull(vocabularyUri);
+        Objects.requireNonNull(reviewRelationUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?reviewedBy ?user ; "
                     + "        ?inContext ?ctx . "
                     + "?ctx ?basedOn ?voc . "
                     + "}", Integer.class)
                 .setParameter("type", typeUri)
                 .setParameter("pc", publicationContextUri)
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
-                .setParameter("rejectedBy", URI.create(TermVocabulary.s_p_zamitnuto))
+                .setParameter("reviewedBy", reviewRelationUri)
                 .setParameter("user", userUri)
                 .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
