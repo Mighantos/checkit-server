@@ -1,10 +1,12 @@
 package com.github.checkit.service;
 
+import com.github.checkit.config.properties.ApplicationConfigProperties;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.CommentDao;
 import com.github.checkit.dto.CommentDto;
 import com.github.checkit.exception.AlreadyExistsException;
 import com.github.checkit.exception.ChangeNotRejectedException;
+import com.github.checkit.exception.RejectionCommentTooShortException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.Comment;
 import com.github.checkit.model.PublicationContext;
@@ -22,14 +24,19 @@ public class CommentService extends BaseRepositoryService<Comment> {
     private final CommentDao commentDao;
     private final UserService userService;
     private final ChangeService changeService;
+    private final int minimalRejectionCommentLength;
 
     /**
      * Constructor.
      */
-    public CommentService(CommentDao commentDao, UserService userService, ChangeService changeService) {
+    public CommentService(CommentDao commentDao, UserService userService, ChangeService changeService,
+                          ApplicationConfigProperties applicationConfigProperties) {
         this.commentDao = commentDao;
         this.userService = userService;
         this.changeService = changeService;
+        this.minimalRejectionCommentLength =
+            applicationConfigProperties.getComment().getRejectionMinimalContentLength();
+
     }
 
     @Override
@@ -40,7 +47,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
     @Transactional
     public List<CommentDto> getAllRelatedToChange(URI changeUri) {
         changeService.getRequiredReference(changeUri);
-        return commentDao.findAllRelatedToChange(changeUri).stream().sorted().map(CommentDto::new).toList();
+        return commentDao.findAllRelatedToChange(changeUri).stream().map(CommentDto::new).toList();
     }
 
     /**
@@ -78,6 +85,9 @@ public class CommentService extends BaseRepositoryService<Comment> {
             throw new AlreadyExistsException("Final comment of user \"%s\" on change \"%s\" already exists.",
                 current.getUri(), change.getUri());
         }
+        if (content.length() < minimalRejectionCommentLength) {
+            throw RejectionCommentTooShortException.create(minimalRejectionCommentLength);
+        }
         Comment comment = new Comment();
         comment.setTag(CommentTag.REJECTION);
         comment.setAuthor(current);
@@ -100,5 +110,9 @@ public class CommentService extends BaseRepositoryService<Comment> {
 
     public void removeAllFinalComments(Change change) {
         findAllFinalComments(change).forEach(this::remove);
+    }
+
+    public void removeFinalComment(PublicationContext publicationContext) {
+        findFinalComment(publicationContext).ifPresent(this::remove);
     }
 }

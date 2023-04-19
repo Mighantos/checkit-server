@@ -38,12 +38,14 @@ public class CommentDao extends BaseDao<Comment> {
             return em.createNativeQuery("SELECT ?comment WHERE { "
                     + "?comment a ?type ; "
                     + "         ?topic ?change ; "
+                    + "         ?created ?time ; "
                     + "         ?hasTag ?tag . "
                     + "FILTER(STR(?tag) = ?discussion) "
-                    + "}", type)
+                    + "} ORDER BY DESC(?time)", type)
                 .setParameter("type", typeUri)
                 .setParameter("topic", URI.create(TermVocabulary.s_p_topic))
                 .setParameter("change", changeUri)
+                .setParameter("created", URI.create(TermVocabulary.s_p_ma_datum_a_cas_vytvoreni))
                 .setParameter("hasTag", URI.create(TermVocabulary.s_p_ma_stitek))
                 .setParameter("discussion", CommentTag.DISCUSSION)
                 .getResultList();

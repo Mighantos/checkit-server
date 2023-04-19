@@ -3,6 +3,7 @@ package com.github.checkit.service.auxiliary;
 import com.github.checkit.dto.ChangeDto;
 import com.github.checkit.dto.RestrictionDto;
 import com.github.checkit.dto.auxiliary.ChangeState;
+import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.auxilary.ChangeSubjectType;
 import com.github.checkit.service.CommentService;
 import com.github.checkit.util.TermVocabulary;
@@ -21,7 +22,7 @@ public class ChangeDtoComposer {
     private final List<ChangeDto> changeDtos;
     @Getter
     private final List<ChangeDto> groupChangeDtosOfRestrictions = new ArrayList<>();
-    private final Map<URI, List<ChangeDto>> subjectsChangeDtosPointingAtBlankNodeMap = new HashMap<>();
+    private Map<URI, List<ChangeDto>> subjectsChangeDtosPointingAtBlankNodeMap;
     private List<ChangeDto> changeDtosInBlankNodes;
 
     public ChangeDtoComposer(List<ChangeDto> changeDtos) {
@@ -32,6 +33,8 @@ public class ChangeDtoComposer {
      * Composes change DTOs to contain restrictions and hides changes composed in restrictions.
      */
     public void compose() {
+        Map<URI, List<ChangeDto>> subjectsCreateChangeDtosPointingAtBlankNodeMap = new HashMap<>();
+        Map<URI, List<ChangeDto>> subjectsDeleteChangeDtosPointingAtBlankNodeMap = new HashMap<>();
         List<ChangeDto> changesPointingAtBlankNode = changeDtos.stream().filter(changeDto ->
                 !changeDto.getSubjectType().equals(ChangeSubjectType.BLANK_NODE) && changeDto.getObject().isBlankNode())
             .toList();
@@ -39,11 +42,21 @@ public class ChangeDtoComposer {
             changeDtos.stream().filter(change -> change.getSubjectType().equals(ChangeSubjectType.BLANK_NODE)).toList();
         for (ChangeDto changePointingAtBlankNode : changesPointingAtBlankNode) {
             URI subject = changePointingAtBlankNode.getSubject();
-            if (!subjectsChangeDtosPointingAtBlankNodeMap.containsKey(subject)) {
-                subjectsChangeDtosPointingAtBlankNodeMap.put(subject, new ArrayList<>());
+            if (changePointingAtBlankNode.getType().equals(ChangeType.CREATED)) {
+                if (!subjectsCreateChangeDtosPointingAtBlankNodeMap.containsKey(subject)) {
+                    subjectsCreateChangeDtosPointingAtBlankNodeMap.put(subject, new ArrayList<>());
+                }
+                subjectsCreateChangeDtosPointingAtBlankNodeMap.get(subject).add(changePointingAtBlankNode);
+            } else {
+                if (!subjectsDeleteChangeDtosPointingAtBlankNodeMap.containsKey(subject)) {
+                    subjectsDeleteChangeDtosPointingAtBlankNodeMap.put(subject, new ArrayList<>());
+                }
+                subjectsDeleteChangeDtosPointingAtBlankNodeMap.get(subject).add(changePointingAtBlankNode);
             }
-            subjectsChangeDtosPointingAtBlankNodeMap.get(subject).add(changePointingAtBlankNode);
         }
+        subjectsChangeDtosPointingAtBlankNodeMap = subjectsCreateChangeDtosPointingAtBlankNodeMap;
+        createGroupChangeDtosOfRestriction();
+        subjectsChangeDtosPointingAtBlankNodeMap = subjectsDeleteChangeDtosPointingAtBlankNodeMap;
         createGroupChangeDtosOfRestriction();
     }
 
@@ -67,6 +80,9 @@ public class ChangeDtoComposer {
         for (URI subject : subjectsChangeDtosPointingAtBlankNodeMap.keySet()) {
             List<ChangeDto> subjectChangeDtosPointingAtBlankNode =
                 subjectsChangeDtosPointingAtBlankNodeMap.get(subject);
+            if (subjectChangeDtosPointingAtBlankNode.isEmpty()) {
+                continue;
+            }
             RestrictionDto restrictionDto = createRestrictionFromChanges(subjectChangeDtosPointingAtBlankNode);
             if (Objects.isNull(restrictionDto)) {
                 continue;
@@ -81,65 +97,69 @@ public class ChangeDtoComposer {
     private RestrictionDto createRestrictionFromChanges(List<ChangeDto> subjectChangeDtosPointingAtBlankNode) {
         RestrictionDto restrictionDto = new RestrictionDto();
         List<ChangeDto> affectedChanges = new ArrayList<>();
-        for (ChangeDto topLevelChangeDto : subjectChangeDtosPointingAtBlankNode) {
-            affectedChanges.add(topLevelChangeDto);
-            List<ChangeDto> blankNodeChanges = changeDtosInBlankNodes.stream()
-                .filter(changeDto -> changeDto.getSubject().equals(topLevelChangeDto.getUri())).toList();
-            if (!isChangeOnRelation(blankNodeChanges) || !isRestriction(blankNodeChanges)) {
-                return null;
-            }
-            if (Objects.isNull(restrictionDto.getRelationUri())) {
-                restrictionDto.setRelationUri(topLevelChangeDto.getSubject());
-                restrictionDto.setRelationName(topLevelChangeDto.getLabel());
-            }
-            boolean start = isStart(blankNodeChanges);
-            for (ChangeDto blankNodeChange : blankNodeChanges) {
-                affectedChanges.add(blankNodeChange);
-                String predicate = blankNodeChange.getPredicate().toString();
-                if (predicate.equals(OWL.MINQUALIFIEDCARDINALITY.toString())) {
-                    int minCardinality = Integer.parseInt(blankNodeChange.getObject().getValue());
-                    if (start) {
-                        if (Objects.nonNull(restrictionDto.getCardinalityStart().getMin())) {
-                            continue;
+        try {
+            for (ChangeDto topLevelChangeDto : subjectChangeDtosPointingAtBlankNode) {
+                affectedChanges.add(topLevelChangeDto);
+                List<ChangeDto> blankNodeChanges = changeDtosInBlankNodes.stream()
+                    .filter(changeDto -> changeDto.getSubject().equals(topLevelChangeDto.getUri())).toList();
+                if (!isChangeOnRelation(blankNodeChanges) || !isRestriction(blankNodeChanges)) {
+                    return null;
+                }
+                if (Objects.isNull(restrictionDto.getRelationUri())) {
+                    restrictionDto.setRelationUri(topLevelChangeDto.getSubject());
+                    restrictionDto.setRelationName(topLevelChangeDto.getLabel());
+                }
+                boolean start = isStart(blankNodeChanges);
+                for (ChangeDto blankNodeChange : blankNodeChanges) {
+                    affectedChanges.add(blankNodeChange);
+                    String predicate = blankNodeChange.getPredicate().toString();
+                    if (predicate.equals(OWL.MINQUALIFIEDCARDINALITY.toString())) {
+                        int minCardinality = Integer.parseInt(blankNodeChange.getObject().getValue());
+                        if (start) {
+                            if (Objects.nonNull(restrictionDto.getCardinalityStart().getMin())) {
+                                continue;
+                            }
+                            restrictionDto.getCardinalityStart().setMin(minCardinality);
+                        } else {
+                            if (Objects.nonNull(restrictionDto.getCardinalityEnd().getMin())) {
+                                continue;
+                            }
+                            restrictionDto.getCardinalityEnd().setMin(minCardinality);
                         }
-                        restrictionDto.getCardinalityStart().setMin(minCardinality);
-                    } else {
-                        if (Objects.nonNull(restrictionDto.getCardinalityEnd().getMin())) {
-                            continue;
+                    } else if (predicate.equals(OWL.MAXQUALIFIEDCARDINALITY.toString())) {
+                        int maxCardinality = Integer.parseInt(blankNodeChange.getObject().getValue());
+                        if (start) {
+                            if (Objects.nonNull(restrictionDto.getCardinalityStart().getMax())) {
+                                continue;
+                            }
+                            restrictionDto.getCardinalityStart().setMax(maxCardinality);
+                        } else {
+                            if (Objects.nonNull(restrictionDto.getCardinalityEnd().getMax())) {
+                                continue;
+                            }
+                            restrictionDto.getCardinalityEnd().setMax(maxCardinality);
                         }
-                        restrictionDto.getCardinalityEnd().setMin(minCardinality);
+                    } else if (predicate.equals(OWL.ONCLASS.toString())) {
+                        URI onClass = URI.create(blankNodeChange.getObject().getValue());
+                        if (start) {
+                            if (Objects.nonNull(restrictionDto.getStartUri())) {
+                                continue;
+                            }
+                            restrictionDto.setStartUri(onClass);
+                            restrictionDto.setStartName(resolveLabelOfAffectedClass(onClass));
+                        } else {
+                            if (Objects.nonNull(restrictionDto.getEndUri())) {
+                                continue;
+                            }
+                            restrictionDto.setEndUri(onClass);
+                            restrictionDto.setEndName(resolveLabelOfAffectedClass(onClass));
+                        }
+                        affectedChanges.addAll(traverseAffectedClass(onClass, restrictionDto.getRelationUri()));
                     }
-                } else if (predicate.equals(OWL.MAXQUALIFIEDCARDINALITY.toString())) {
-                    int maxCardinality = Integer.parseInt(blankNodeChange.getObject().getValue());
-                    if (start) {
-                        if (Objects.nonNull(restrictionDto.getCardinalityStart().getMax())) {
-                            continue;
-                        }
-                        restrictionDto.getCardinalityStart().setMax(maxCardinality);
-                    } else {
-                        if (Objects.nonNull(restrictionDto.getCardinalityEnd().getMax())) {
-                            continue;
-                        }
-                        restrictionDto.getCardinalityEnd().setMax(maxCardinality);
-                    }
-                } else if (predicate.equals(OWL.ONCLASS.toString())) {
-                    URI onClass = URI.create(blankNodeChange.getObject().getValue());
-                    if (start) {
-                        if (Objects.nonNull(restrictionDto.getStartUri())) {
-                            continue;
-                        }
-                        restrictionDto.setStartUri(onClass);
-                        restrictionDto.setStartName(resolveLabelOfAffectedClass(onClass));
-                    } else {
-                        if (Objects.nonNull(restrictionDto.getEndUri())) {
-                            continue;
-                        }
-                        restrictionDto.setEndUri(onClass);
-                        restrictionDto.setEndName(resolveLabelOfAffectedClass(onClass));
-                    }
-                    affectedChanges.addAll(traverseAffectedClass(onClass, restrictionDto.getRelationUri()));
                 }
             }
+        } catch (Exception e) {
+            return null;
         }
         restrictionDto.setAffectedChanges(affectedChanges);
         return restrictionDto;
@@ -147,7 +167,8 @@ public class ChangeDtoComposer {
 
     private List<ChangeDto> traverseAffectedClass(URI onClass, URI relationUri) {
         assert !onClass.equals(relationUri);
-        List<ChangeDto> subjectChangeDtosPointingAtBlankNode = subjectsChangeDtosPointingAtBlankNodeMap.get(onClass);
+        List<ChangeDto> subjectChangeDtosPointingAtBlankNode =
+            subjectsChangeDtosPointingAtBlankNodeMap.get(onClass);
         List<ChangeDto> affectedChanges = new ArrayList<>();
         List<ChangeDto> affectedTopLevelChangeDtos = new ArrayList<>();
         for (ChangeDto topLevelChangeDto : subjectChangeDtosPointingAtBlankNode) {

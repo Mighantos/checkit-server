@@ -20,7 +20,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @OWLClass(iri = TermVocabulary.s_c_Comment)
-public class Comment extends AbstractEntity implements Comparable<Comment> {
+public class Comment extends AbstractEntity {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
@@ -62,10 +62,5 @@ public class Comment extends AbstractEntity implements Comparable<Comment> {
     @PreUpdate
     public void preUpdate() {
         this.modified = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-    }
-
-    @Override
-    public int compareTo(Comment o) {
-        return this.created.compareTo(o.created);
     }
 }

@@ -42,6 +42,17 @@ public class PublicationContextController extends BaseController {
         return publicationContextService.getReviewablePublicationContexts();
     }
 
+    @GetMapping("/closed")
+    public List<PublicationContextDto> getClosedPublicationContexts(@RequestParam(required = false, defaultValue = "0")
+                                                                    int pageNumber) {
+        return publicationContextService.getClosedPublicationContexts(pageNumber);
+    }
+
+    @GetMapping("/closed/page-count")
+    public int getPageCountOfClosedPublicationContexts() {
+        return publicationContextService.getPageCountOfClosedPublicationContexts();
+    }
+
     @GetMapping("/{publicationContextId}")
     public PublicationContextDetailDto getPublicationContextDetail(@PathVariable String publicationContextId) {
         return publicationContextService.getPublicationContextDetail(publicationContextId);

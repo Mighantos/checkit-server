@@ -12,7 +12,7 @@ connects to RDF database using [Rdf4jDataSource](https://github.com/kbss-cvut/jo
 |              | Tested with versions   |
 |--------------|------------------------|
 | **Java**     | Amazon Corretto 17.0.6 |
-| **Gradle**   | 8.0.1                  |
+| **Gradle**   | 8.1                    |
 | **Keycloak** | JBOSS 12.0.4           |
 | **GraphDB**  | GraphDB 9.6.0, 9.8.0   |
 
