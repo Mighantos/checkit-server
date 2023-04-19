@@ -34,6 +34,10 @@ public class ChangeResolver {
     private final Model draftGraph;
     private final AbstractChangeableContext draftContext;
     private final ChangeDao changeDao;
+    private HashMap<Resource, Model> canonicalSubGraphs;
+    private HashMap<Resource, Model> draftSubGraphs;
+    private HashMap<Resource, List<Statement>> canonicalTopLevelSubjectsSubGraphs;
+    private HashMap<Resource, List<Statement>> draftTopLevelSubjectsSubGraphs;
     @Getter
     private final List<Change> changes = new ArrayList<>();
 
@@ -89,13 +93,17 @@ public class ChangeResolver {
      * position and changes of these blank nodes in comparison to canonical version.
      */
     public void findChangesInSubGraphs() {
-        HashMap<Resource, Model> canonicalSubGraphs = getSubGraphs(canonicalGraph);
-        HashMap<Resource, Model> draftSubGraphs = getSubGraphs(draftGraph);
-        HashMap<Resource, List<Statement>> canonicalTopLevelSubjectsSubGraphs =
-            getTopLevelSubjectsSubGraphs(canonicalGraph);
-        HashMap<Resource, List<Statement>> draftTopLevelSubjectsSubGraphs = getTopLevelSubjectsSubGraphs(draftGraph);
+        canonicalSubGraphs = getSubGraphs(canonicalGraph);
+        draftSubGraphs = getSubGraphs(draftGraph);
+        canonicalTopLevelSubjectsSubGraphs = getTopLevelSubjectsSubGraphs(canonicalGraph);
+        draftTopLevelSubjectsSubGraphs = getTopLevelSubjectsSubGraphs(draftGraph);
+        removeIsomorphicSubGraphs();
 
-        //find isomorphic subGraphs
+        getChangesFromBlankNodeStatements();
+    }
+
+    private void removeIsomorphicSubGraphs() {
+        //find isomorphic sub-graphs
         for (Resource subject : canonicalTopLevelSubjectsSubGraphs.keySet()) {
             if (!draftTopLevelSubjectsSubGraphs.containsKey(subject)) {
                 continue;
@@ -110,26 +118,27 @@ public class ChangeResolver {
                 if (!canonicalSubGraphs.containsKey(canoicalResource)) {
                     continue;
                 }
-                Model model = canonicalSubGraphs.get(canoicalResource);
+                Model canonicalSubGraph = canonicalSubGraphs.get(canoicalResource);
                 for (Statement draftStatement : draftSubjectSubGraphs) {
-                    Resource draftResource = draftStatement.getObject().asResource();
+                    Resource draftObject = draftStatement.getObject().asResource();
                     if (!draftSubjectStatementsToDelete.contains(draftStatement) && draftSubGraphs.containsKey(
-                        draftResource) && model.isIsomorphicWith(draftSubGraphs.get(draftResource))) {
+                        draftObject) && canonicalSubGraph.isIsomorphicWith(draftSubGraphs.get(draftObject))) {
                         canonicalSubjectStatementsToDelete.add(canonicalStatement);
                         draftSubjectStatementsToDelete.add(draftStatement);
-                        canonicalSubGraphs.remove(canoicalResource);
-                        draftSubGraphs.remove(draftResource);
+                        removeSubGraphRecursively(canonicalSubGraphs, canoicalResource);
+                        removeSubGraphRecursively(draftSubGraphs, draftObject);
                         break;
                     }
                 }
             }
+            //remove isomorphic sub graphs
             canonicalSubjectSubGraphs.removeAll(canonicalSubjectStatementsToDelete);
             draftSubjectSubGraphs.removeAll(draftSubjectStatementsToDelete);
             canonicalTopLevelSubjectsSubGraphs.put(subject, canonicalSubjectSubGraphs);
             draftTopLevelSubjectsSubGraphs.put(subject, draftSubjectSubGraphs);
         }
 
-        //remove isomorphic sub graphs
+        //remove subjects with no sub-graphs
         List<Resource> subjectsToRemove = canonicalTopLevelSubjectsSubGraphs.keySet().stream()
             .filter(s -> canonicalTopLevelSubjectsSubGraphs.get(s).isEmpty()).toList();
         for (Resource subject : subjectsToRemove) {
@@ -140,17 +149,20 @@ public class ChangeResolver {
         for (Resource subject : subjectsToRemove) {
             draftTopLevelSubjectsSubGraphs.remove(subject);
         }
-
-        getChangesFromBlankNodeStatements(canonicalSubGraphs, draftSubGraphs,
-            canonicalTopLevelSubjectsSubGraphs, draftTopLevelSubjectsSubGraphs);
     }
 
-    private void getChangesFromBlankNodeStatements(
-        HashMap<Resource, Model> canonicalSubGraphs,
-        HashMap<Resource, Model> draftSubGraphs,
-        HashMap<Resource, List<Statement>> canonicalTopLevelSubjectsSubGraphs,
-        HashMap<Resource, List<Statement>> draftTopLevelSubjectsSubGraphs
-    ) {
+    private void removeSubGraphRecursively(HashMap<Resource, Model> subGraphs, Resource subGraphId) {
+        Model removedSubGraph = subGraphs.remove(subGraphId);
+        StmtIterator stmtIterator = removedSubGraph.listStatements();
+        while (stmtIterator.hasNext()) {
+            RDFNode object = stmtIterator.nextStatement().getObject();
+            if (object.asNode().isBlank()) {
+                removeSubGraphRecursively(subGraphs, object.asResource());
+            }
+        }
+    }
+
+    private void getChangesFromBlankNodeStatements() {
         for (Resource subject : draftTopLevelSubjectsSubGraphs.keySet()) {
             MultilingualString label = fetchChangeLabel(subject, draftGraph);
             for (Statement statement : draftTopLevelSubjectsSubGraphs.get(subject)) {
