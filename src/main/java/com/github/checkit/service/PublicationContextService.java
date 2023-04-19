@@ -11,6 +11,7 @@ import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
 import com.github.checkit.dto.PublicationContextStatisticsDto;
 import com.github.checkit.dto.ReviewableVocabularyDto;
+import com.github.checkit.dto.VocabularyStatisticsDto;
 import com.github.checkit.dto.auxiliary.PublicationContextState;
 import com.github.checkit.exception.AlreadyExistsException;
 import com.github.checkit.exception.ForbiddenException;
@@ -24,6 +25,7 @@ import com.github.checkit.model.Comment;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
+import com.github.checkit.model.Vocabulary;
 import com.github.checkit.model.VocabularyContext;
 import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.auxilary.CommentTag;
@@ -155,11 +157,19 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext pc = findRequired(publicationContextUri);
         PublicationContextState state = getState(pc, current);
+        PublicationContextStatisticsDto statistics = null;
         List<ReviewableVocabularyDto> affectedVocabularies =
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
-                .map(vocabulary -> new ReviewableVocabularyDto(vocabulary, vocabulary.getGestors().contains(current)))
-                .toList();
-        return new PublicationContextDetailDto(pc, state, resolveFinalComment(pc), affectedVocabularies);
+                .map(vocabulary -> {
+                    boolean gestored = vocabulary.getGestors().contains(current);
+                    VocabularyStatisticsDto vocStatistics =
+                        gestored ? getVocabularyChanges(pc, vocabulary, current) : null;
+                    return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics);
+                }).toList();
+        if (affectedVocabularies.stream().anyMatch(ReviewableVocabularyDto::isGestored)) {
+            statistics = getStatistics(pc, current);
+        }
+        return new PublicationContextDetailDto(pc, state, resolveFinalComment(pc), statistics, affectedVocabularies);
     }
 
     /**
@@ -344,6 +354,15 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         int rejectedChangesCount = publicationContextDao.countRejectedChanges(pc.getUri(), user.getUri());
         return new PublicationContextStatisticsDto(totalChangesCount, reviewableChangesCount, approvedChangesCount,
             rejectedChangesCount);
+    }
+
+    private VocabularyStatisticsDto getVocabularyChanges(PublicationContext pc, Vocabulary vocabulary, User current) {
+        int totalChanges = publicationContextDao.countChangesInVocabulary(pc.getUri(), vocabulary.getUri());
+        int totalApprovedChanges =
+            publicationContextDao.countApprovedChangesInVocabulary(pc.getUri(), current.getUri(), vocabulary.getUri());
+        int totalRejectedChanges =
+            publicationContextDao.countRejectedChangesInVocabulary(pc.getUri(), current.getUri(), vocabulary.getUri());
+        return new VocabularyStatisticsDto(totalChanges, totalApprovedChanges, totalRejectedChanges);
     }
 
     private PublicationContextState getState(PublicationContext pc, User current) {

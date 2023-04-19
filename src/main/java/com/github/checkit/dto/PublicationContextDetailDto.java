@@ -14,8 +14,9 @@ public class PublicationContextDetailDto extends PublicationContextDto {
      * Constructor.
      */
     public PublicationContextDetailDto(PublicationContext publicationContext, PublicationContextState state,
-                                       CommentDto finalComment, List<ReviewableVocabularyDto> affectedVocabularies) {
-        super(publicationContext, state, finalComment);
+                                       CommentDto finalComment, PublicationContextStatisticsDto statistics,
+                                       List<ReviewableVocabularyDto> affectedVocabularies) {
+        super(publicationContext, state, finalComment, statistics);
         this.affectedVocabularies = affectedVocabularies;
     }
 }

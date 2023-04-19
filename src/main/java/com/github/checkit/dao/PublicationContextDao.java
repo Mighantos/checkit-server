@@ -315,6 +315,35 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     }
 
     /**
+     * Counts changes in specified publication context in specified vocabulary.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param vocabularyUri         URI identifier of vocabulary
+     * @return number of changes
+     */
+    public Integer countChangesInVocabulary(URI publicationContextUri, URI vocabularyUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(vocabularyUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("voc", vocabularyUri)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
      * Counts changes reviewable by specified user in specified publication context.
      *
      * @param publicationContextUri URI identifier of publication context
@@ -322,7 +351,8 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @return number of changes
      */
     public Integer countReviewableChanges(URI publicationContextUri, URI userUri) {
-
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(userUri);
         try {
             return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
                     + "?pc a ?type ; "
@@ -398,6 +428,40 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     }
 
     /**
+     * Counts changes approved by specified user in specified publication context in specified vocabulary.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param userUri               URI identifier of user
+     * @param vocabularyUri         URI identifier of vocabulary
+     * @return number of changes
+     */
+    public Integer countApprovedChangesInVocabulary(URI publicationContextUri, URI userUri, URI vocabularyUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(userUri);
+        Objects.requireNonNull(vocabularyUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?approvedBy ?user ; "
+                    + "        ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("approvedBy", URI.create(TermVocabulary.s_p_schvaleno))
+                .setParameter("user", userUri)
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("voc", vocabularyUri)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
      * Counts changes rejected by specified user in specified publication context.
      *
      * @param publicationContextUri URI identifier of publication context
@@ -419,6 +483,40 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                 .setParameter("rejectedBy", URI.create(TermVocabulary.s_p_zamitnuto))
                 .setParameter("user", userUri)
                 .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Counts changes rejected by specified user in specified publication context in specified vocabulary.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param userUri               URI identifier of user
+     * @param vocabularyUri         URI identifier of vocabulary
+     * @return number of changes
+     */
+    public Integer countRejectedChangesInVocabulary(URI publicationContextUri, URI userUri, URI vocabularyUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(userUri);
+        Objects.requireNonNull(vocabularyUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?rejectedBy ?user ; "
+                    + "        ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("rejectedBy", URI.create(TermVocabulary.s_p_zamitnuto))
+                .setParameter("user", userUri)
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("voc", vocabularyUri)
                 .getSingleResult();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
