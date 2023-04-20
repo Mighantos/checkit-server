@@ -7,6 +7,7 @@ import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,6 +31,8 @@ public class ChangeDao extends BaseDao<Change> {
      * @return list of changes
      */
     public List<Change> findAllInPublicationContextRelevantToUser(URI publicationContextUri, URI userUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(userUri);
         try {
             Descriptor descriptor = descriptorFactory.changeDescriptor(publicationContextUri);
             return em.createNativeQuery("SELECT ?change WHERE { "
@@ -86,6 +89,8 @@ public class ChangeDao extends BaseDao<Change> {
      * @return true of false
      */
     public boolean isUserGestorOfVocabularyWithChange(URI userUri, URI changeUri) {
+        Objects.requireNonNull(userUri);
+        Objects.requireNonNull(changeUri);
         try {
             return em.createNativeQuery("ASK {"
                     + "?change a ?type ; "
@@ -112,6 +117,7 @@ public class ChangeDao extends BaseDao<Change> {
      * @return true of false
      */
     public boolean isChangesPublicationContextClosed(URI changeUri) {
+        Objects.requireNonNull(changeUri);
         try {
             return em.createNativeQuery("ASK { "
                     + "?change a ?type . "
@@ -128,7 +134,34 @@ public class ChangeDao extends BaseDao<Change> {
         }
     }
 
+    /**
+     * Checks if publication context of specified change was updated.
+     *
+     * @param changeUri   URI identifier of change
+     * @param versionDate date of publication context last update
+     * @return true of false
+     */
+    public boolean wasChangesPublicationContextUpdated(URI changeUri, Instant versionDate) {
+        Objects.requireNonNull(changeUri);
+        try {
+            return !em.createNativeQuery("ASK { "
+                    + "?change a ?type . "
+                    + "?pc ?hasChange ?change ; "
+                    + "    ?updated ?time . "
+                    + "}", Boolean.class)
+                .setParameter("change", changeUri)
+                .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("updated", URI.create(TermVocabulary.s_p_ma_datum_a_cas_posledni_modifikace))
+                .setParameter("time", versionDate)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
     private URI resolvePublicationContext(URI changeUri) {
+        Objects.requireNonNull(changeUri);
         try {
             return em.createNativeQuery("SELECT ?pc WHERE {"
                     + "?change a ?type . "

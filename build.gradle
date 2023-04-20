@@ -9,14 +9,14 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.0.4'
+    id 'org.springframework.boot' version '3.0.5'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
     id 'checkstyle'
 }
 
 group = 'com.github'
-version = "0.3.7"
+version = "0.3.8"
 
 compileJava {
     sourceCompatibility = '17'
