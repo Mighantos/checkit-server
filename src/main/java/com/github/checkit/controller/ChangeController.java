@@ -2,6 +2,7 @@ package com.github.checkit.controller;
 
 import com.github.checkit.service.ChangeService;
 import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,37 +27,37 @@ public class ChangeController extends BaseController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/{changeId}/approved")
-    public void approveChange(@PathVariable String changeId) {
-        changeService.approveChange(changeId);
+    public void approveChange(@PathVariable String changeId, @RequestParam Instant versionDate) {
+        changeService.approveChange(changeId, versionDate);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/approved")
-    public void approveChanges(@RequestBody List<URI> changes) {
-        changeService.approveChanges(changes);
+    public void approveChanges(@RequestBody List<URI> changes, @RequestParam Instant versionDate) {
+        changeService.approveChanges(changes, versionDate);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/{changeId}/rejected")
-    public void rejectChange(@PathVariable String changeId) {
-        changeService.rejectChange(changeId);
+    public void rejectChange(@PathVariable String changeId, @RequestParam Instant versionDate) {
+        changeService.rejectChange(changeId, versionDate);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/rejected")
-    public void rejectChanges(@RequestBody List<URI> changes) {
-        changeService.rejectChanges(changes);
+    public void rejectChanges(@RequestBody List<URI> changes, @RequestParam Instant versionDate) {
+        changeService.rejectChanges(changes, versionDate);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{changeId}/review")
-    public void removeChangeReview(@PathVariable String changeId) {
-        changeService.removeChangeReview(changeId);
+    public void removeChangeReview(@PathVariable String changeId, @RequestParam Instant versionDate) {
+        changeService.removeChangeReview(changeId, versionDate);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/review")
-    public void removeChangesReview(@RequestBody List<URI> changes) {
-        changeService.removeChangesReview(changes);
+    public void removeChangesReview(@RequestBody List<URI> changes, @RequestParam Instant versionDate) {
+        changeService.removeChangesReview(changes, versionDate);
     }
 }

@@ -3,9 +3,11 @@ package com.github.checkit.service;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.dao.CommentDao;
+import com.github.checkit.exception.EmptyArrayParameterException;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.exception.PublicationContextIsClosedException;
+import com.github.checkit.exception.PublicationContextWasUpdatedException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
@@ -13,6 +15,7 @@ import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.service.auxiliary.ChangeResolver;
 import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.rdf.model.Model;
@@ -52,13 +55,15 @@ public class ChangeService extends BaseRepositoryService<Change> {
     /**
      * Marks specified change as approved by current user.
      *
-     * @param changeId identifier of change
+     * @param changeId    identifier of change
+     * @param versionDate date of publication context last update
      */
     @Transactional
-    public void approveChange(String changeId) {
+    public void approveChange(String changeId, Instant versionDate) {
         User current = userService.getCurrent();
         URI changeUri = createChangeUriFromId(changeId);
         checkUserCanReviewChange(current.getUri(), changeUri);
+        checkUpToDate(changeUri, versionDate);
         Change change = findRequired(changeUri);
         change.addApprovedBy(current);
         change.removeRejectedBy(current);
@@ -69,12 +74,17 @@ public class ChangeService extends BaseRepositoryService<Change> {
     /**
      * Marks specified list of changes as approved by current user.
      *
-     * @param changeUris URI identifiers of changes
+     * @param changeUris  URI identifiers of changes
+     * @param versionDate date of publication context last update
      */
     @Transactional
-    public void approveChanges(List<URI> changeUris) {
+    public void approveChanges(List<URI> changeUris, Instant versionDate) {
         User current = userService.getCurrent();
+        if (changeUris.isEmpty()) {
+            throw new EmptyArrayParameterException("List of changes to approve can't be empty.");
+        }
         changeUris.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
+        checkUpToDate(changeUris.get(0), versionDate);
         for (URI changeUri : changeUris) {
             Change change = findRequired(changeUri);
             change.addApprovedBy(current);
@@ -87,13 +97,15 @@ public class ChangeService extends BaseRepositoryService<Change> {
     /**
      * Marks specified change as approved by current user.
      *
-     * @param changeId identifier of change
+     * @param changeId    identifier of change
+     * @param versionDate date of publication context last update
      */
     @Transactional
-    public void rejectChange(String changeId) {
+    public void rejectChange(String changeId, Instant versionDate) {
         User current = userService.getCurrent();
         URI changeUri = createChangeUriFromId(changeId);
         checkUserCanReviewChange(current.getUri(), changeUri);
+        checkUpToDate(changeUri, versionDate);
         Change change = findRequired(changeUri);
         change.addRejectedBy(current);
         change.removeApprovedBy(current);
@@ -104,12 +116,17 @@ public class ChangeService extends BaseRepositoryService<Change> {
     /**
      * Marks specified list of changes as rejected by current user.
      *
-     * @param changeUris URI identifiers of changes
+     * @param changeUris  URI identifiers of changes
+     * @param versionDate date of publication context last update
      */
     @Transactional
-    public void rejectChanges(List<URI> changeUris) {
+    public void rejectChanges(List<URI> changeUris, Instant versionDate) {
         User current = userService.getCurrent();
+        if (changeUris.isEmpty()) {
+            throw new EmptyArrayParameterException("List of changes to reject can't be empty.");
+        }
         changeUris.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
+        checkUpToDate(changeUris.get(0), versionDate);
         for (URI changeUri : changeUris) {
             Change change = findRequired(changeUri);
             change.addRejectedBy(current);
@@ -122,13 +139,15 @@ public class ChangeService extends BaseRepositoryService<Change> {
     /**
      * Clears current user's review on specified change.
      *
-     * @param changeId identifier of change
+     * @param changeId    identifier of change
+     * @param versionDate date of publication context last update
      */
     @Transactional
-    public void removeChangeReview(String changeId) {
+    public void removeChangeReview(String changeId, Instant versionDate) {
         User current = userService.getCurrent();
         URI changeUri = createChangeUriFromId(changeId);
         checkUserCanReviewChange(current.getUri(), changeUri);
+        checkUpToDate(changeUri, versionDate);
         Change change = findRequired(changeUri);
         change.removeRejectedBy(current);
         change.removeApprovedBy(current);
@@ -140,12 +159,17 @@ public class ChangeService extends BaseRepositoryService<Change> {
     /**
      * Clears current user's review on specified list of changes.
      *
-     * @param changeUris URI identifiers of changes
+     * @param changeUris  URI identifiers of changes
+     * @param versionDate date of publication context last update
      */
     @Transactional
-    public void removeChangesReview(List<URI> changeUris) {
+    public void removeChangesReview(List<URI> changeUris, Instant versionDate) {
         User current = userService.getCurrent();
+        if (changeUris.isEmpty()) {
+            throw new EmptyArrayParameterException("List of changes to clear review can't be empty.");
+        }
         changeUris.forEach(changeUri -> checkUserCanReviewChange(current.getUri(), changeUri));
+        checkUpToDate(changeUris.get(0), versionDate);
         for (URI changeUri : changeUris) {
             Change change = findRequired(changeUri);
             change.removeRejectedBy(current);
@@ -206,6 +230,12 @@ public class ChangeService extends BaseRepositoryService<Change> {
     private void checkNotInClosedPublicationContext(URI changeUri) {
         if (changeDao.isChangesPublicationContextClosed(changeUri)) {
             throw PublicationContextIsClosedException.create(changeUri);
+        }
+    }
+
+    private void checkUpToDate(URI changeUri, Instant versionDate) {
+        if (changeDao.wasChangesPublicationContextUpdated(changeUri, versionDate)) {
+            throw PublicationContextWasUpdatedException.create(changeUri);
         }
     }
 
