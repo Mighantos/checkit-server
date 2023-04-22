@@ -138,7 +138,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     /**
-     * Returns how many mages are available to show of closed publication contexts.
+     * Returns how many pages are available to show of closed publication contexts.
      */
     public int getPageCountOfClosedPublicationContexts() {
         return (int) Math.ceil((double) publicationContextDao.countAllClosed() / pageSize);
