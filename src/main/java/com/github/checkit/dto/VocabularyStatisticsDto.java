@@ -1,20 +1,24 @@
 package com.github.checkit.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class VocabularyStatisticsDto {
 
     private final int totalChanges;
-    private final int approvedChanges;
-    private final int rejectedChanges;
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer approvedChanges;
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer rejectedChanges;
 
     /**
      * Constructor.
      */
-    public VocabularyStatisticsDto(int totalChanges, int approvedChanges, int rejectedChanges) {
+    public VocabularyStatisticsDto(int totalChanges) {
         this.totalChanges = totalChanges;
-        this.approvedChanges = approvedChanges;
-        this.rejectedChanges = rejectedChanges;
     }
 }

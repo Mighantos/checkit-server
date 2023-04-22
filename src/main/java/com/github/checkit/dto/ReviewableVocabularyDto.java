@@ -1,6 +1,5 @@
 package com.github.checkit.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.checkit.model.Vocabulary;
 import java.net.URI;
 import java.util.List;
@@ -12,7 +11,6 @@ public class ReviewableVocabularyDto {
     private final URI uri;
     private final String label;
     private final boolean gestored;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final VocabularyStatisticsDto statistics;
     private final List<UserDto> gestors;
 

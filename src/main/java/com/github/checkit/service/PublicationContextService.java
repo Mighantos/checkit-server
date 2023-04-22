@@ -162,8 +162,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> {
                     boolean gestored = vocabulary.getGestors().contains(current);
-                    VocabularyStatisticsDto vocStatistics =
-                        gestored ? getVocabularyChanges(pc, vocabulary, current) : null;
+                    VocabularyStatisticsDto vocStatistics = getVocabularyStatistics(pc, vocabulary, current, gestored);
                     return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics);
                 }).toList();
         if (affectedVocabularies.stream().anyMatch(ReviewableVocabularyDto::isGestored)) {
@@ -356,13 +355,19 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             rejectedChangesCount);
     }
 
-    private VocabularyStatisticsDto getVocabularyChanges(PublicationContext pc, Vocabulary vocabulary, User current) {
-        int totalChanges = publicationContextDao.countChangesInVocabulary(pc.getUri(), vocabulary.getUri());
-        int totalApprovedChanges =
-            publicationContextDao.countApprovedChangesInVocabulary(pc.getUri(), current.getUri(), vocabulary.getUri());
-        int totalRejectedChanges =
-            publicationContextDao.countRejectedChangesInVocabulary(pc.getUri(), current.getUri(), vocabulary.getUri());
-        return new VocabularyStatisticsDto(totalChanges, totalApprovedChanges, totalRejectedChanges);
+    private VocabularyStatisticsDto getVocabularyStatistics(PublicationContext pc, Vocabulary vocabulary, User current,
+                                                            boolean gestored) {
+        VocabularyStatisticsDto statistics = new VocabularyStatisticsDto(
+            publicationContextDao.countChangesInVocabulary(pc.getUri(), vocabulary.getUri()));
+        if (gestored) {
+            statistics.setApprovedChanges(
+                publicationContextDao.countApprovedChangesInVocabulary(pc.getUri(), current.getUri(),
+                    vocabulary.getUri()));
+            statistics.setRejectedChanges(
+                publicationContextDao.countRejectedChangesInVocabulary(pc.getUri(), current.getUri(),
+                    vocabulary.getUri()));
+        }
+        return statistics;
     }
 
     private PublicationContextState getState(PublicationContext pc, User current) {
