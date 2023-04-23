@@ -190,7 +190,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext pc = findRequired(publicationContextUri);
         String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
-        List<ChangeDto> changes = convertPublicationChangesToDtos(pc, current, language, vocabularyUri);
+        List<ChangeDto> changes = convertChangesInVocabularyToDtos(pc, current, language, vocabularyUri);
         return new ContextChangesDto(vocabularyUri, vocabularyLabel, isAllowedToReview, pc, getState(pc, null),
             changes);
     }
@@ -223,9 +223,11 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContext.setFromProject(project);
         }
 
-        Set<Change> newFormOfChanges =
+        Set<Change> newlyFormedOfChanges =
             takeIntoConsiderationExistingChanges(currentChanges, publicationContext.getChanges());
-        publicationContext.setChanges(newFormOfChanges);
+        assignUris(newlyFormedOfChanges);
+        resolveCountable(newlyFormedOfChanges);
+        publicationContext.setChanges(newlyFormedOfChanges);
 
         URI publicationContextUri;
         if (publicationContextExists) {
@@ -291,8 +293,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
     }
 
-    private List<ChangeDto> convertPublicationChangesToDtos(PublicationContext pc, User current, String language,
-                                                            URI vocabularyUri) {
+    private List<ChangeDto> convertChangesInVocabularyToDtos(PublicationContext pc, User current, String language,
+                                                             URI vocabularyUri) {
         Set<Change> changes = pc.getChanges();
         List<ChangeDto> changeDtos = new ArrayList<>(changes.stream()
             .filter(change ->
@@ -306,10 +308,28 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         }
         ChangeDtoComposer changeDtoComposer = new ChangeDtoComposer(changeDtos);
         changeDtoComposer.compose();
-        changeDtoComposer.selectCommentableChangeInGroups(commentService);
         changeDtos.addAll(changeDtoComposer.getGroupChangeDtosOfRestrictions());
 
         return changeDtos.stream().sorted().toList();
+    }
+
+    private void resolveCountable(Set<Change> changes) {
+        Set<URI> contextUris = new HashSet<>();
+        Set<URI> countableChangeUris = new HashSet<>();
+        changes.forEach(change -> contextUris.add(change.getContext().getUri()));
+        for (URI contextUri : contextUris) {
+            List<ChangeDto> changeDtos = new ArrayList<>(changes.stream()
+                .filter(change -> change.getContext().getUri().equals(contextUri))
+                .map(ChangeDto::new).toList());
+            ChangeDtoComposer changeComposer = new ChangeDtoComposer(changeDtos);
+            changeComposer.compose();
+            countableChangeUris.addAll(changeComposer.getCountable());
+        }
+        changes.forEach(change -> change.setCountable(countableChangeUris.remove(change.getUri())));
+    }
+
+    private void assignUris(Set<Change> newlyFormedOfChanges) {
+        newlyFormedOfChanges.forEach(change -> change.setUri(changeService.generateEntityUri()));
     }
 
     private void checkCanReview(PublicationContext pc, User user) {

@@ -1,5 +1,6 @@
 package com.github.checkit.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.checkit.dto.auxiliary.ChangeState;
 import com.github.checkit.model.Change;
@@ -29,6 +30,8 @@ public class ChangeDto implements Comparable<ChangeDto> {
     private final ChangeState state;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final CommentDto rejectionComment;
+    @JsonIgnore
+    private final boolean countable;
 
     /**
      * Constructor.
@@ -50,6 +53,29 @@ public class ChangeDto implements Comparable<ChangeDto> {
         }
         this.state = resolveChangeState(change, user);
         this.rejectionComment = rejectionComment;
+        this.countable = change.getCountable();
+    }
+
+    /**
+     * Constructor for change before persisting.
+     */
+    public ChangeDto(Change change) {
+        this.id = change.getId();
+        this.uri = change.getUri();
+        this.type = change.getChangeType();
+        this.subjectType = change.getSubjectType();
+        this.label = null;
+        this.subject = change.getSubject();
+        this.predicate = change.getPredicate();
+        this.object = new ChangeObjectDto(change.getObject());
+        if (Objects.nonNull(change.getNewObject())) {
+            this.newObject = new ChangeObjectDto(change.getNewObject());
+        } else {
+            this.newObject = null;
+        }
+        this.state = null;
+        this.rejectionComment = null;
+        this.countable = true;
     }
 
     /**
@@ -67,6 +93,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.newObject = null;
         this.state = changeState;
         this.rejectionComment = null;
+        this.countable = false;
     }
 
     private String resolveLabel(Change change, String languageTag, String defaultLanguageTag) {

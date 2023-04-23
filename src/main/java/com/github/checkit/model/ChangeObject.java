@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @OWLClass(iri = TermVocabulary.s_c_objekt_zmeny)
 public class ChangeObject extends AbstractEntity {
 
@@ -43,5 +42,23 @@ public class ChangeObject extends AbstractEntity {
 
     public String getLanguage() {
         return isBlankNode() ? null : this.valueWithLanguageTag.getLanguages().iterator().next();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChangeObject that = (ChangeObject) o;
+        return Objects.equals(valueWithLanguageTag, that.valueWithLanguageTag) && Objects.equals(type,
+            that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(valueWithLanguageTag, type);
     }
 }

@@ -227,6 +227,10 @@ public class ChangeService extends BaseRepositoryService<Change> {
         }
     }
 
+    public URI generateEntityUri() {
+        return changeDao.generateEntityUri();
+    }
+
     private void checkNotInClosedPublicationContext(URI changeUri) {
         if (changeDao.isChangesPublicationContextClosed(changeUri)) {
             throw PublicationContextIsClosedException.create(changeUri);

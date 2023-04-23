@@ -5,15 +5,16 @@ import com.github.checkit.dto.RestrictionDto;
 import com.github.checkit.dto.auxiliary.ChangeState;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.auxilary.ChangeSubjectType;
-import com.github.checkit.service.CommentService;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import lombok.Getter;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 
@@ -58,19 +59,27 @@ public class ChangeDtoComposer {
         createGroupChangeDtosOfRestriction();
         subjectsChangeDtosPointingAtBlankNodeMap = subjectsDeleteChangeDtosPointingAtBlankNodeMap;
         createGroupChangeDtosOfRestriction();
+        selectCommentableChangeInGroups();
     }
 
     /**
-     * Sets commentable changeDto in all created restrictions.
+     * Gets a set of Changes that are countable to statistics.
      *
-     * @param commentService comment service
+     * @return set of URIs of changes
      */
-    public void selectCommentableChangeInGroups(CommentService commentService) {
+    public Set<URI> getCountable() {
+        Set<URI> countableChanges = new HashSet<>(changeDtos.stream().map(ChangeDto::getUri).toList());
+        countableChanges.addAll(groupChangeDtosOfRestrictions.stream()
+            .map(changeDto -> changeDto.getObject().getRestriction().getCommentableChange()).toList());
+        return countableChanges;
+    }
+
+    private void selectCommentableChangeInGroups() {
         for (ChangeDto groupChangeDtosOfRestriction : groupChangeDtosOfRestrictions) {
             RestrictionDto restriction = groupChangeDtosOfRestriction.getObject().getRestriction();
             List<ChangeDto> affectedChanges = restriction.getAffectedChanges();
             ChangeDto commentableChangeDto = affectedChanges.stream()
-                .filter(changeDto -> !commentService.getAllRelatedToChange(changeDto.getUri()).isEmpty()).findFirst()
+                .filter(ChangeDto::isCountable).findFirst()
                 .orElse(affectedChanges.iterator().next());
             restriction.setCommentableChange(commentableChangeDto.getUri());
         }
