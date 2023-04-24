@@ -303,10 +303,13 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
             return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
+                    + "?change ?countable ?true . "
                     + "}", Integer.class)
                 .setParameter("type", typeUri)
                 .setParameter("pc", publicationContextUri)
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("countable", URI.create(TermVocabulary.s_p_je_pocitatelna_do_statistiky))
+                .setParameter("true", true)
                 .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
                 .getSingleResult();
         } catch (RuntimeException e) {
@@ -328,13 +331,16 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
             return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
-                    + "?change ?inContext ?ctx . "
+                    + "?change ?inContext ?ctx ; "
+                    + "        ?countable ?true . "
                     + "?ctx ?basedOn ?voc . "
                     + "}", Integer.class)
                 .setParameter("type", typeUri)
                 .setParameter("pc", publicationContextUri)
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
                 .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("countable", URI.create(TermVocabulary.s_p_je_pocitatelna_do_statistiky))
+                .setParameter("true", true)
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
                 .setParameter("voc", vocabularyUri)
                 .getSingleResult();
@@ -357,7 +363,8 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
             return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
-                    + "?change ?inContext ?ctx . "
+                    + "?change ?inContext ?ctx ; "
+                    + "        ?countable ?true . "
                     + "?ctx ?basedOn ?voc . "
                     + "?voc ?gestoredBy ?user . "
                     + "}", Integer.class)
@@ -365,6 +372,8 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                 .setParameter("pc", publicationContextUri)
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
                 .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("countable", URI.create(TermVocabulary.s_p_je_pocitatelna_do_statistiky))
+                .setParameter("true", true)
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
                 .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
                 .setParameter("user", userUri)
@@ -386,12 +395,15 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
             return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
-                    + "?change ?approvedBy ?user . "
+                    + "?change ?approvedBy ?user ; "
+                    + "        ?countable ?true . "
                     + "}", Integer.class)
                 .setParameter("type", typeUri)
                 .setParameter("pc", publicationContextUri)
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
                 .setParameter("approvedBy", URI.create(TermVocabulary.s_p_schvaleno))
+                .setParameter("countable", URI.create(TermVocabulary.s_p_je_pocitatelna_do_statistiky))
+                .setParameter("true", true)
                 .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
                 .getSingleResult();
         } catch (RuntimeException e) {
@@ -455,13 +467,16 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
             return em.createNativeQuery("SELECT (COUNT(DISTINCT ?change) as ?count) WHERE { "
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
-                    + "?change ?reviewedBy ?user . "
+                    + "?change ?reviewedBy ?user ; "
+                    + "        ?countable ?true . "
                     + "}", Integer.class)
                 .setParameter("type", typeUri)
                 .setParameter("pc", publicationContextUri)
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
                 .setParameter("reviewedBy", reviewRelationUri)
                 .setParameter("user", userUri)
+                .setParameter("countable", URI.create(TermVocabulary.s_p_je_pocitatelna_do_statistiky))
+                .setParameter("true", true)
                 .setDescriptor(descriptorFactory.publicationContextDescriptor(publicationContextUri))
                 .getSingleResult();
         } catch (RuntimeException e) {
@@ -480,7 +495,8 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
                     + "?change ?reviewedBy ?user ; "
-                    + "        ?inContext ?ctx . "
+                    + "        ?inContext ?ctx ; "
+                    + "        ?countable ?true . "
                     + "?ctx ?basedOn ?voc . "
                     + "}", Integer.class)
                 .setParameter("type", typeUri)
@@ -489,6 +505,8 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                 .setParameter("reviewedBy", reviewRelationUri)
                 .setParameter("user", userUri)
                 .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("countable", URI.create(TermVocabulary.s_p_je_pocitatelna_do_statistiky))
+                .setParameter("true", true)
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
                 .setParameter("voc", vocabularyUri)
                 .getSingleResult();

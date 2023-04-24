@@ -40,6 +40,11 @@ public class Change extends AbstractCommentableEntity {
     @OWLDataProperty(iri = RDFS.LABEL)
     private MultilingualString label;
 
+    @NotBlank
+    @ParticipationConstraints(nonEmpty = true)
+    @OWLDataProperty(iri = TermVocabulary.s_p_je_pocitatelna_do_statistiky)
+    private Boolean countable;
+
     @Enumerated
     @OWLDataProperty(iri = TermVocabulary.s_p_ma_popis_typu_subjektu)
     private ChangeSubjectType subjectType;
