@@ -329,7 +329,11 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private void assignUris(Set<Change> newlyFormedOfChanges) {
-        newlyFormedOfChanges.forEach(change -> change.setUri(changeService.generateEntityUri()));
+        for (Change change : newlyFormedOfChanges) {
+            if (Objects.isNull(change.getUri())) {
+                change.setUri(changeService.generateEntityUri());
+            }
+        }
     }
 
     private void checkCanReview(PublicationContext pc, User user) {

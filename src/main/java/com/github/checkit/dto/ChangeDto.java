@@ -73,7 +73,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         } else {
             this.newObject = null;
         }
-        this.state = null;
+        this.state = ChangeState.NOT_REVIEWED;
         this.rejectionComment = null;
         this.countable = true;
     }
