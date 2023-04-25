@@ -185,11 +185,12 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
         boolean isAllowedToReview =
-            publicationContextDao.isUserHavePermittedToReviewVocabulary(current.getUri(), publicationContextUri,
+            publicationContextDao.isUserPermittedToReviewVocabulary(current.getUri(), publicationContextUri,
                 vocabularyUri);
 
         PublicationContext pc = findRequired(publicationContextUri);
-        String vocabularyLabel = vocabularyService.findRequired(vocabularyUri).getLabel();
+        String vocabularyLabel =
+            vocabularyService.findRequiredInPublication(vocabularyUri, publicationContextUri).getLabel();
         List<ChangeDto> changes = convertChangesInVocabularyToDtos(pc, current, language, vocabularyUri);
         return new ContextChangesDto(vocabularyUri, vocabularyLabel, isAllowedToReview, pc, getState(pc, null),
             changes);
@@ -298,7 +299,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         Set<Change> changes = pc.getChanges();
         List<ChangeDto> changeDtos = new ArrayList<>(changes.stream()
             .filter(change ->
-                ((VocabularyContext) change.getContext()).getBasedOnVocabulary().getUri().equals(vocabularyUri))
+                change.getContext().getBasedOnVersion().equals(vocabularyUri))
             .map(change ->
                 new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current)))
             .toList());

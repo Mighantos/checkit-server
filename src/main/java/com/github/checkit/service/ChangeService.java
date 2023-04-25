@@ -188,7 +188,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
      */
     public List<Change> getChanges(VocabularyContext vocabularyContext) {
         Model canonicalGraph =
-            vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVocabulary().getUri());
+            vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVersion());
         Model draftGraph = vocabularyContextService.getVocabularyContent(vocabularyContext.getUri());
         return getChanges(canonicalGraph, draftGraph, vocabularyContext);
     }

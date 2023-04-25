@@ -6,6 +6,7 @@ import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.persistence.DescriptorFactory;
 import com.github.checkit.util.TermVocabulary;
+import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import java.net.URI;
 import java.util.List;
@@ -34,37 +35,9 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
     @Override
     public List<Vocabulary> findAll() {
         try {
-            return em.createNativeQuery("SELECT ?voc WHERE { GRAPH ?voc { ?voc a ?type . } }", type)
+            return em.createNativeQuery("SELECT ?voc WHERE { GRAPH ?voc { ?voc a ?type . } }", URI.class)
                 .setParameter("type", typeUri)
-                .getResultList();
-        } catch (RuntimeException e) {
-            throw new PersistenceException(e);
-        }
-    }
-
-    /**
-     * Finds affected vocabularies of specified publication context.
-     *
-     * @param publicationContextUri URI identifier of publication context
-     * @return list of canonical vocabularies
-     */
-    public List<Vocabulary> findAllAffectedVocabularies(URI publicationContextUri) {
-        Objects.requireNonNull(publicationContextUri);
-        try {
-            return em.createNativeQuery("SELECT DISTINCT ?voc WHERE {"
-                    + "?pc a ?type ; "
-                    + "    ?hasChange ?change . "
-                    + "?change ?inContext ?ctx . "
-                    + "?ctx ?basedOn ?voc . "
-                    + "?voc a ?vocType . "
-                    + "}", Vocabulary.class)
-                .setParameter("pc", publicationContextUri)
-                .setParameter("type", URI.create(TermVocabulary.s_c_publikacni_kontext))
-                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
-                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
-                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
-                .setParameter("vocType", typeUri)
-                .getResultList();
+                .getResultStream().map(this::find).flatMap(Optional::stream).collect(Collectors.toList());
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
@@ -78,6 +51,44 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
+    }
+
+    /**
+     * Finds vocabulary in specified vocabulary context.
+     *
+     * @param vocabularyUri        URI identifier of vocabulary
+     * @param vocabularyContextUri URI identifier of vocabulary context
+     * @return {@code Optional} containing the vocabulary instance or an empty {@code Optional} if no such instance
+     *     exists.
+     */
+    public Optional<Vocabulary> findInContext(URI vocabularyUri, URI vocabularyContextUri) {
+        Objects.requireNonNull(vocabularyUri);
+        Objects.requireNonNull(vocabularyContextUri);
+        try {
+            return Optional.ofNullable(
+                em.find(type, vocabularyUri, descriptorFactory.vocabularyDescriptor(vocabularyContextUri)));
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Finds vocabulary with change in specified publication context.
+     *
+     * @param vocabularyUri         URI identifier of vocabulary
+     * @param publicationContextUri URI identifier of publication context
+     * @return {@code Optional} containing the vocabulary instance or an empty {@code Optional} if no such instance
+     *     exists.
+     */
+    public Optional<Vocabulary> findFromPublicationContext(URI vocabularyUri, URI publicationContextUri) {
+        Objects.requireNonNull(vocabularyUri);
+        Objects.requireNonNull(publicationContextUri);
+        Optional<URI> vocabularyContextUri =
+            resolveContextOfVocabularyInPublicationContext(vocabularyUri, publicationContextUri);
+        if (vocabularyContextUri.isEmpty()) {
+            return Optional.empty();
+        }
+        return findInContext(vocabularyUri, vocabularyContextUri.get());
     }
 
     @Override
@@ -159,5 +170,28 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
         query.addGraphURI(vocabularyUri.toString());
         return QueryExecution.service(repositoryConfigProperties.getUrl())
             .query(query).construct();
+    }
+
+    private Optional<URI> resolveContextOfVocabularyInPublicationContext(URI vocabularyUri,
+                                                                         URI publicationContextUri) {
+        Objects.requireNonNull(vocabularyUri);
+        Objects.requireNonNull(publicationContextUri);
+        try {
+            return Optional.ofNullable(em.createNativeQuery("SELECT DISTINCT ?ctx WHERE { "
+                    + "?pc ?hasChange ?change . "
+                    + "?change ?inContext ?ctx . "
+                    + "?ctx ?basedOn ?voc . "
+                    + "}", URI.class)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
+                .setParameter("voc", vocabularyUri)
+                .getSingleResult());
+        } catch (NoResultException nre) {
+            return Optional.empty();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
     }
 }
