@@ -252,8 +252,4 @@ public class ChangeService extends BaseRepositoryService<Change> {
             throw NotFoundException.create(Change.class, changeUri);
         }
     }
-
-    public List<Change> findAllInPublicationContextRelevantToUser(URI publicationContextUri, URI userUri) {
-        return changeDao.findAllInPublicationContextRelevantToUser(publicationContextUri, userUri);
-    }
 }
