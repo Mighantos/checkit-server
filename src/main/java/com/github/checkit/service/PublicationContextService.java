@@ -101,8 +101,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         allOpenPublicationContexts.removeAll(
             publicationContextDao.findAllOpenThatAffectVocabulariesGestoredBy(userUri));
         return allOpenPublicationContexts.stream().map(pc -> {
-            PublicationContextState state = getState(pc, null);
-            return new PublicationContextDto(pc, state, resolveFinalComment(pc));
+            PublicationContextState state = getState(pc);
+            return new PublicationContextDto(pc, state, resolveFinalComment(pc), getStatistics(pc));
         }).toList();
     }
 
@@ -137,7 +137,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             if (comment.isPresent()) {
                 finalComment = new CommentDto(comment.get());
             }
-            return new PublicationContextDto(pc, getState(pc, null), finalComment);
+            return new PublicationContextDto(pc, getState(pc), finalComment);
         }).toList();
     }
 
@@ -161,7 +161,6 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext pc = findRequired(publicationContextUri);
         PublicationContextState state = getState(pc, current);
-        PublicationContextStatisticsDto statistics = null;
         List<ReviewableVocabularyDto> affectedVocabularies =
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> {
@@ -169,9 +168,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                     VocabularyStatisticsDto vocStatistics = getVocabularyStatistics(pc, vocabulary, current, gestored);
                     return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics);
                 }).toList();
-        if (affectedVocabularies.stream().anyMatch(ReviewableVocabularyDto::isGestored)) {
-            statistics = getStatistics(pc, current);
-        }
+        PublicationContextStatisticsDto statistics =
+            affectedVocabularies.stream().anyMatch(ReviewableVocabularyDto::isGestored) ? getStatistics(pc, current)
+                                                                                        : getStatistics(pc);
         return new PublicationContextDetailDto(pc, state, resolveFinalComment(pc), statistics, affectedVocabularies);
     }
 
@@ -196,8 +195,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         String vocabularyLabel =
             vocabularyService.findRequiredInPublication(vocabularyUri, publicationContextUri).getLabel();
         List<ChangeDto> changes = convertChangesInVocabularyToDtos(pc, current, language, vocabularyUri);
-        return new ContextChangesDto(vocabularyUri, vocabularyLabel, isAllowedToReview, pc, getState(pc, null),
-            changes);
+        return new ContextChangesDto(vocabularyUri, vocabularyLabel, isAllowedToReview, pc, getState(pc), changes);
     }
 
     /**
@@ -384,6 +382,11 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             rejectedChangesCount);
     }
 
+    private PublicationContextStatisticsDto getStatistics(PublicationContext pc) {
+        int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
+        return new PublicationContextStatisticsDto(totalChangesCount);
+    }
+
     private VocabularyStatisticsDto getVocabularyStatistics(PublicationContext pc, Vocabulary vocabulary, User current,
                                                             boolean gestored) {
         VocabularyStatisticsDto statistics = new VocabularyStatisticsDto(
@@ -397,6 +400,10 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                     vocabulary.getUri()));
         }
         return statistics;
+    }
+
+    private PublicationContextState getState(PublicationContext pc) {
+        return getState(pc, null);
     }
 
     private PublicationContextState getState(PublicationContext pc, User current) {
