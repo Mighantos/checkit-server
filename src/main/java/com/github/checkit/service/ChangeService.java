@@ -188,7 +188,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
      */
     public List<Change> getChanges(VocabularyContext vocabularyContext) {
         Model canonicalGraph =
-            vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVocabulary().getUri());
+            vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVersion());
         Model draftGraph = vocabularyContextService.getVocabularyContent(vocabularyContext.getUri());
         return getChanges(canonicalGraph, draftGraph, vocabularyContext);
     }
@@ -222,7 +222,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
     public void checkUserCanReviewChange(URI userUri, URI changeUri) {
         checkExists(changeUri);
         checkNotInClosedPublicationContext(changeUri);
-        if (!changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
+        if (!userService.isCurrentAdmin() && !changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
             throw ForbiddenException.createForbiddenToReviewChange(userUri, changeUri);
         }
     }
@@ -251,9 +251,5 @@ public class ChangeService extends BaseRepositoryService<Change> {
         if (!exists(changeUri)) {
             throw NotFoundException.create(Change.class, changeUri);
         }
-    }
-
-    public List<Change> findAllInPublicationContextRelevantToUser(URI publicationContextUri, URI userUri) {
-        return changeDao.findAllInPublicationContextRelevantToUser(publicationContextUri, userUri);
     }
 }

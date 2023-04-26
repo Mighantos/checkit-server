@@ -247,7 +247,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @param vocabularyUri         URI identifier of vocabulary
      * @return true or false
      */
-    public boolean isUserHavePermittedToReviewVocabulary(URI userUri, URI publicationContextUri, URI vocabularyUri) {
+    public boolean isUserPermittedToReviewVocabulary(URI userUri, URI publicationContextUri, URI vocabularyUri) {
         try {
             return em.createNativeQuery("ASK { "
                     + "?pc a ?type ; "

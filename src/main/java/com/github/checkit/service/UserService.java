@@ -5,6 +5,7 @@ import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.UserDao;
 import com.github.checkit.dto.CurrentUserDto;
 import com.github.checkit.model.User;
+import com.github.checkit.security.UserRole;
 import java.net.URI;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,6 +52,11 @@ public class UserService extends BaseRepositoryService<User> {
     public User getRequiredReferenceByUserId(String userId) {
         URI userUri = createUserUriFromId(userId);
         return getRequiredReference(userUri);
+    }
+
+    public boolean isCurrentAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getAuthorities().stream().anyMatch(ga -> ga.getAuthority().equals(UserRole.ADMIN));
     }
 
     private URI createUserUriFromId(String userId) {
