@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: al-checkit-server
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-test:
