@@ -222,7 +222,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
     public void checkUserCanReviewChange(URI userUri, URI changeUri) {
         checkExists(changeUri);
         checkNotInClosedPublicationContext(changeUri);
-        if (!changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
+        if (!userService.isCurrentAdmin() && !changeDao.isUserGestorOfVocabularyWithChange(userUri, changeUri)) {
             throw ForbiddenException.createForbiddenToReviewChange(userUri, changeUri);
         }
     }

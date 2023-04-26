@@ -93,6 +93,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      */
     @Transactional
     public List<PublicationContextDto> getReadonlyPublicationContexts() {
+        if (userService.isCurrentAdmin()) {
+            return new ArrayList<>();
+        }
         List<PublicationContext> allOpenPublicationContexts = publicationContextDao.findAllOpen();
         URI userUri = userService.getCurrent().getUri();
         allOpenPublicationContexts.removeAll(
@@ -112,6 +115,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     public List<PublicationContextDto> getReviewablePublicationContexts() {
         User current = userService.getCurrent();
         List<PublicationContext> publicationContexts =
+            userService.isCurrentAdmin() ? publicationContextDao.findAllOpen() :
             publicationContextDao.findAllOpenThatAffectVocabulariesGestoredBy(current.getUri());
         return publicationContexts.stream().map(pc -> {
             PublicationContextState state = getState(pc, current);
@@ -161,7 +165,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         List<ReviewableVocabularyDto> affectedVocabularies =
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> {
-                    boolean gestored = vocabulary.getGestors().contains(current);
+                    boolean gestored = userService.isCurrentAdmin() || vocabulary.getGestors().contains(current);
                     VocabularyStatisticsDto vocStatistics = getVocabularyStatistics(pc, vocabulary, current, gestored);
                     return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics);
                 }).toList();
@@ -184,9 +188,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                                                                      String language) {
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
-        boolean isAllowedToReview =
-            publicationContextDao.isUserPermittedToReviewVocabulary(current.getUri(), publicationContextUri,
-                vocabularyUri);
+        boolean isAllowedToReview = userService.isCurrentAdmin()
+            || publicationContextDao.isUserPermittedToReviewVocabulary(current.getUri(), publicationContextUri,
+            vocabularyUri);
 
         PublicationContext pc = findRequired(publicationContextUri);
         String vocabularyLabel =
@@ -338,7 +342,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private void checkCanReview(PublicationContext pc, User user) {
-        if (!publicationContextDao.canUserReview(pc.getUri(), user.getUri())) {
+        if (!userService.isCurrentAdmin() && !publicationContextDao.canUserReview(pc.getUri(), user.getUri())) {
             throw ForbiddenException.createForbiddenToReviewPublicationContext(user.getUri(), pc.getUri());
         }
     }
