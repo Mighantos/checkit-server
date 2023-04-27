@@ -91,7 +91,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      *
      * @return list of publication contexts
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PublicationContextDto> getReadonlyPublicationContexts() {
         if (userService.isCurrentAdmin()) {
             return new ArrayList<>();
@@ -111,7 +111,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      *
      * @return list of publication contexts
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PublicationContextDto> getReviewablePublicationContexts() {
         User current = userService.getCurrent();
         List<PublicationContext> publicationContexts =
@@ -129,7 +129,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      * @param pageNumber page number
      * @return list of publication contexts
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PublicationContextDto> getClosedPublicationContexts(int pageNumber) {
         return publicationContextDao.findAllClosed(pageNumber, pageSize).stream().map(pc -> {
             CommentDto finalComment = null;
@@ -154,7 +154,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      * @param publicationContextId identifier of publication context
      * @return publication context detail
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public PublicationContextDetailDto getPublicationContextDetail(String publicationContextId) {
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
@@ -182,7 +182,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      * @param language             preferred language
      * @return basic information about context and changes made
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public ContextChangesDto getChangesInContextInPublicationContext(String publicationContextId, URI vocabularyUri,
                                                                      String language) {
         User current = userService.getCurrent();

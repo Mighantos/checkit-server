@@ -44,7 +44,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
         return commentDao;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CommentDto> getAllRelatedToChange(URI changeUri) {
         changeService.getRequiredReference(changeUri);
         return commentDao.findAllRelatedToChange(changeUri).stream().map(CommentDto::new).toList();
