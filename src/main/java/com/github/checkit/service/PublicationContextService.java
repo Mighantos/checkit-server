@@ -375,7 +375,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
     private PublicationContextStatisticsDto getStatistics(PublicationContext pc, User user) {
         int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
-        int reviewableChangesCount = publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
+        int reviewableChangesCount = userService.isCurrentAdmin() ? totalChangesCount :
+                                     publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
         int approvedChangesCount = publicationContextDao.countApprovedChanges(pc.getUri(), user.getUri());
         int rejectedChangesCount = publicationContextDao.countRejectedChanges(pc.getUri(), user.getUri());
         return new PublicationContextStatisticsDto(totalChangesCount, reviewableChangesCount, approvedChangesCount,
@@ -426,6 +427,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private boolean userApprovedEverythingPossibleButNotAll(PublicationContext pc, User user) {
+        if (userService.isCurrentAdmin()) {
+            return false;
+        }
         int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
         int countReviewableChanges = publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
         if (countReviewableChanges == totalChangesCount) {
