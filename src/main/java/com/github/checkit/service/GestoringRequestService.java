@@ -41,8 +41,22 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
         return findRequired(uri);
     }
 
-    public List<GestoringRequestDto> findAllRequestsAsDtos() {
-        return findAll().stream().map(GestoringRequestDto::new).toList();
+    @Transactional(readOnly = true)
+    public List<GestoringRequestDto> findAllRequestsAsDto() {
+        return findAll().stream()
+            .map(gr -> new GestoringRequestDto(gr, vocabularyService.findRequired(gr.getVocabulary()))).toList();
+    }
+
+    /**
+     * Finds gestoring requests created by current user.
+     *
+     * @return list of gestoring requests
+     */
+    @Transactional(readOnly = true)
+    public List<GestoringRequestDto> findMyRequestsAsDto() {
+        URI currentUserUri = userService.getCurrent().getUri();
+        return gestoringRequestDao.findAllFromApplicant(currentUserUri).stream().map(gr -> new GestoringRequestDto(gr,
+            vocabularyService.findRequired(gr.getVocabulary()))).toList();
     }
 
     @Transactional
@@ -89,7 +103,7 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     public void resolveGestoringRequest(String requestId, boolean approved) {
         if (approved) {
             GestoringRequest gestoringRequest = findRequiredById(requestId);
-            Vocabulary vocabulary = vocabularyService.findRequired(gestoringRequest.getVocabulary().getUri());
+            Vocabulary vocabulary = vocabularyService.findRequired(gestoringRequest.getVocabulary());
             User applicant = userService.findRequired(gestoringRequest.getApplicant().getUri());
             vocabulary.addGestor(applicant);
             vocabularyService.update(vocabulary);
@@ -99,11 +113,6 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
 
     public int getAllCount() {
         return gestoringRequestDao.getAllCount();
-    }
-
-    public List<GestoringRequestDto> findMyRequestsAsDto() {
-        URI currentUserUri = userService.getCurrent().getUri();
-        return gestoringRequestDao.findAllFromApplicant(currentUserUri).stream().map(GestoringRequestDto::new).toList();
     }
 
     private URI createUriFromId(String id) {

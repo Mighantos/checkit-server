@@ -31,7 +31,7 @@ public class GestoringRequestController extends BaseController {
     @GetMapping
     @PreAuthorize("hasRole('" + UserRole.ADMIN + "')")
     public List<GestoringRequestDto> getAllGestoringRequests() {
-        return gestoringRequestService.findAllRequestsAsDtos();
+        return gestoringRequestService.findAllRequestsAsDto();
     }
 
     @GetMapping("/my-requests")

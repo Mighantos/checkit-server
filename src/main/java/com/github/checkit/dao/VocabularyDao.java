@@ -43,6 +43,25 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
         }
     }
 
+    /**
+     * Find vocabularies gestored by specified user.
+     *
+     * @param user user
+     * @return list of vocabularies
+     */
+    public List<Vocabulary> findAllGestoredVocabularies(User user) {
+        try {
+            return em.createNativeQuery("SELECT ?vocab WHERE {"
+                    + "?vocab ?jeGestorem ?user ."
+                    + "}", URI.class)
+                .setParameter("user", user.getUri())
+                .setParameter("jeGestorem", URI.create(TermVocabulary.s_p_ma_gestora))
+                .getResultStream().map(this::find).flatMap(Optional::stream).collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
     @Override
     public Optional<Vocabulary> find(URI uri) {
         Objects.requireNonNull(uri);
@@ -136,21 +155,6 @@ public class VocabularyDao extends BaseDao<Vocabulary> {
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
-    }
-
-    /**
-     * Find vocabularies gestored by specified user.
-     *
-     * @param user user
-     * @return list of vocabularies
-     */
-    public List<Vocabulary> findGestoredVocabularies(User user) {
-        return em.createNativeQuery("SELECT ?vocab WHERE {"
-                + "?vocab ?jeGestorem ?user ."
-                + "}", Vocabulary.class)
-            .setParameter("user", user.getUri())
-            .setParameter("jeGestorem", URI.create(TermVocabulary.s_p_ma_gestora))
-            .getResultList();
     }
 
     /**
