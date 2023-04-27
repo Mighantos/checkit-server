@@ -32,6 +32,7 @@ public final class TermVocabulary {
     public static final String s_c_vraceno_zpet = CHANGE_DESCRIPTION_NAMESPACE + "vráceno-zpět";
     public static final String s_c_objekt_zmeny = CHANGE_DESCRIPTION_NAMESPACE + "objekt-změny";
     public static final String s_c_komentovatelna_entita = CHANGE_DESCRIPTION_NAMESPACE + "komentovatelná-entita";
+    public static final String s_c_notifikace = CHANGE_DESCRIPTION_NAMESPACE + "notifikace";
     public static final String s_p_ma_gestora = CHANGE_DESCRIPTION_NAMESPACE + "má-gestora";
     public static final String s_p_je_gestorem = CHANGE_DESCRIPTION_NAMESPACE + "je-gestorem";
     public static final String s_p_ma_zadatele = CHANGE_DESCRIPTION_NAMESPACE + "má-žadatele";
@@ -61,6 +62,7 @@ public final class TermVocabulary {
     public static final String s_c_slovnikovy_kontext = WORKSPACE_NAMESPACE + "slovníkový-kontext";
     public static final String s_c_prilohovy_kontext = WORKSPACE_NAMESPACE + "přílohový-kontext";
     public static final String s_c_slovnik = DATA_DESCRIPTION_NAMESPACE + "slovník";
+    public static final String s_c_Comment = SIOCT_NAMESPACE + "Comment";
     public static final String s_p_ma_krestni_jmeno = DATA_DESCRIPTION_NAMESPACE + "má-křestní-jméno";
     public static final String s_p_ma_prijmeni = DATA_DESCRIPTION_NAMESPACE + "má-příjmení";
     public static final String s_p_vychazi_z_verze = WORKSPACE_NAMESPACE + "vychází-z-verze";
@@ -74,5 +76,7 @@ public final class TermVocabulary {
     public static final String s_p_has_creator = SIOC_NAMESPACE + "has_creator";
     public static final String s_p_topic = SIOC_NAMESPACE + "topic";
     public static final String s_p_content = SIOC_NAMESPACE + "content";
-    public static final String s_c_Comment = SIOCT_NAMESPACE + "Comment";
+    public static final String s_p_read_at = SIOC_NAMESPACE + "read_at";
+    public static final String s_p_addressed_to = SIOC_NAMESPACE + "addressed_to";
+    public static final String s_p_about = SIOC_NAMESPACE + "about";
 }

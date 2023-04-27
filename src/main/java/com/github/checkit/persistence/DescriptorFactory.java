@@ -184,7 +184,7 @@ public class DescriptorFactory {
      * <p>The descriptor specifies that the instance will correspond to the set IRI.
      * It also initializes other required attribute descriptors.
      *
-     * @return Change descriptor
+     * @return Comment descriptor
      */
     public Descriptor commentDescriptor() {
         URI contextUri = URI.create(repositoryConfigProperties.getComment().getContext());
@@ -192,6 +192,22 @@ public class DescriptorFactory {
         descriptor.addAttributeDescriptor(fieldSpec(Comment.class, "topic"),
             new EntityDescriptor((URI) null));
         descriptor.addAttributeDescriptor(fieldSpec(Comment.class, "author"),
+            new EntityDescriptor((URI) null));
+        return descriptor;
+    }
+
+    /**
+     * Creates a JOPA descriptor for a notification entity.
+     *
+     * <p>The descriptor specifies that the instance will correspond to the set IRI.
+     * It also initializes other required attribute descriptors.
+     *
+     * @return Notification descriptor
+     */
+    public Descriptor notificationDescriptor() {
+        URI contextUri = URI.create(repositoryConfigProperties.getNotification().getContext());
+        EntityDescriptor descriptor = entityDescriptor(contextUri);
+        descriptor.addAttributeDescriptor(fieldSpec(Comment.class, "addressedTo"),
             new EntityDescriptor((URI) null));
         return descriptor;
     }
