@@ -91,7 +91,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      *
      * @return list of publication contexts
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PublicationContextDto> getReadonlyPublicationContexts() {
         if (userService.isCurrentAdmin()) {
             return new ArrayList<>();
@@ -111,7 +111,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      *
      * @return list of publication contexts
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PublicationContextDto> getReviewablePublicationContexts() {
         User current = userService.getCurrent();
         List<PublicationContext> publicationContexts =
@@ -129,7 +129,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      * @param pageNumber page number
      * @return list of publication contexts
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PublicationContextDto> getClosedPublicationContexts(int pageNumber) {
         return publicationContextDao.findAllClosed(pageNumber, pageSize).stream().map(pc -> {
             CommentDto finalComment = null;
@@ -154,7 +154,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      * @param publicationContextId identifier of publication context
      * @return publication context detail
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public PublicationContextDetailDto getPublicationContextDetail(String publicationContextId) {
         User current = userService.getCurrent();
         URI publicationContextUri = createPublicationContextUriFromId(publicationContextId);
@@ -182,7 +182,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
      * @param language             preferred language
      * @return basic information about context and changes made
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public ContextChangesDto getChangesInContextInPublicationContext(String publicationContextId, URI vocabularyUri,
                                                                      String language) {
         User current = userService.getCurrent();
@@ -375,7 +375,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
     private PublicationContextStatisticsDto getStatistics(PublicationContext pc, User user) {
         int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
-        int reviewableChangesCount = publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
+        int reviewableChangesCount = userService.isCurrentAdmin() ? totalChangesCount :
+                                     publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
         int approvedChangesCount = publicationContextDao.countApprovedChanges(pc.getUri(), user.getUri());
         int rejectedChangesCount = publicationContextDao.countRejectedChanges(pc.getUri(), user.getUri());
         return new PublicationContextStatisticsDto(totalChangesCount, reviewableChangesCount, approvedChangesCount,
@@ -426,6 +427,9 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private boolean userApprovedEverythingPossibleButNotAll(PublicationContext pc, User user) {
+        if (userService.isCurrentAdmin()) {
+            return false;
+        }
         int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
         int countReviewableChanges = publicationContextDao.countReviewableChanges(pc.getUri(), user.getUri());
         if (countReviewableChanges == totalChangesCount) {
