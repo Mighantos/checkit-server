@@ -9,6 +9,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.PrePersist;
+import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import lombok.Data;
@@ -32,11 +33,11 @@ public class GestoringRequest extends AbstractEntity {
     @ParticipationConstraints(nonEmpty = true)
     @OWLObjectProperty(iri = TermVocabulary.s_p_zada_o_gestorovani, fetch = FetchType.EAGER, cascade =
         CascadeType.DETACH)
-    private Vocabulary vocabulary;
+    private URI vocabulary;
 
     public GestoringRequest(User applicant, Vocabulary vocabulary) {
         this.applicant = applicant;
-        this.vocabulary = vocabulary;
+        this.vocabulary = vocabulary.getUri();
     }
 
     @PrePersist
@@ -55,7 +56,7 @@ public class GestoringRequest extends AbstractEntity {
             + "uri=" + getUri()
             + ", created=" + created
             + ", applicant=" + (applicant != null ? applicant.getUri() : applicant)
-            + ", vocabulary=" + (vocabulary != null ? vocabulary.getUri() : vocabulary)
+            + ", vocabulary=" + vocabulary
             + '}';
     }
 }

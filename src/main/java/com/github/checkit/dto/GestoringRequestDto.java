@@ -1,6 +1,7 @@
 package com.github.checkit.dto;
 
 import com.github.checkit.model.GestoringRequest;
+import com.github.checkit.model.Vocabulary;
 import java.net.URI;
 import java.time.Instant;
 import lombok.Getter;
@@ -17,11 +18,11 @@ public class GestoringRequestDto {
     /**
      * Constructor.
      */
-    public GestoringRequestDto(GestoringRequest gestoringRequest) {
+    public GestoringRequestDto(GestoringRequest gestoringRequest, Vocabulary vocabulary) {
         this.id = gestoringRequest.getId();
         this.uri = gestoringRequest.getUri();
         this.created = gestoringRequest.getCreated();
         this.applicant = new UserDto(gestoringRequest.getApplicant());
-        this.vocabulary = new VocabularyDto(gestoringRequest.getVocabulary());
+        this.vocabulary = new VocabularyDto(vocabulary);
     }
 }

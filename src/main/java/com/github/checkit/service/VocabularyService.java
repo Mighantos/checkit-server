@@ -62,6 +62,17 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
     }
 
     /**
+     * Finds all vocabularies gestored by current user.
+     *
+     * @return list of vocabularies
+     */
+    public List<VocabularyDto> getMyGestoredVocabularies() {
+        User currentUser = userService.getCurrent();
+        return vocabularyDao.findAllGestoredVocabularies(currentUser).stream().map(VocabularyDto::new).sorted()
+            .toList();
+    }
+
+    /**
      * Finds specified vocabulary changed in specified publication context as canonical version or newly created
      * vocabulary.
      *
@@ -85,11 +96,6 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
 
     public int getGestoredCount() {
         return vocabularyDao.getGestoredCount();
-    }
-
-    public List<VocabularyDto> getMyGestoredVocabularies() {
-        User currentUser = userService.getCurrent();
-        return vocabularyDao.findGestoredVocabularies(currentUser).stream().map(VocabularyDto::new).sorted().toList();
     }
 
     public Model getVocabularyContent(URI vocabularyUri) {
