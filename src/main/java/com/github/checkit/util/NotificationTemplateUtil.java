@@ -91,4 +91,31 @@ public final class NotificationTemplateUtil {
             change.getContext().getBasedOnVersion().toString()));
         return notification;
     }
+
+    /**
+     * Creates template for rejection comment on change.
+     *
+     * @param comment created comment
+     * @param change  change which was commented
+     * @param pc      publication context of change
+     * @return Notification template
+     */
+    public static Notification getForRejectionComment(Comment comment, Change change, PublicationContext pc) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "Change rejected").set("cs", "Změna zamítnuta"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s rejected change about \"%s\" in publication context \"%s\", where you contributed.",
+                    comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "en"),
+                    pc.getFromProject().getLabel()))
+            .set("cs",
+                String.format("%s zamítnul změnu ohledně \"%s\" v publikačním kontextu \"%s\", na kterém jste se "
+                        + "podílel/a.",
+                    comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "cs"),
+                    pc.getFromProject().getLabel())));
+        //TODO: change to specific change when frontend supports it
+        notification.setAbout(FrontendPaths.getVocabularyInPublicationContextPath(pc.getId(),
+            change.getContext().getBasedOnVersion().toString()));
+        return notification;
+    }
 }

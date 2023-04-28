@@ -30,8 +30,8 @@ public class UserService extends BaseRepositoryService<User> {
         return userDao;
     }
 
-    public Set<User> getAllInDiscussionOnChange(URI changeUri) {
-        return userDao.getAllInDiscussionOnChange(changeUri);
+    public Set<User> findAllInDiscussionOnChange(URI changeUri) {
+        return userDao.findAllInDiscussionOnChange(changeUri);
     }
 
     /**

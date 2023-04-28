@@ -98,6 +98,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
         comment.setContent(content);
         comment.setTopic(change);
         persist(comment);
+        notificationService.createdRejectionComment(comment, change);
     }
 
     public List<Comment> findAllFinalComments(Change change) {

@@ -146,11 +146,10 @@ public class NotificationService extends BaseRepositoryService<Notification> {
      */
     @Transactional
     public void createdDiscussionComment(Comment comment, Change change) {
-        PublicationContext pc = publicationContextDao.findFromChange(change.getUri()).orElseThrow(
-            () -> new NotFoundException("Publication context of change \"%s\" not found.", change.getUri()));
+        PublicationContext pc = findRequiredPublicationContext(change.getUri());
         Set<User> usersToNotify = new HashSet<>();
         usersToNotify.addAll(change.getReviewBy());
-        usersToNotify.addAll(userService.getAllInDiscussionOnChange(change.getUri()));
+        usersToNotify.addAll(userService.findAllInDiscussionOnChange(change.getUri()));
         usersToNotify.add(pc.getFromProject().getAuthor());
         usersToNotify.remove(comment.getAuthor());
         Notification template = NotificationTemplateUtil.getForDiscussionComment(comment, change, pc);
@@ -159,5 +158,35 @@ public class NotificationService extends BaseRepositoryService<Notification> {
             notification.setAddressedTo(user);
             persist(notification);
         }
+    }
+
+    /**
+     * Creates notifications for project creator of publication with change that was rejected with comment.
+     *
+     * @param comment created comment
+     * @param change  change which was rejected
+     */
+    @Transactional
+    public void createdRejectionComment(Comment comment, Change change) {
+        PublicationContext pc = findRequiredPublicationContext(change.getUri());
+        Set<User> gestors = new HashSet<>();
+        vocabularyService.find(change.getContext().getBasedOnVersion())
+            .ifPresentOrElse(voc -> gestors.addAll(voc.getGestors()),
+                () -> keycloakApiUtil.getAdminIds().stream().map(userService::findRequiredByUserId)
+                    .forEach(gestors::add));
+        Set<User> usersToNotify = new HashSet<>(userService.findAllInDiscussionOnChange(change.getUri()));
+        usersToNotify.removeAll(gestors);
+        usersToNotify.add(pc.getFromProject().getAuthor());
+        Notification template = NotificationTemplateUtil.getForRejectionComment(comment, change, pc);
+        for (User user : usersToNotify) {
+            Notification notification = Notification.createFromTemplate(template);
+            notification.setAddressedTo(user);
+            persist(notification);
+        }
+    }
+
+    private PublicationContext findRequiredPublicationContext(URI changeUri) {
+        return publicationContextDao.findFromChange(changeUri).orElseThrow(
+            () -> new NotFoundException("Publication context of change \"%s\" not found.", changeUri));
     }
 }

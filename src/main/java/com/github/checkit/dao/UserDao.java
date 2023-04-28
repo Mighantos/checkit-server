@@ -23,7 +23,7 @@ public class UserDao extends BaseDao<User> {
      * @param changeUri URI identifier of change
      * @return set of users
      */
-    public Set<User> getAllInDiscussionOnChange(URI changeUri) {
+    public Set<User> findAllInDiscussionOnChange(URI changeUri) {
         Objects.requireNonNull(changeUri);
         try {
             return new HashSet<>(em.createNativeQuery("SELECT DISTINCT ?user WHERE { "
