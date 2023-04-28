@@ -90,4 +90,30 @@ public class NotificationDao extends BaseDao<Notification> {
             throw new PersistenceException(e);
         }
     }
+
+    /**
+     * Gets number of unread notifications for current user.
+     *
+     * @return number of notifications
+     */
+    public int getUnreadCountForUser(URI userUri) {
+        Objects.requireNonNull(userUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(?n) as ?count) WHERE { "
+                    + "?n a ?type ;"
+                    + "   ?addressedTo ?user . "
+                    + "FILTER NOT EXISTS { "
+                    + "     ?n ?readAt ?time . "
+                    + "     } "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("addressedTo", URI.create(TermVocabulary.s_p_addressed_to))
+                .setParameter("user", userUri)
+                .setParameter("readAt", URI.create(TermVocabulary.s_p_read_at))
+                .setDescriptor(descriptorFactory.notificationDescriptor())
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
 }

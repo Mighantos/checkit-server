@@ -30,6 +30,11 @@ public class NotificationController extends BaseController {
         return notificationService.getAllForCurrent(pageNumber, languageTag);
     }
 
+    @GetMapping("/unread/count")
+    public int getUnreadCountForCurrent() {
+        return notificationService.getUnreadCountForCurrent();
+    }
+
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/seen")
     public void markSeen(@RequestParam URI notificationUri) {

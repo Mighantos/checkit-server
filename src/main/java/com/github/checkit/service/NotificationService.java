@@ -63,6 +63,11 @@ public class NotificationService extends BaseRepositoryService<Notification> {
         return notifications.stream().map(notification -> new NotificationDto(notification, languageTag)).toList();
     }
 
+    public int getUnreadCountForCurrent() {
+        User current = userService.getCurrent();
+        return notificationDao.getUnreadCountForUser(current.getUri());
+    }
+
     /**
      * Marks specified notification as read.
      *
