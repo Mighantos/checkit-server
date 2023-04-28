@@ -2,6 +2,8 @@ application:
   version: ${version}
   publicationContext:
     pageSize: 15
+  notification:
+    pageSize: 15
   comment:
     rejectionMinimalContentLength: 10
 
