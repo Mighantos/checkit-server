@@ -520,7 +520,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private PublicationContext findRequiredFromProject(ProjectContext projectContext) {
-        return publicationContextDao.findByProject(projectContext).orElseThrow(
+        return publicationContextDao.findByProject(projectContext.getUri()).orElseThrow(
             () -> new NotFoundException("Publication context related to project \"%s\" was not found.",
                 projectContext.getUri()));
     }

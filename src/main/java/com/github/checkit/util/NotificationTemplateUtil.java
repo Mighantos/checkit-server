@@ -1,5 +1,7 @@
 package com.github.checkit.util;
 
+import com.github.checkit.model.Change;
+import com.github.checkit.model.Comment;
 import com.github.checkit.model.Notification;
 import com.github.checkit.model.PublicationContext;
 import cz.cvut.kbss.jopa.model.MultilingualString;
@@ -21,7 +23,7 @@ public final class NotificationTemplateUtil {
                 pc.getFromProject().getLabel())).set("cs",
             String.format("Byl vytvořen publikační kontext \"%s\" obsahující vámi gestorovaný slovník.",
                 pc.getFromProject().getLabel())));
-        notification.setAbout(FrontendPaths.PUBLICATION_DETAIL_PATH + pc.getId());
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
         return notification;
     }
 
@@ -40,7 +42,7 @@ public final class NotificationTemplateUtil {
                 pc.getFromProject().getLabel())).set("cs",
             String.format("Byl vytvořen publikační kontext \"%s\" s novým slovníkem.",
                 pc.getFromProject().getLabel())));
-        notification.setAbout(FrontendPaths.PUBLICATION_DETAIL_PATH + pc.getId());
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
         return notification;
     }
 
@@ -60,7 +62,33 @@ public final class NotificationTemplateUtil {
                 pc.getFromProject().getLabel())).set("cs",
             String.format("Byl aktualizován publikační kontext \"%s\", který jste revidovali.",
                 pc.getFromProject().getLabel())));
-        notification.setAbout(FrontendPaths.PUBLICATION_DETAIL_PATH + pc.getId());
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
+        return notification;
+    }
+
+    /**
+     * Creates template for discussion comment on change.
+     *
+     * @param comment created comment
+     * @param change  change which was commented
+     * @param pc      publication context of change
+     * @return Notification template
+     */
+    public static Notification getForDiscussionComment(Comment comment, Change change, PublicationContext pc) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "New comment").set("cs", "Nový komentář"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s commented on change about \"%s\" in publication context \"%s\".",
+                    comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "en"),
+                    pc.getFromProject().getLabel()))
+            .set("cs",
+                String.format("%s okomentoval změnu ohledně \"%s\" v publikačním kontextu \"%s\".",
+                    comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "cs"),
+                    pc.getFromProject().getLabel())));
+        //TODO: change to specific change when frontend supports it
+        notification.setAbout(FrontendPaths.getVocabularyInPublicationContextPath(pc.getId(),
+            change.getContext().getBasedOnVersion().toString()));
         return notification;
     }
 }

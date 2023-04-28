@@ -109,6 +109,75 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     }
 
     @Override
+    public Optional<PublicationContext> find(URI uri) {
+        Objects.requireNonNull(uri);
+        try {
+            Descriptor descriptor = descriptorFactory.publicationContextDescriptor(uri);
+            return Optional.ofNullable(em.find(type, uri, descriptor));
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Finds not approved publication context related to specified project.
+     *
+     * @param projectContextUri URI identifier of project context
+     * @return publication context
+     */
+    public Optional<PublicationContext> findByProject(URI projectContextUri) {
+        Objects.requireNonNull(projectContextUri);
+        try {
+            return find(em.createNativeQuery("SELECT DISTINCT ?pc WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?fromProject ?project . "
+                    + "FILTER NOT EXISTS { "
+                    + "     ?comment a ?commentType ; "
+                    + "              ?hasTag ?tag ; "
+                    + "              ?topic ?pc . "
+                    + "     FILTER(STR(?tag) = ?approval) "
+                    + "     } "
+                    + "}", URI.class)
+                .setParameter("type", typeUri)
+                .setParameter("fromProject", URI.create(TermVocabulary.s_p_z_projektu))
+                .setParameter("project", projectContextUri)
+                .setParameter("commentType", URI.create(TermVocabulary.s_c_Comment))
+                .setParameter("hasTag", URI.create(TermVocabulary.s_p_ma_stitek))
+                .setParameter("topic", URI.create(TermVocabulary.s_p_topic))
+                .setParameter("approval", CommentTag.APPROVAL)
+                .getSingleResult());
+        } catch (NoResultException nre) {
+            return Optional.empty();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Finds publication context with specified change inside.
+     *
+     * @param changeUri URI identifier of change
+     * @return publication context
+     */
+    public Optional<PublicationContext> findFromChange(URI changeUri) {
+        Objects.requireNonNull(changeUri);
+        try {
+            return find(em.createNativeQuery("SELECT ?pc WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "}", URI.class)
+                .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("change", changeUri)
+                .getSingleResult());
+        } catch (NoResultException nre) {
+            return Optional.empty();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    @Override
     public void persist(PublicationContext entity) {
         Objects.requireNonNull(entity);
         try {
@@ -160,51 +229,6 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                 .setParameter("topic", URI.create(TermVocabulary.s_p_topic))
                 .setParameter("approval", CommentTag.APPROVAL)
                 .getSingleResult();
-        } catch (RuntimeException e) {
-            throw new PersistenceException(e);
-        }
-    }
-
-    @Override
-    public Optional<PublicationContext> find(URI uri) {
-        Objects.requireNonNull(uri);
-        try {
-            Descriptor descriptor = descriptorFactory.publicationContextDescriptor(uri);
-            return Optional.ofNullable(em.find(type, uri, descriptor));
-        } catch (RuntimeException e) {
-            throw new PersistenceException(e);
-        }
-    }
-
-    /**
-     * Finds not approved publication context related to specified project.
-     *
-     * @param projectContext project context
-     * @return publication context
-     */
-    public Optional<PublicationContext> findByProject(ProjectContext projectContext) {
-        try {
-            URI uri = em.createNativeQuery("SELECT DISTINCT ?pc WHERE { "
-                    + "?pc a ?type ; "
-                    + "    ?fromProject ?project . "
-                    + "FILTER NOT EXISTS { "
-                    + "     ?comment a ?commentType ; "
-                    + "              ?hasTag ?tag ; "
-                    + "              ?topic ?pc . "
-                    + "     FILTER(STR(?tag) = ?approval) "
-                    + "     } "
-                    + "}", URI.class)
-                .setParameter("type", typeUri)
-                .setParameter("fromProject", URI.create(TermVocabulary.s_p_z_projektu))
-                .setParameter("project", projectContext.getUri())
-                .setParameter("commentType", URI.create(TermVocabulary.s_c_Comment))
-                .setParameter("hasTag", URI.create(TermVocabulary.s_p_ma_stitek))
-                .setParameter("topic", URI.create(TermVocabulary.s_p_topic))
-                .setParameter("approval", CommentTag.APPROVAL)
-                .getSingleResult();
-            return find(uri);
-        } catch (NoResultException nre) {
-            return Optional.empty();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }

@@ -3,8 +3,12 @@ package com.github.checkit.service;
 import com.github.checkit.config.properties.ApplicationConfigProperties;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.NotificationDao;
+import com.github.checkit.dao.PublicationContextDao;
 import com.github.checkit.dto.NotificationDto;
 import com.github.checkit.exception.ForbiddenException;
+import com.github.checkit.exception.NotFoundException;
+import com.github.checkit.model.Change;
+import com.github.checkit.model.Comment;
 import com.github.checkit.model.Notification;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
@@ -23,23 +27,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService extends BaseRepositoryService<Notification> {
 
     private final NotificationDao notificationDao;
+    private final PublicationContextDao publicationContextDao;
     private final UserService userService;
     private final VocabularyService vocabularyService;
-    private final CommentService commentService;
     private final KeycloakApiUtil keycloakApiUtil;
     private final int pageSize;
 
     /**
      * Constructor.
      */
-    public NotificationService(NotificationDao notificationDao, UserService userService,
-                               VocabularyService vocabularyService, CommentService commentService,
-                               KeycloakApiUtil keycloakApiUtil,
+    public NotificationService(NotificationDao notificationDao, PublicationContextDao publicationContextDao,
+                               UserService userService,
+                               VocabularyService vocabularyService, KeycloakApiUtil keycloakApiUtil,
                                ApplicationConfigProperties applicationConfigProperties) {
         this.notificationDao = notificationDao;
+        this.publicationContextDao = publicationContextDao;
         this.userService = userService;
         this.vocabularyService = vocabularyService;
-        this.commentService = commentService;
         this.keycloakApiUtil = keycloakApiUtil;
         this.pageSize = applicationConfigProperties.getNotification().getPageSize();
     }
@@ -86,7 +90,7 @@ public class NotificationService extends BaseRepositoryService<Notification> {
     /**
      * Creates notifications for gestors about new publication context.
      *
-     * @param publicationContext publication context
+     * @param publicationContext created publication context
      */
     @Transactional
     public void createdPublication(PublicationContext publicationContext) {
@@ -122,7 +126,7 @@ public class NotificationService extends BaseRepositoryService<Notification> {
     /**
      * Creates notifications for gestors about new version of existing publication context.
      *
-     * @param publicationContext publication context
+     * @param publicationContext updated publication context
      */
     @Transactional
     public void updatedPublication(PublicationContext publicationContext, Set<User> reviewers) {
@@ -130,6 +134,29 @@ public class NotificationService extends BaseRepositoryService<Notification> {
         for (User reviewer : reviewers) {
             Notification notification = Notification.createFromTemplate(template);
             notification.setAddressedTo(reviewer);
+            persist(notification);
+        }
+    }
+
+    /**
+     * Creates notifications for involved users of change that was commented.
+     *
+     * @param comment created comment
+     * @param change  change which was commented
+     */
+    @Transactional
+    public void createdDiscussionComment(Comment comment, Change change) {
+        PublicationContext pc = publicationContextDao.findFromChange(change.getUri()).orElseThrow(
+            () -> new NotFoundException("Publication context of change \"%s\" not found.", change.getUri()));
+        Set<User> usersToNotify = new HashSet<>();
+        usersToNotify.addAll(change.getReviewBy());
+        usersToNotify.addAll(userService.getAllInDiscussionOnChange(change.getUri()));
+        usersToNotify.add(pc.getFromProject().getAuthor());
+        usersToNotify.remove(comment.getAuthor());
+        Notification template = NotificationTemplateUtil.getForDiscussionComment(comment, change, pc);
+        for (User user : usersToNotify) {
+            Notification notification = Notification.createFromTemplate(template);
+            notification.setAddressedTo(user);
             persist(notification);
         }
     }
