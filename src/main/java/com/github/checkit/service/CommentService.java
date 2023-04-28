@@ -115,4 +115,8 @@ public class CommentService extends BaseRepositoryService<Comment> {
     public void removeFinalComment(PublicationContext publicationContext) {
         findFinalComment(publicationContext).ifPresent(this::remove);
     }
+
+    public int getDiscussionCommentsCount(Change change) {
+        return commentDao.getDiscussionCommentsCount(change.getUri());
+    }
 }

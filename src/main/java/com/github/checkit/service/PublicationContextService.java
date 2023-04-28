@@ -310,7 +310,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             .filter(change ->
                 change.getContext().getBasedOnVersion().equals(vocabularyUri))
             .map(change ->
-                new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current)))
+                new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current),
+                    commentService.getDiscussionCommentsCount(change)))
             .toList());
         if (changeDtos.isEmpty()) {
             throw new NotFoundException("No changes in vocabulary \"%s\" found in publication context \"%s\".",

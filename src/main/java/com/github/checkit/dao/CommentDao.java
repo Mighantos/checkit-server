@@ -34,6 +34,7 @@ public class CommentDao extends BaseDao<Comment> {
      * @return list of comments
      */
     public List<Comment> findAllRelatedToChange(URI changeUri) {
+        Objects.requireNonNull(changeUri);
         try {
             return em.createNativeQuery("SELECT ?comment WHERE { "
                     + "?comment a ?type ; "
@@ -182,6 +183,32 @@ public class CommentDao extends BaseDao<Comment> {
         Objects.requireNonNull(entity);
         try {
             em.remove(em.merge(entity, descriptorFactory.commentDescriptor()));
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Gets number of discussion comments on specified change.
+     *
+     * @param changeUri URI identifier of change
+     * @return count of discussion comments
+     */
+    public int getDiscussionCommentsCount(URI changeUri) {
+        Objects.requireNonNull(changeUri);
+        try {
+            return em.createNativeQuery("SELECT (COUNT(?comment) as ?count) WHERE { "
+                    + "?comment a ?type ; "
+                    + "         ?topic ?change ; "
+                    + "         ?hasTag ?tag . "
+                    + "FILTER(STR(?tag) = ?discussion) "
+                    + "}", Integer.class)
+                .setParameter("type", typeUri)
+                .setParameter("topic", URI.create(TermVocabulary.s_p_topic))
+                .setParameter("change", changeUri)
+                .setParameter("hasTag", URI.create(TermVocabulary.s_p_ma_stitek))
+                .setParameter("discussion", CommentTag.DISCUSSION)
+                .getSingleResult();
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
         }
