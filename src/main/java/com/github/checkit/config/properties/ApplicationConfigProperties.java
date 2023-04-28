@@ -22,13 +22,23 @@ public class ApplicationConfigProperties {
     private CommentProperties comment;
     @Nonnull
     private PublicationContextProperties publicationContext;
-
+    @Nonnull
+    private NotificationProperties notification;
 
     @Getter
     @Setter
     @Configuration
     @ConfigurationProperties("publicationcontext")
     public static class PublicationContextProperties {
+        @Nonnull
+        private Integer pageSize;
+    }
+
+    @Getter
+    @Setter
+    @Configuration
+    @ConfigurationProperties("notification")
+    public static class NotificationProperties {
         @Nonnull
         private Integer pageSize;
     }

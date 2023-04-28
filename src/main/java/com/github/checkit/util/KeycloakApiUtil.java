@@ -79,6 +79,11 @@ public class KeycloakApiUtil {
         return api.clients().get(clientUUID).roles().get(adminRole.getName()).getUserMembers().size();
     }
 
+    public List<String> getAdminIds() {
+        return api.clients().get(clientUUID).roles().get(adminRole.getName()).getUserMembers()
+            .stream().map(UserRepresentation::getId).toList();
+    }
+
     private UserResource fetchUser(String userId) {
         try {
             UserResource user = api.users().get(userId);

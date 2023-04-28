@@ -19,4 +19,8 @@ public class ForbiddenException extends BaseException {
     public static ForbiddenException createForbiddenToReviewChange(URI userUri, URI changeUri) {
         return new ForbiddenException("User \"%s\" can't review change \"%s\".", userUri, changeUri);
     }
+
+    public static ForbiddenException createForbiddenToMarkNotification() {
+        return new ForbiddenException("Can't mark notifications of other users as read.");
+    }
 }

@@ -18,7 +18,9 @@ import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import jakarta.validation.constraints.NotBlank;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import lombok.Data;
@@ -169,5 +171,17 @@ public class Change extends AbstractCommentableEntity {
 
     public boolean notApproved() {
         return getApprovedBy().isEmpty();
+    }
+
+    /**
+     * Gets users who reviewed this change.
+     *
+     * @return list of users
+     */
+    public List<User> getReviewBy() {
+        List<User> reviewedBy = new ArrayList<>();
+        reviewedBy.addAll(getApprovedBy());
+        reviewedBy.addAll(getRejectedBy());
+        return reviewedBy;
     }
 }

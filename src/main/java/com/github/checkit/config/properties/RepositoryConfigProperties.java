@@ -36,6 +36,9 @@ public class RepositoryConfigProperties {
     @Nonnull
     private CommentProperties comment;
 
+    @Nonnull
+    private NotificationProperties notification;
+
     @Getter
     @Setter
     @Configuration
@@ -64,6 +67,16 @@ public class RepositoryConfigProperties {
     @Configuration
     @ConfigurationProperties("comment")
     public static class CommentProperties {
+
+        @Nonnull
+        private String context;
+    }
+
+    @Getter
+    @Setter
+    @Configuration
+    @ConfigurationProperties("notification")
+    public static class NotificationProperties {
 
         @Nonnull
         private String context;
