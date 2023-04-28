@@ -4,6 +4,7 @@ import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.Comment;
 import com.github.checkit.model.GestoringRequest;
+import com.github.checkit.model.Notification;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.Vocabulary;
@@ -175,6 +176,8 @@ public class DescriptorFactory {
         EntityDescriptor descriptor = entityDescriptor(projectContextUri);
         descriptor.addAttributeDescriptor(fieldSpec(ProjectContext.class, "vocabularyContexts"),
             new EntityDescriptor((URI) null));
+        descriptor.addAttributeDescriptor(fieldSpec(ProjectContext.class, "author"),
+            new EntityDescriptor((URI) null));
         return descriptor;
     }
 
@@ -207,7 +210,7 @@ public class DescriptorFactory {
     public Descriptor notificationDescriptor() {
         URI contextUri = URI.create(repositoryConfigProperties.getNotification().getContext());
         EntityDescriptor descriptor = entityDescriptor(contextUri);
-        descriptor.addAttributeDescriptor(fieldSpec(Comment.class, "addressedTo"),
+        descriptor.addAttributeDescriptor(fieldSpec(Notification.class, "addressedTo"),
             new EntityDescriptor((URI) null));
         return descriptor;
     }

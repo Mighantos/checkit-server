@@ -7,6 +7,7 @@ import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.User;
 import com.github.checkit.model.auxilary.ChangeSubjectType;
+import com.github.checkit.util.Utils;
 import java.net.URI;
 import java.util.Comparator;
 import java.util.Objects;
@@ -42,7 +43,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.uri = change.getUri();
         this.type = change.getChangeType();
         this.subjectType = change.getSubjectType();
-        this.label = resolveLabel(change, languageTag, defaultLanguageTag);
+        this.label = Utils.resolveMultilingual(change.getLabel(), languageTag, defaultLanguageTag);
         this.subject = change.getSubject();
         this.predicate = change.getPredicate();
         this.object = new ChangeObjectDto(change.getObject());
@@ -94,16 +95,6 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.state = changeState;
         this.rejectionComment = null;
         this.countable = false;
-    }
-
-    private String resolveLabel(Change change, String languageTag, String defaultLanguageTag) {
-        if (change.getLabel().contains(languageTag)) {
-            return change.getLabel().get(languageTag);
-        }
-        if (change.getLabel().contains(defaultLanguageTag)) {
-            return change.getLabel().get(defaultLanguageTag);
-        }
-        return change.getLabel().get();
     }
 
     private ChangeState resolveChangeState(Change change, User user) {

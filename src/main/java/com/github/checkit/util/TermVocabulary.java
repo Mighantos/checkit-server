@@ -72,6 +72,7 @@ public final class TermVocabulary {
     public static final String s_p_ma_datum_a_cas_vytvoreni = DATA_DESCRIPTION_NAMESPACE + "má-datum-a-čas-vytvoření";
     public static final String s_p_ma_datum_a_cas_posledni_modifikace = DATA_DESCRIPTION_NAMESPACE
         + "má-datum-a-čas-poslední-modifikace";
+    public static final String s_p_ma_autora = DATA_DESCRIPTION_NAMESPACE + "má-autora";
     public static final String s_p_ma_vztazeny_prvek_1 = PRIMARY_VOCABULARY_NAMESPACE + "má-vztažený-prvek-1";
     public static final String s_p_has_creator = SIOC_NAMESPACE + "has_creator";
     public static final String s_p_topic = SIOC_NAMESPACE + "topic";

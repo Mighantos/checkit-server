@@ -56,6 +56,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final VocabularyService vocabularyService;
     private final UserService userService;
     private final CommentService commentService;
+    private final NotificationService notificationService;
     private final String defaultLanguageTag;
     private final int minimalRejectionCommentLength;
     private final int pageSize;
@@ -67,6 +68,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                                      ProjectContextService projectContextService, ChangeService changeService,
                                      VocabularyService vocabularyService, UserService userService,
                                      CommentService commentService,
+                                     NotificationService notificationService,
                                      RepositoryConfigProperties repositoryConfigProperties,
                                      ApplicationConfigProperties applicationConfigProperties) {
         this.publicationContextDao = publicationContextDao;
@@ -75,6 +77,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         this.vocabularyService = vocabularyService;
         this.userService = userService;
         this.commentService = commentService;
+        this.notificationService = notificationService;
         this.defaultLanguageTag = repositoryConfigProperties.getLanguage();
         this.minimalRejectionCommentLength =
             applicationConfigProperties.getComment().getRejectionMinimalContentLength();
@@ -213,9 +216,11 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         }
 
         PublicationContext publicationContext;
+        Set<User> reviewers = new HashSet<>();
         boolean publicationContextExists = publicationContextDao.exists(project);
         if (publicationContextExists) {
             publicationContext = findRequiredFromProject(project);
+            publicationContext.getChanges().forEach(change -> reviewers.addAll(change.getReviewBy()));
         } else {
             //Don't create publication context with no changes.
             if (currentChanges.isEmpty()) {
@@ -236,11 +241,13 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         if (publicationContextExists) {
             publicationContextUri = update(publicationContext).getUri();
             commentService.removeFinalComment(publicationContext);
+            notificationService.updatedPublication(publicationContext, reviewers);
             logger.info("Changes in publication context \"{}\" were updated from project \"{}\".",
                 publicationContextUri, projectUri);
         } else {
             persist(publicationContext);
             publicationContextUri = publicationContext.getUri();
+            notificationService.createdPublication(publicationContext);
             logger.info("Publication context \"{}\" was created from project \"{}\".", publicationContextUri,
                 projectUri);
         }
