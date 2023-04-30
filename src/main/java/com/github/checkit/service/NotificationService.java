@@ -7,6 +7,7 @@ import com.github.checkit.dao.PublicationContextDao;
 import com.github.checkit.dto.NotificationDto;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
+import com.github.checkit.exception.NotificationAlreadyReadException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.Comment;
 import com.github.checkit.model.Notification;
@@ -18,6 +19,7 @@ import com.github.checkit.util.NotificationTemplateUtil;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -82,6 +84,9 @@ public class NotificationService extends BaseRepositoryService<Notification> {
         Notification notification = findRequired(notificationUri);
         if (!notification.getAddressedTo().equals(userService.getCurrent())) {
             throw ForbiddenException.createForbiddenToMarkNotification();
+        }
+        if (Objects.nonNull(notification.getReadAt())) {
+            throw NotificationAlreadyReadException.create(notificationUri);
         }
         notification.markRead();
         update(notification);
