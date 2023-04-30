@@ -381,7 +381,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
     private List<CommentDto> resolveRejectionCommentsOfOthers(Change change, User current) {
         return commentService.findAllFinalComments(change).stream()
-            .filter(comment -> comment.getAuthor().equals(current)).map(CommentDto::new).toList();
+            .filter(comment -> !comment.getAuthor().equals(current)).map(CommentDto::new).toList();
     }
 
     private URI createPublicationContextUriFromId(String id) {
