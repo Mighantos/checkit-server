@@ -311,7 +311,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             .filter(change ->
                 change.getContext().getBasedOnVersion().equals(vocabularyUri))
             .map(change ->
-                new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComments(change),
+                new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current),
+                    resolveRejectionCommentsOfOthers(change, current),
                     commentService.getDiscussionCommentsCount(change)))
             .toList());
         if (changeDtos.isEmpty()) {
@@ -369,8 +370,18 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         return finalComment;
     }
 
-    private List<CommentDto> resolveRejectionComments(Change change) {
-        return commentService.findAllFinalComments(change).stream().map(CommentDto::new).toList();
+    private CommentDto resolveRejectionComment(Change change, User current) {
+        CommentDto rejectionComment = null;
+        Optional<Comment> comment = commentService.findFinalComment(change, current);
+        if (comment.isPresent()) {
+            rejectionComment = new CommentDto(comment.get());
+        }
+        return rejectionComment;
+    }
+
+    private List<CommentDto> resolveRejectionCommentsOfOthers(Change change, User current) {
+        return commentService.findAllFinalComments(change).stream()
+            .filter(comment -> comment.getAuthor().equals(current)).map(CommentDto::new).toList();
     }
 
     private URI createPublicationContextUriFromId(String id) {

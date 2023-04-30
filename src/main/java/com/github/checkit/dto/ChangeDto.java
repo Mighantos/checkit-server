@@ -31,7 +31,10 @@ public class ChangeDto implements Comparable<ChangeDto> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final ChangeObjectDto newObject;
     private final ChangeState state;
-    private final List<CommentDto> rejectionComments;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final CommentDto rejectionComment;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private final List<CommentDto> rejectionCommentsOfOthers;
     private final int numberOfComments;
     @JsonIgnore
     private final boolean countable;
@@ -40,7 +43,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
      * Constructor.
      */
     public ChangeDto(Change change, User user, String languageTag, String defaultLanguageTag,
-                     List<CommentDto> rejectionComments, int numberOfComments) {
+                     CommentDto rejectionComment, List<CommentDto> rejectionCommentsOfOthers, int numberOfComments) {
         this.id = change.getId();
         this.uri = change.getUri();
         this.type = change.getChangeType();
@@ -55,7 +58,8 @@ public class ChangeDto implements Comparable<ChangeDto> {
             this.newObject = null;
         }
         this.state = resolveChangeState(change, user);
-        this.rejectionComments = rejectionComments;
+        this.rejectionComment = rejectionComment;
+        this.rejectionCommentsOfOthers = rejectionCommentsOfOthers;
         this.numberOfComments = numberOfComments;
         this.countable = change.getCountable();
     }
@@ -78,7 +82,8 @@ public class ChangeDto implements Comparable<ChangeDto> {
             this.newObject = null;
         }
         this.state = ChangeState.NOT_REVIEWED;
-        this.rejectionComments = new ArrayList<>();
+        this.rejectionComment = null;
+        this.rejectionCommentsOfOthers = new ArrayList<>();
         this.numberOfComments = 0;
         this.countable = true;
     }
@@ -97,7 +102,8 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.object = new ChangeObjectDto(restrictionDto);
         this.newObject = null;
         this.state = changeState;
-        this.rejectionComments = new ArrayList<>();
+        this.rejectionComment = null;
+        this.rejectionCommentsOfOthers = new ArrayList<>();
         this.numberOfComments = 0;
         this.countable = false;
     }
