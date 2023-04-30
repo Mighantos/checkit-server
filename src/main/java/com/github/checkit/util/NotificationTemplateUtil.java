@@ -86,9 +86,8 @@ public final class NotificationTemplateUtil {
                 String.format("%s okomentoval změnu ohledně \"%s\" v publikačním kontextu \"%s\".",
                     comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "cs"),
                     pc.getFromProject().getLabel())));
-        //TODO: change to specific change when frontend supports it
-        notification.setAbout(FrontendPaths.getVocabularyInPublicationContextPath(pc.getId(),
-            change.getContext().getBasedOnVersion().toString()));
+        notification.setAbout(FrontendPaths.getChangeInVocabularyInPublicationContextPath(pc.getId(),
+            change.getContext().getBasedOnVersion().toString(), change.getId()));
         return notification;
     }
 
@@ -113,9 +112,8 @@ public final class NotificationTemplateUtil {
                         + "podílel/a.",
                     comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "cs"),
                     pc.getFromProject().getLabel())));
-        //TODO: change to specific change when frontend supports it
-        notification.setAbout(FrontendPaths.getVocabularyInPublicationContextPath(pc.getId(),
-            change.getContext().getBasedOnVersion().toString()));
+        notification.setAbout(FrontendPaths.getChangeInVocabularyInPublicationContextPath(pc.getId(),
+            change.getContext().getBasedOnVersion().toString(), change.getId()));
         return notification;
     }
 }
