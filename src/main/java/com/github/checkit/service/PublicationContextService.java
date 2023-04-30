@@ -247,7 +247,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         } else {
             persist(publicationContext);
             publicationContextUri = publicationContext.getUri();
-            notificationService.createdPublication(publicationContext);
+            notificationService.createdPublicationContext(publicationContext);
             logger.info("Publication context \"{}\" was created from project \"{}\".", publicationContextUri,
                 projectUri);
         }
@@ -276,6 +276,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         comment.setAuthor(current);
         comment.setContent(finalComment);
         commentService.persist(comment);
+        notificationService.approvedPublicationContext(comment, publicationContext);
     }
 
     /**
@@ -300,7 +301,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         comment.setAuthor(current);
         comment.setContent(finalComment);
         commentService.persist(comment);
-
+        notificationService.rejectedPublicationContext(comment, publicationContext);
     }
 
     private List<ChangeDto> convertChangesInVocabularyToDtos(PublicationContext pc, User current, String language,

@@ -93,7 +93,7 @@ public class NotificationService extends BaseRepositoryService<Notification> {
      * @param publicationContext created publication context
      */
     @Transactional
-    public void createdPublication(PublicationContext publicationContext) {
+    public void createdPublicationContext(PublicationContext publicationContext) {
         Set<User> gestorUsers = new HashSet<>();
         Set<URI> vocabularyURIs = new HashSet<>();
         publicationContext.getChanges().forEach(change -> vocabularyURIs.add(change.getContext().getBasedOnVersion()));
@@ -119,6 +119,44 @@ public class NotificationService extends BaseRepositoryService<Notification> {
         for (String adminId : keycloakApiUtil.getAdminIds()) {
             Notification notification = Notification.createFromTemplate(template);
             notification.setAddressedTo(userService.findRequiredByUserId(adminId));
+            persist(notification);
+        }
+    }
+
+    /**
+     * Creates notifications for editors about approved publication context.
+     *
+     * @param comment            Approving comment
+     * @param publicationContext approved publication context
+     */
+    @Transactional
+    public void approvedPublicationContext(Comment comment, PublicationContext publicationContext) {
+        Set<User> gestorUsers = new HashSet<>();
+        gestorUsers.add(publicationContext.getFromProject().getAuthor());
+        Notification template =
+            NotificationTemplateUtil.getForApprovingCommentOnPublicationContext(comment, publicationContext);
+        for (User gestorUser : gestorUsers) {
+            Notification notification = Notification.createFromTemplate(template);
+            notification.setAddressedTo(gestorUser);
+            persist(notification);
+        }
+    }
+
+    /**
+     * Creates notifications for editors about rejected publication context.
+     *
+     * @param comment            Rejection comment
+     * @param publicationContext approved publication context
+     */
+    @Transactional
+    public void rejectedPublicationContext(Comment comment, PublicationContext publicationContext) {
+        Set<User> gestorUsers = new HashSet<>();
+        gestorUsers.add(publicationContext.getFromProject().getAuthor());
+        Notification template =
+            NotificationTemplateUtil.getForRejectionCommentOnPublicationContext(comment, publicationContext);
+        for (User gestorUser : gestorUsers) {
+            Notification notification = Notification.createFromTemplate(template);
+            notification.setAddressedTo(gestorUser);
             persist(notification);
         }
     }
@@ -177,7 +215,7 @@ public class NotificationService extends BaseRepositoryService<Notification> {
         Set<User> usersToNotify = new HashSet<>(userService.findAllInDiscussionOnChange(change.getUri()));
         usersToNotify.removeAll(gestors);
         usersToNotify.add(pc.getFromProject().getAuthor());
-        Notification template = NotificationTemplateUtil.getForRejectionComment(comment, change, pc);
+        Notification template = NotificationTemplateUtil.getForRejectionCommentOnChange(comment, change, pc);
         for (User user : usersToNotify) {
             Notification notification = Notification.createFromTemplate(template);
             notification.setAddressedTo(user);

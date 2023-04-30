@@ -99,7 +99,7 @@ public final class NotificationTemplateUtil {
      * @param pc      publication context of change
      * @return Notification template
      */
-    public static Notification getForRejectionComment(Comment comment, Change change, PublicationContext pc) {
+    public static Notification getForRejectionCommentOnChange(Comment comment, Change change, PublicationContext pc) {
         Notification notification = new Notification();
         notification.setTitle(
             new MultilingualString().set("en", "Change rejected").set("cs", "Změna zamítnuta"));
@@ -114,6 +114,52 @@ public final class NotificationTemplateUtil {
                     pc.getFromProject().getLabel())));
         notification.setAbout(FrontendPaths.getChangeInVocabularyInPublicationContextPath(pc.getId(),
             change.getContext().getBasedOnVersion().toString(), change.getId()));
+        return notification;
+    }
+
+    /**
+     * Creates template for approved publication context.
+     *
+     * @param comment created comment
+     * @param pc      publication context of comment
+     * @return Notification template
+     */
+    public static Notification getForApprovingCommentOnPublicationContext(Comment comment,
+                                                                        PublicationContext pc) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "Publication context approved").set("cs", "Publikační kontext "
+                + "schválen"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s approved publication context \"%s\", where you contributed.",
+                    comment.getAuthor().getFullName(), pc.getFromProject().getLabel()))
+            .set("cs",
+                String.format("%s schválil publikační kontext \"%s\", na kterém jste se podílel/a.",
+                    comment.getAuthor().getFullName(), pc.getFromProject().getLabel())));
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
+        return notification;
+    }
+
+    /**
+     * Creates template for rejected publication context.
+     *
+     * @param comment created comment
+     * @param pc      publication context of comment
+     * @return Notification template
+     */
+    public static Notification getForRejectionCommentOnPublicationContext(Comment comment,
+                                                                        PublicationContext pc) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "Publication context rejected").set("cs", "Publikační kontext "
+                + "zamítnut"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s rejected publication context \"%s\", where you contributed.",
+                    comment.getAuthor().getFullName(), pc.getFromProject().getLabel()))
+            .set("cs",
+                String.format("%s zamítnul publikační kontext \"%s\", na kterém jste se podílel/a.",
+                    comment.getAuthor().getFullName(), pc.getFromProject().getLabel())));
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
         return notification;
     }
 }
