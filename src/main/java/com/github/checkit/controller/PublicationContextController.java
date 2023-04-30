@@ -67,9 +67,9 @@ public class PublicationContextController extends BaseController {
      * @return Object with name of vocabulary a list of changes
      */
     @GetMapping("/{publicationContextId}/vocabulary-changes")
-    public ContextChangesDto getPublicationContextDetail(@PathVariable String publicationContextId,
-                                                         @RequestParam("vocabularyUri") URI vocabularyUri,
-                                                         @RequestParam(required = false) String language) {
+    public ContextChangesDto getChangesInContextInPublicationContext(@PathVariable String publicationContextId,
+                                                                     @RequestParam("vocabularyUri") URI vocabularyUri,
+                                                                     @RequestParam(required = false) String language) {
         if (Objects.isNull(language) || language.isEmpty()) {
             language = repositoryConfigProperties.getLanguage();
         }
