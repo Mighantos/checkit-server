@@ -8,7 +8,6 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import java.net.URI;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
@@ -27,7 +26,7 @@ public class ChangeDao extends BaseDao<Change> {
     public Optional<Change> find(URI uri) {
         Objects.requireNonNull(uri);
         try {
-            Descriptor descriptor = descriptorFactory.changeDescriptor(resolvePublicationContext(uri));
+            Descriptor descriptor = descriptorFactory.changeDescriptor(resolvePublicationContextUri(uri));
             return Optional.ofNullable(em.find(type, uri, descriptor));
         } catch (RuntimeException e) {
             throw new PersistenceException(e);
@@ -38,7 +37,7 @@ public class ChangeDao extends BaseDao<Change> {
     public Change update(Change entity) {
         Objects.requireNonNull(entity);
         try {
-            Descriptor descriptor = descriptorFactory.changeDescriptor(resolvePublicationContext(entity.getUri()));
+            Descriptor descriptor = descriptorFactory.changeDescriptor(resolvePublicationContextUri(entity.getUri()));
             Change merged = em.merge(entity, descriptor);
             em.getEntityManagerFactory().getCache().evict(entity.getUri());
             return merged;
@@ -58,9 +57,9 @@ public class ChangeDao extends BaseDao<Change> {
         Objects.requireNonNull(userUri);
         Objects.requireNonNull(changeUri);
         try {
-            return em.createNativeQuery("ASK {"
+            return em.createNativeQuery("ASK { "
                     + "?change a ?type ; "
-                    + "    ?inContext ?ctx . "
+                    + "        ?inContext ?ctx . "
                     + "?ctx ?basedOn ?voc . "
                     + "?voc ?gestoredBy ?user ."
                     + "}", Boolean.class)
@@ -126,12 +125,12 @@ public class ChangeDao extends BaseDao<Change> {
         }
     }
 
-    private URI resolvePublicationContext(URI changeUri) {
+    private URI resolvePublicationContextUri(URI changeUri) {
         Objects.requireNonNull(changeUri);
         try {
-            return em.createNativeQuery("SELECT ?pc WHERE {"
+            return em.createNativeQuery("SELECT ?pc WHERE { "
                     + "?change a ?type . "
-                    + "?pc ?hasChange ?change ."
+                    + "?pc ?hasChange ?change . "
                     + "}", URI.class)
                 .setParameter("change", changeUri)
                 .setParameter("type", typeUri)

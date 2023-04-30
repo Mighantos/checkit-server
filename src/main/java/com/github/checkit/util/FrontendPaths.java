@@ -1,12 +1,30 @@
 package com.github.checkit.util;
 
+import java.net.URI;
+
 /**
  * This class contains some URL paths of Frontend CheckIt used in notifications.
  */
 public final class FrontendPaths {
 
-    public static String PUBLICATION_SEPARATOR = "publications";
+    private static final String PUBLICATION_CONTEXT_PATH_NAME = "publications";
+    private static final String VOCABULARY_IN_PUBLICATION_CONTEXT_PATH_NAME = "vocabulary";
 
-    public static String PUBLICATIONS_PATH = "/" + PUBLICATION_SEPARATOR;
-    public static String PUBLICATION_DETAIL_PATH = PUBLICATIONS_PATH + "/";
+    private static final String VOCABULARY_URI_PARAMETER_NAME = "vocabularyUri";
+    private static final String CHANGE_ID_PARAMETER_NAME = "changeId";
+
+    public static String getPublicationDetailPath(String publicationId) {
+        return String.format("/%s/%s", PUBLICATION_CONTEXT_PATH_NAME, publicationId);
+    }
+
+    public static String getVocabularyInPublicationContextPath(String publicationId, String vocabularyUri) {
+        return String.format("%s/%s?%s=%s", getPublicationDetailPath(publicationId),
+            VOCABULARY_IN_PUBLICATION_CONTEXT_PATH_NAME, VOCABULARY_URI_PARAMETER_NAME, vocabularyUri);
+    }
+
+    public static String getChangeInVocabularyInPublicationContextPath(String publicationId, String vocabularyUri,
+                                                                       String changeId) {
+        return String.format("%s&%s=%s", getVocabularyInPublicationContextPath(publicationId, vocabularyUri),
+            CHANGE_ID_PARAMETER_NAME, changeId);
+    }
 }

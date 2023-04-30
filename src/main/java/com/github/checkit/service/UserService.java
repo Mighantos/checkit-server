@@ -7,9 +7,11 @@ import com.github.checkit.dto.CurrentUserDto;
 import com.github.checkit.model.User;
 import com.github.checkit.security.UserRole;
 import java.net.URI;
+import java.util.Set;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService extends BaseRepositoryService<User> {
@@ -28,6 +30,10 @@ public class UserService extends BaseRepositoryService<User> {
         return userDao;
     }
 
+    public Set<User> findAllInDiscussionOnChange(URI changeUri) {
+        return userDao.findAllInDiscussionOnChange(changeUri);
+    }
+
     /**
      * Returns current user with his roles.
      *
@@ -39,6 +45,7 @@ public class UserService extends BaseRepositoryService<User> {
         return new CurrentUserDto(user, auth);
     }
 
+    @Transactional(readOnly = true)
     public User getCurrent() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return findRequiredByUserId(auth.getName());

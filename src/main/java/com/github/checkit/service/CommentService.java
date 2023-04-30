@@ -24,16 +24,19 @@ public class CommentService extends BaseRepositoryService<Comment> {
     private final CommentDao commentDao;
     private final UserService userService;
     private final ChangeService changeService;
+    private final NotificationService notificationService;
     private final int minimalRejectionCommentLength;
 
     /**
      * Constructor.
      */
     public CommentService(CommentDao commentDao, UserService userService, ChangeService changeService,
+                          NotificationService notificationService,
                           ApplicationConfigProperties applicationConfigProperties) {
         this.commentDao = commentDao;
         this.userService = userService;
         this.changeService = changeService;
+        this.notificationService = notificationService;
         this.minimalRejectionCommentLength =
             applicationConfigProperties.getComment().getRejectionMinimalContentLength();
 
@@ -65,6 +68,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
         comment.setContent(content);
         comment.setTopic(change);
         persist(comment);
+        notificationService.createdDiscussionComment(comment, change);
     }
 
     /**
@@ -94,6 +98,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
         comment.setContent(content);
         comment.setTopic(change);
         persist(comment);
+        notificationService.createdRejectionComment(comment, change);
     }
 
     public List<Comment> findAllFinalComments(Change change) {
@@ -114,5 +119,9 @@ public class CommentService extends BaseRepositoryService<Comment> {
 
     public void removeFinalComment(PublicationContext publicationContext) {
         findFinalComment(publicationContext).ifPresent(this::remove);
+    }
+
+    public int getDiscussionCommentsCount(Change change) {
+        return commentDao.getDiscussionCommentsCount(change.getUri());
     }
 }

@@ -31,6 +31,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
     private final ChangeState state;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final CommentDto rejectionComment;
+    private final int numberOfComments;
     @JsonIgnore
     private final boolean countable;
 
@@ -38,7 +39,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
      * Constructor.
      */
     public ChangeDto(Change change, User user, String languageTag, String defaultLanguageTag,
-                     CommentDto rejectionComment) {
+                     CommentDto rejectionComment, int numberOfComments) {
         this.id = change.getId();
         this.uri = change.getUri();
         this.type = change.getChangeType();
@@ -54,6 +55,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         }
         this.state = resolveChangeState(change, user);
         this.rejectionComment = rejectionComment;
+        this.numberOfComments = numberOfComments;
         this.countable = change.getCountable();
     }
 
@@ -76,6 +78,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         }
         this.state = ChangeState.NOT_REVIEWED;
         this.rejectionComment = null;
+        this.numberOfComments = 0;
         this.countable = true;
     }
 
@@ -94,6 +97,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.newObject = null;
         this.state = changeState;
         this.rejectionComment = null;
+        this.numberOfComments = 0;
         this.countable = false;
     }
 

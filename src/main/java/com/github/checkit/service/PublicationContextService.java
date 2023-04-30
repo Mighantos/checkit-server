@@ -247,7 +247,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         } else {
             persist(publicationContext);
             publicationContextUri = publicationContext.getUri();
-            notificationService.createdPublication(publicationContext);
+            notificationService.createdPublicationContext(publicationContext);
             logger.info("Publication context \"{}\" was created from project \"{}\".", publicationContextUri,
                 projectUri);
         }
@@ -276,6 +276,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         comment.setAuthor(current);
         comment.setContent(finalComment);
         commentService.persist(comment);
+        notificationService.approvedPublicationContext(comment, publicationContext);
     }
 
     /**
@@ -300,7 +301,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         comment.setAuthor(current);
         comment.setContent(finalComment);
         commentService.persist(comment);
-
+        notificationService.rejectedPublicationContext(comment, publicationContext);
     }
 
     private List<ChangeDto> convertChangesInVocabularyToDtos(PublicationContext pc, User current, String language,
@@ -310,7 +311,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             .filter(change ->
                 change.getContext().getBasedOnVersion().equals(vocabularyUri))
             .map(change ->
-                new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current)))
+                new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current),
+                    commentService.getDiscussionCommentsCount(change)))
             .toList());
         if (changeDtos.isEmpty()) {
             throw new NotFoundException("No changes in vocabulary \"%s\" found in publication context \"%s\".",
@@ -519,7 +521,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private PublicationContext findRequiredFromProject(ProjectContext projectContext) {
-        return publicationContextDao.findByProject(projectContext).orElseThrow(
+        return publicationContextDao.findByProject(projectContext.getUri()).orElseThrow(
             () -> new NotFoundException("Publication context related to project \"%s\" was not found.",
                 projectContext.getUri()));
     }

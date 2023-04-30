@@ -1,5 +1,7 @@
 package com.github.checkit.util;
 
+import com.github.checkit.model.Change;
+import com.github.checkit.model.Comment;
 import com.github.checkit.model.Notification;
 import com.github.checkit.model.PublicationContext;
 import cz.cvut.kbss.jopa.model.MultilingualString;
@@ -21,7 +23,7 @@ public final class NotificationTemplateUtil {
                 pc.getFromProject().getLabel())).set("cs",
             String.format("Byl vytvořen publikační kontext \"%s\" obsahující vámi gestorovaný slovník.",
                 pc.getFromProject().getLabel())));
-        notification.setAbout(FrontendPaths.PUBLICATION_DETAIL_PATH + pc.getId());
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
         return notification;
     }
 
@@ -40,7 +42,7 @@ public final class NotificationTemplateUtil {
                 pc.getFromProject().getLabel())).set("cs",
             String.format("Byl vytvořen publikační kontext \"%s\" s novým slovníkem.",
                 pc.getFromProject().getLabel())));
-        notification.setAbout(FrontendPaths.PUBLICATION_DETAIL_PATH + pc.getId());
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
         return notification;
     }
 
@@ -60,7 +62,104 @@ public final class NotificationTemplateUtil {
                 pc.getFromProject().getLabel())).set("cs",
             String.format("Byl aktualizován publikační kontext \"%s\", který jste revidovali.",
                 pc.getFromProject().getLabel())));
-        notification.setAbout(FrontendPaths.PUBLICATION_DETAIL_PATH + pc.getId());
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
+        return notification;
+    }
+
+    /**
+     * Creates template for discussion comment on change.
+     *
+     * @param comment created comment
+     * @param change  change which was commented
+     * @param pc      publication context of change
+     * @return Notification template
+     */
+    public static Notification getForDiscussionComment(Comment comment, Change change, PublicationContext pc) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "New comment").set("cs", "Nový komentář"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s commented on change about \"%s\" in publication context \"%s\".",
+                    comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "en"),
+                    pc.getFromProject().getLabel()))
+            .set("cs",
+                String.format("%s okomentoval změnu ohledně \"%s\" v publikačním kontextu \"%s\".",
+                    comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "cs"),
+                    pc.getFromProject().getLabel())));
+        notification.setAbout(FrontendPaths.getChangeInVocabularyInPublicationContextPath(pc.getId(),
+            change.getContext().getBasedOnVersion().toString(), change.getId()));
+        return notification;
+    }
+
+    /**
+     * Creates template for rejection comment on change.
+     *
+     * @param comment created comment
+     * @param change  change which was commented
+     * @param pc      publication context of change
+     * @return Notification template
+     */
+    public static Notification getForRejectionCommentOnChange(Comment comment, Change change, PublicationContext pc) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "Change rejected").set("cs", "Změna zamítnuta"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s rejected change about \"%s\" in publication context \"%s\", where you contributed.",
+                    comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "en"),
+                    pc.getFromProject().getLabel()))
+            .set("cs",
+                String.format("%s zamítnul změnu ohledně \"%s\" v publikačním kontextu \"%s\", na kterém jste se "
+                        + "podílel/a.",
+                    comment.getAuthor().getFullName(), Utils.resolveMultilingual(change.getLabel(), "cs"),
+                    pc.getFromProject().getLabel())));
+        notification.setAbout(FrontendPaths.getChangeInVocabularyInPublicationContextPath(pc.getId(),
+            change.getContext().getBasedOnVersion().toString(), change.getId()));
+        return notification;
+    }
+
+    /**
+     * Creates template for approved publication context.
+     *
+     * @param comment created comment
+     * @param pc      publication context of comment
+     * @return Notification template
+     */
+    public static Notification getForApprovingCommentOnPublicationContext(Comment comment,
+                                                                        PublicationContext pc) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "Publication context approved").set("cs", "Publikační kontext "
+                + "schválen"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s approved publication context \"%s\", where you contributed.",
+                    comment.getAuthor().getFullName(), pc.getFromProject().getLabel()))
+            .set("cs",
+                String.format("%s schválil publikační kontext \"%s\", na kterém jste se podílel/a.",
+                    comment.getAuthor().getFullName(), pc.getFromProject().getLabel())));
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
+        return notification;
+    }
+
+    /**
+     * Creates template for rejected publication context.
+     *
+     * @param comment created comment
+     * @param pc      publication context of comment
+     * @return Notification template
+     */
+    public static Notification getForRejectionCommentOnPublicationContext(Comment comment,
+                                                                        PublicationContext pc) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "Publication context rejected").set("cs", "Publikační kontext "
+                + "zamítnut"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s rejected publication context \"%s\", where you contributed.",
+                    comment.getAuthor().getFullName(), pc.getFromProject().getLabel()))
+            .set("cs",
+                String.format("%s zamítnul publikační kontext \"%s\", na kterém jste se podílel/a.",
+                    comment.getAuthor().getFullName(), pc.getFromProject().getLabel())));
+        notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
         return notification;
     }
 }
