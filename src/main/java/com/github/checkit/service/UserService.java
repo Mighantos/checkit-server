@@ -45,7 +45,6 @@ public class UserService extends BaseRepositoryService<User> {
         return new CurrentUserDto(user, auth);
     }
 
-    @Transactional(readOnly = true)
     public User getCurrent() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return findRequiredByUserId(auth.getName());

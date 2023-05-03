@@ -22,11 +22,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificationService extends BaseRepositoryService<Notification> {
+
+    private final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     private final NotificationDao notificationDao;
     private final PublicationContextDao publicationContextDao;
@@ -90,6 +94,7 @@ public class NotificationService extends BaseRepositoryService<Notification> {
         }
         notification.markRead();
         update(notification);
+        logger.debug("Notification \"{}\" was marked as seen.", notificationUri);
     }
 
     /**
@@ -120,12 +125,17 @@ public class NotificationService extends BaseRepositoryService<Notification> {
         if (noNewVocabulary) {
             return;
         }
+        Set<User> notifiedUsers = new HashSet<>(gestorUsers);
         template = NotificationTemplateUtil.getForCreatedPublicationContextForAdmin(publicationContext);
         for (String adminId : keycloakApiUtil.getAdminIds()) {
+            User admin = userService.findRequiredByUserId(adminId);
+            notifiedUsers.add(admin);
             Notification notification = Notification.createFromTemplate(template);
-            notification.setAddressedTo(userService.findRequiredByUserId(adminId));
+            notification.setAddressedTo(admin);
             persist(notification);
         }
+        logger.debug("Notifications for gestors {} about created publication \"{}\", were created.",
+            notifiedUsers.stream().map(User::toSimpleString).toList(), publicationContext.getUri());
     }
 
     /**
@@ -136,15 +146,17 @@ public class NotificationService extends BaseRepositoryService<Notification> {
      */
     @Transactional
     public void approvedPublicationContext(Comment comment, PublicationContext publicationContext) {
-        Set<User> gestorUsers = new HashSet<>();
-        gestorUsers.add(publicationContext.getFromProject().getAuthor());
+        Set<User> editorUsers = new HashSet<>();
+        editorUsers.add(publicationContext.getFromProject().getAuthor());
         Notification template =
             NotificationTemplateUtil.getForApprovingCommentOnPublicationContext(comment, publicationContext);
-        for (User gestorUser : gestorUsers) {
+        for (User editorUser : editorUsers) {
             Notification notification = Notification.createFromTemplate(template);
-            notification.setAddressedTo(gestorUser);
+            notification.setAddressedTo(editorUser);
             persist(notification);
         }
+        logger.debug("Notifications for editor users {} about approved publication \"{}\" they participated in, were "
+            + "created.", editorUsers.stream().map(User::toSimpleString).toList(), publicationContext.getUri());
     }
 
     /**
@@ -155,15 +167,17 @@ public class NotificationService extends BaseRepositoryService<Notification> {
      */
     @Transactional
     public void rejectedPublicationContext(Comment comment, PublicationContext publicationContext) {
-        Set<User> gestorUsers = new HashSet<>();
-        gestorUsers.add(publicationContext.getFromProject().getAuthor());
+        Set<User> editorUsers = new HashSet<>();
+        editorUsers.add(publicationContext.getFromProject().getAuthor());
         Notification template =
             NotificationTemplateUtil.getForRejectionCommentOnPublicationContext(comment, publicationContext);
-        for (User gestorUser : gestorUsers) {
+        for (User editorUser : editorUsers) {
             Notification notification = Notification.createFromTemplate(template);
-            notification.setAddressedTo(gestorUser);
+            notification.setAddressedTo(editorUser);
             persist(notification);
         }
+        logger.debug("Notifications for editor users {} about rejected publication \"{}\" they participated in, were "
+            + "created.", editorUsers.stream().map(User::toSimpleString).toList(), publicationContext.getUri());
     }
 
     /**
@@ -179,6 +193,8 @@ public class NotificationService extends BaseRepositoryService<Notification> {
             notification.setAddressedTo(reviewer);
             persist(notification);
         }
+        logger.debug("Notifications for reviewers {} about updated publication \"{}\" with their reviews, were "
+            + "created.", reviewers.stream().map(User::toSimpleString).toList(), publicationContext.getUri());
     }
 
     /**
@@ -201,6 +217,9 @@ public class NotificationService extends BaseRepositoryService<Notification> {
             notification.setAddressedTo(user);
             persist(notification);
         }
+        logger.debug("Notifications for users {} about created discussion comment on change \"{}\" in publication "
+                + "context \"{}\", were created.", usersToNotify.stream().map(User::toSimpleString).toList(),
+            change.getUri(), pc.getUri());
     }
 
     /**
@@ -226,6 +245,9 @@ public class NotificationService extends BaseRepositoryService<Notification> {
             notification.setAddressedTo(user);
             persist(notification);
         }
+        logger.debug("Notifications for users {} about created rejection comment on change \"{}\" in publication "
+                + "context \"{}\", were created.", usersToNotify.stream().map(User::toSimpleString).toList(),
+            change.getUri(), pc.getUri());
     }
 
     private PublicationContext findRequiredPublicationContext(URI changeUri) {
