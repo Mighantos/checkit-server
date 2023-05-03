@@ -11,11 +11,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AdminUserService {
+
+    private final Logger logger = LoggerFactory.getLogger(AdminUserService.class);
 
     private final KeycloakApiUtil keycloakApiUtil;
     private final UserService userService;
@@ -31,22 +35,6 @@ public class AdminUserService {
         this.userService = userService;
         this.vocabularyService = vocabularyService;
         this.gestoringRequestService = gestoringRequestService;
-    }
-
-    /**
-     * Sets or removes admin role for specified user in keycloak.
-     *
-     * @param userKeycloakId ID of user to be modified
-     * @param admin          if user should have admin role or not
-     */
-    public void setAdminRoleToUser(String userKeycloakId, boolean admin) {
-        checkNotApiAdmin(userKeycloakId);
-        checkNotCurrentUser(userKeycloakId);
-        if (admin) {
-            keycloakApiUtil.setAdminRoleForUser(userKeycloakId);
-        } else {
-            keycloakApiUtil.removeAdminRoleForUser(userKeycloakId);
-        }
     }
 
     /**
@@ -67,6 +55,25 @@ public class AdminUserService {
     }
 
     /**
+     * Sets or removes admin role for specified user in keycloak.
+     *
+     * @param userKeycloakId ID of user to be modified
+     * @param admin          if user should have admin role or not
+     */
+    public void setAdminRoleToUser(String userKeycloakId, boolean admin) {
+        checkNotApiAdmin(userKeycloakId);
+        checkNotCurrentUser(userKeycloakId);
+        User user = userService.findRequiredByUserId(userKeycloakId);
+        if (admin) {
+            keycloakApiUtil.setAdminRoleForUser(userKeycloakId);
+            logger.info("User {} was given admin role.", user.toSimpleString());
+        } else {
+            keycloakApiUtil.removeAdminRoleForUser(userKeycloakId);
+            logger.info("User {} was removed from admins.", user.toSimpleString());
+        }
+    }
+
+    /**
      * Adds user as a gestor of the specified vocabulary.
      *
      * @param vocabularyUri vocabulary URI
@@ -79,6 +86,8 @@ public class AdminUserService {
         vocabulary.addGestor(user);
         gestoringRequestService.remove(vocabularyUri, user.getUri());
         vocabularyService.update(vocabulary);
+        logger.info("User {} was added as gestor of vocabulary {}.", user.toSimpleString(),
+            vocabulary.toSimpleString());
     }
 
     /**
@@ -93,6 +102,8 @@ public class AdminUserService {
         User user = userService.getRequiredReferenceByUserId(userId);
         vocabulary.removeGestor(user);
         vocabularyService.update(vocabulary);
+        logger.info("User {} was removed from gestors of vocabulary {}.", user.toSimpleString(),
+            vocabulary.toSimpleString());
     }
 
     private void checkNotApiAdmin(String userId) {

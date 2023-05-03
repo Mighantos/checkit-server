@@ -27,7 +27,7 @@ public class CommentController extends BaseController {
 
     @GetMapping("/discussion-on-change")
     public List<CommentDto> getAllRelatedToChange(@RequestParam URI changeUri) {
-        return commentService.getAllRelatedToChange(changeUri);
+        return commentService.findAllRelatedToChange(changeUri);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
