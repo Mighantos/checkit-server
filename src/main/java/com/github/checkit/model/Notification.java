@@ -32,8 +32,6 @@ public class Notification extends AbstractEntity {
     @OWLDataProperty(iri = TermVocabulary.s_p_content)
     private MultilingualString content;
 
-    @NotBlank
-    @ParticipationConstraints(nonEmpty = true)
     @OWLDataProperty(iri = TermVocabulary.s_p_about)
     private String about;
 
