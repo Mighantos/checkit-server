@@ -31,6 +31,7 @@ import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.auxilary.CommentTag;
 import com.github.checkit.service.auxiliary.ChangeDtoComposer;
 import com.github.checkit.util.TermVocabulary;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,12 +165,16 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext pc = findRequired(publicationContextUri);
         PublicationContextState state = getState(pc, current);
+        Map<AbstractChangeableContext, List<User>> contextApprovedByMap = resolveApprovedByForContexts(pc);
         List<ReviewableVocabularyDto> affectedVocabularies =
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> {
                     boolean gestored = userService.isCurrentAdmin() || vocabulary.getGestors().contains(current);
+                    List<User> approvedBy =
+                        contextApprovedByMap.get(contextApprovedByMap.keySet().stream()
+                            .filter(ctx -> ctx.getBasedOnVersion().equals(vocabulary.getUri())).findFirst().get());
                     VocabularyStatisticsDto vocStatistics = getVocabularyStatistics(pc, vocabulary, current, gestored);
-                    return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics);
+                    return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics, approvedBy);
                 }).toList();
         PublicationContextStatisticsDto statistics =
             affectedVocabularies.stream().anyMatch(ReviewableVocabularyDto::isGestored) ? getStatistics(pc, current)
@@ -217,7 +222,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext publicationContext;
         Set<User> reviewers = new HashSet<>();
-        boolean publicationContextExists = publicationContextDao.exists(project);
+        boolean publicationContextExists = publicationContextDao.existsNotApproved(project.getUri());
         if (publicationContextExists) {
             publicationContext = findRequiredFromProject(project);
             publicationContext.getChanges().forEach(change -> reviewers.addAll(change.getReviewBy()));
@@ -230,12 +235,15 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContext = new PublicationContext();
             publicationContext.setFromProject(project);
         }
-
-        Set<Change> newlyFormedOfChanges =
-            takeIntoConsiderationExistingChanges(currentChanges, publicationContext.getChanges());
-        assignUris(newlyFormedOfChanges);
-        resolveCountable(newlyFormedOfChanges);
-        publicationContext.setChanges(newlyFormedOfChanges);
+        Set<Change> existingChanges = publicationContext.getChanges();
+        Set<Change> newFormOfChanges =
+            takeIntoConsiderationExistingChanges(new HashSet<>(currentChanges), new HashSet<>(existingChanges));
+        if (newFormOfChanges.equals(existingChanges)) {
+            return publicationContext.getUri();
+        }
+        assignUris(newFormOfChanges);
+        resolveCountable(newFormOfChanges);
+        publicationContext.setChanges(newFormOfChanges);
 
         URI publicationContextUri;
         if (publicationContextExists) {
@@ -455,44 +463,44 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private boolean isApprovable(PublicationContext pc, User user) {
-        Map<AbstractChangeableContext, List<Change>> contextChangesMap = new HashMap<>();
         int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
         int totalApprovedChangesCount = publicationContextDao.countApprovedChanges(pc.getUri());
         if (totalChangesCount != totalApprovedChangesCount) {
             return false;
         }
         //check that every vocabulary was reviewed in whole by someone
-        boolean userReviewedAtLeastOneWholeContext = false;
-        for (Change change : pc.getChanges()) {
-            AbstractChangeableContext context = change.getContext();
-            if (!contextChangesMap.containsKey(context)) {
-                contextChangesMap.put(context, new ArrayList<>());
-            }
-            contextChangesMap.get(context).add(change);
+        Map<AbstractChangeableContext, List<User>> contextApprovedByMap = resolveApprovedByForContexts(pc);
+        if (contextApprovedByMap.values().stream().anyMatch(List::isEmpty)) {
+            return false;
         }
-        for (List<Change> contextChanges : contextChangesMap.values()) {
-            Set<User> approvedBy = new HashSet<>(contextChanges.get(0).getApprovedBy());
-            if (approvedBy.contains(user)) {
-                approvedBy.remove(user);
-                if (contextChanges.stream().allMatch(change -> change.isApproved(user))) {
-                    userReviewedAtLeastOneWholeContext = true;
-                    continue;
-                }
-            }
-            if (approvedBy.stream().noneMatch(
-                approvingUser -> contextChanges.stream().allMatch(change -> change.isApproved(approvingUser)))) {
-                return false;
-            }
-        }
-        return userReviewedAtLeastOneWholeContext;
+        return contextApprovedByMap.values().stream().anyMatch(approvedBy -> approvedBy.contains(user));
     }
 
-    private Set<Change> takeIntoConsiderationExistingChanges(List<Change> currentChanges, Set<Change> existingChanges) {
+    private Map<AbstractChangeableContext, List<User>> resolveApprovedByForContexts(PublicationContext pc) {
+        Map<AbstractChangeableContext, List<User>> contextApprovedByMap = new HashMap<>();
+        for (AbstractChangeableContext context : publicationContextDao.getAllAffectedContexts(pc.getUri())) {
+            List<User> approvedBy = new ArrayList<>();
+            Set<User> potentiallyApprovedBy =
+                changeService.findRequiredAnyInContextInPublicationContext(pc.getUri(), context.getUri())
+                    .getApprovedBy();
+            for (User approvedByCandidate : potentiallyApprovedBy) {
+                if (publicationContextDao.hasApprovedWholeContext(pc.getUri(), context.getUri(),
+                    approvedByCandidate.getUri())) {
+                    approvedBy.add(approvedByCandidate);
+                }
+            }
+            contextApprovedByMap.put(context, approvedBy);
+        }
+        return contextApprovedByMap;
+    }
+
+    private Set<Change> takeIntoConsiderationExistingChanges(Set<Change> currentChanges, Set<Change> existingChanges) {
         if (existingChanges.isEmpty()) {
             return new HashSet<>(currentChanges);
         }
 
-        List<Change> newFormOfChanges = new ArrayList<>();
+        List<Change> newFormOfChanges = resolveBlankNodeChanges(existingChanges, currentChanges);
+
         for (Change currentChange : currentChanges) {
             Optional<Change> optExistingChange =
                 existingChanges.stream().filter(currentChange::hasSameTripleAs).findFirst();
@@ -524,6 +532,97 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         }
 
         return new HashSet<>(newFormOfChanges);
+    }
+
+    private List<Change> resolveBlankNodeChanges(Set<Change> existingChanges, Set<Change> currentChanges) {
+        List<Change> newFormOfChanges = new ArrayList<>();
+        Map<Change, List<Change>> existingBlankNodeGraphs = extractBlankNodeGraphs(existingChanges);
+        Map<Change, List<Change>> currentBlankNodeGraphs = extractBlankNodeGraphs(currentChanges);
+
+        for (Change currentPointingToBlankNodeChange : currentBlankNodeGraphs.keySet()) {
+            List<Change> currentGraphBlankNodes = currentBlankNodeGraphs.get(currentPointingToBlankNodeChange);
+            Change sameExistingPointingToBlankNodeChange = null;
+            for (Change existingPointingToBlankNodeChange : existingBlankNodeGraphs.keySet()) {
+                List<Change> existingGraphBlankNodes = existingBlankNodeGraphs.get(existingPointingToBlankNodeChange);
+                if (currentPointingToBlankNodeChange.hasSameTripleAs(existingPointingToBlankNodeChange)
+                    && isListOfChangesIsomorphic(existingGraphBlankNodes, currentGraphBlankNodes)) {
+                    sameExistingPointingToBlankNodeChange = existingPointingToBlankNodeChange;
+                    break;
+                }
+            }
+            if (sameExistingPointingToBlankNodeChange == null) {
+                newFormOfChanges.add(currentPointingToBlankNodeChange);
+                newFormOfChanges.addAll(currentGraphBlankNodes);
+            } else {
+                List<Change> existingGraphBlankNodes =
+                    existingBlankNodeGraphs.get(sameExistingPointingToBlankNodeChange);
+                existingBlankNodeGraphs.remove(sameExistingPointingToBlankNodeChange);
+                MultilingualString label = currentPointingToBlankNodeChange.getLabel();
+                existingGraphBlankNodes.forEach(blankNodeChange -> {
+                    blankNodeChange.setLabel(label);
+                    newFormOfChanges.add(blankNodeChange);
+                });
+                sameExistingPointingToBlankNodeChange.setLabel(label);
+                newFormOfChanges.add(sameExistingPointingToBlankNodeChange);
+            }
+        }
+        //remove unused
+        for (Change existingPointingToBlankNodeChange : existingBlankNodeGraphs.keySet()) {
+            existingBlankNodeGraphs.get(existingPointingToBlankNodeChange).forEach(changeService::remove);
+            changeService.remove(existingPointingToBlankNodeChange);
+        }
+        return newFormOfChanges;
+    }
+
+    private boolean isListOfChangesIsomorphic(List<Change> existingGraphBlankNodes,
+                                              List<Change> currentGraphBlankNodes) {
+        List<Change> currentGraphBlankNodesCopy = new ArrayList<>(currentGraphBlankNodes);
+        if (existingGraphBlankNodes.size() != currentGraphBlankNodesCopy.size()) {
+            return false;
+        }
+        for (Change existingGraphBlankNode : existingGraphBlankNodes) {
+            Change sameChange = null;
+            for (Change currentGraphBlankNode : currentGraphBlankNodesCopy) {
+                if (existingGraphBlankNode.hasSameTripleAs(currentGraphBlankNode)) {
+                    sameChange = currentGraphBlankNode;
+                    break;
+                }
+            }
+            if (sameChange == null) {
+                return false;
+            }
+            currentGraphBlankNodesCopy.remove(sameChange);
+        }
+        return true;
+    }
+
+    private Map<Change, List<Change>> extractBlankNodeGraphs(Set<Change> changes) {
+        List<Change> blankNodeChanges = new ArrayList<>(changes.stream().filter(Change::isInBlankNode).toList());
+        blankNodeChanges.forEach(changes::remove);
+        List<Change> pointingToBlankNodeChanges =
+            changes.stream().filter(change -> change.getObject().isBlankNode()).toList();
+        pointingToBlankNodeChanges.forEach(changes::remove);
+        Map<Change, List<Change>> blankNodeGraphs = new HashMap<>();
+        for (Change pointingToBlankNodeChange : pointingToBlankNodeChanges) {
+            blankNodeGraphs.put(pointingToBlankNodeChange,
+                getSubGraphChanges(pointingToBlankNodeChange, blankNodeChanges));
+        }
+        return blankNodeGraphs;
+    }
+
+    private List<Change> getSubGraphChanges(Change pointingToBlankNodeChange, List<Change> blankNodeChanges) {
+        URI parentUri = pointingToBlankNodeChange.getUri();
+        List<Change> graphBlankNodes =
+            new ArrayList<>(blankNodeChanges.stream().filter(change -> change.getSubject().equals(parentUri)).toList());
+        blankNodeChanges.removeAll(graphBlankNodes);
+        List<Change> subGraphChanges = new ArrayList<>();
+        for (Change blankNodeChange : graphBlankNodes) {
+            if (blankNodeChange.getObject().isBlankNode()) {
+                subGraphChanges.addAll(getSubGraphChanges(blankNodeChange, blankNodeChanges));
+            }
+        }
+        graphBlankNodes.addAll(subGraphChanges);
+        return graphBlankNodes;
     }
 
     private PublicationContext findRequiredFromProject(ProjectContext projectContext) {

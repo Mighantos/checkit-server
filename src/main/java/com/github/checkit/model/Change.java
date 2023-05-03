@@ -136,8 +136,8 @@ public class Change extends AbstractCommentableEntity {
      */
     public boolean hasSameTripleAs(Change right) {
         Objects.requireNonNull(right);
-        return this.subject.equals(right.subject) && this.predicate.equals(right.predicate)
-            && this.object.equals(right.object);
+        return (subjectType.equals(ChangeSubjectType.BLANK_NODE) || this.subject.equals(right.subject))
+            && this.predicate.equals(right.predicate) && this.object.equals(right.object);
     }
 
     /**
@@ -171,6 +171,10 @@ public class Change extends AbstractCommentableEntity {
 
     public boolean notApproved() {
         return getApprovedBy().isEmpty();
+    }
+
+    public boolean isInBlankNode() {
+        return getSubjectType().equals(ChangeSubjectType.BLANK_NODE);
     }
 
     /**

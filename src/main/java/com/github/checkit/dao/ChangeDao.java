@@ -33,6 +33,37 @@ public class ChangeDao extends BaseDao<Change> {
         }
     }
 
+    /**
+     * Finds any change in specified context of specified publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param contextUri            URI identifier of context
+     * @return change if context is present publication context
+     */
+    public Optional<Change> findAnyInContextInPublicationContext(URI publicationContextUri, URI contextUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(contextUri);
+        try {
+            Optional<URI> anyChange = em.createNativeQuery("SELECT ?change WHERE { "
+                    + "?change a ?type ; "
+                    + "        ?inContext ?ctx . "
+                    + "?pc ?hasChange ?change . "
+                    + "}", URI.class)
+                .setParameter("type", typeUri)
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("ctx", contextUri)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .getResultStream().findFirst();
+            if (anyChange.isEmpty()) {
+                return Optional.empty();
+            }
+            return find(anyChange.get());
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
     @Override
     public Change update(Change entity) {
         Objects.requireNonNull(entity);
