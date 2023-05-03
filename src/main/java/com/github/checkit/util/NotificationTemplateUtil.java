@@ -4,6 +4,8 @@ import com.github.checkit.model.Change;
 import com.github.checkit.model.Comment;
 import com.github.checkit.model.Notification;
 import com.github.checkit.model.PublicationContext;
+import com.github.checkit.model.User;
+import com.github.checkit.model.Vocabulary;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 
 public final class NotificationTemplateUtil {
@@ -125,7 +127,7 @@ public final class NotificationTemplateUtil {
      * @return Notification template
      */
     public static Notification getForApprovingCommentOnPublicationContext(Comment comment,
-                                                                        PublicationContext pc) {
+                                                                          PublicationContext pc) {
         Notification notification = new Notification();
         notification.setTitle(
             new MultilingualString().set("en", "Publication context approved").set("cs", "Publikační kontext "
@@ -148,7 +150,7 @@ public final class NotificationTemplateUtil {
      * @return Notification template
      */
     public static Notification getForRejectionCommentOnPublicationContext(Comment comment,
-                                                                        PublicationContext pc) {
+                                                                          PublicationContext pc) {
         Notification notification = new Notification();
         notification.setTitle(
             new MultilingualString().set("en", "Publication context rejected").set("cs", "Publikační kontext "
@@ -160,6 +162,51 @@ public final class NotificationTemplateUtil {
                 String.format("%s zamítnul publikační kontext \"%s\", na kterém jste se podílel/a.",
                     comment.getAuthor().getFullName(), pc.getFromProject().getLabel())));
         notification.setAbout(FrontendPaths.getPublicationDetailPath(pc.getId()));
+        return notification;
+    }
+
+    /**
+     * Creates template for created gestoring request.
+     *
+     * @param applicant  user applying to gestor
+     * @param vocabulary vocabulary
+     * @return Notification template
+     */
+    public static Notification getForCreatedGestoringRequest(User applicant, Vocabulary vocabulary) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "New gestoring request").set("cs", "Nový požadavek na gestorování"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("%s requests to gestor vocabulary \"%s\".",
+                    applicant.getFullName(), vocabulary.getLabel()))
+            .set("cs",
+                String.format("%s žádá o gestorování slovníku \"%s\".",
+                    applicant.getFullName(), vocabulary.getLabel())));
+        notification.setAbout(FrontendPaths.getGestoringRequests());
+        return notification;
+    }
+
+    /**
+     * Creates template for resolved gestoring request.
+     *
+     * @param vocabulary vocabulary
+     * @param approved   if gestoring request was approved or not
+     * @return Notification template
+     */
+    public static Notification getForResolvedGestoringRequest(Vocabulary vocabulary, boolean approved) {
+        Notification notification = new Notification();
+        notification.setTitle(
+            new MultilingualString().set("en", "Resolved gestoring request").set("cs", "Vyřízený požadavek na "
+                + "gestorování"));
+        notification.setContent(new MultilingualString().set("en",
+                String.format("Your gestoring request for vocabulary \"%s\" was %s",
+                    vocabulary.getLabel(), approved ? "approved. You can now review changes made to this vocabulary." :
+                                           "rejected."))
+            .set("cs",
+                String.format("Vaše žádost o gestorování slovníku \"%s\" byla %s",
+                    vocabulary.getLabel(), approved ? "schválena. Nyní můžete revidovat změny provedené pro tento "
+                        + "slovník." : "zamítnuta.")));
+        notification.setAbout("");
         return notification;
     }
 }

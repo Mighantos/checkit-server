@@ -10,6 +10,7 @@ import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.exception.NotificationAlreadyReadException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.Comment;
+import com.github.checkit.model.GestoringRequest;
 import com.github.checkit.model.Notification;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
@@ -248,6 +249,48 @@ public class NotificationService extends BaseRepositoryService<Notification> {
         logger.debug("Notifications for users {} about created rejection comment on change \"{}\" in publication "
                 + "context \"{}\", were created.", usersToNotify.stream().map(User::toSimpleString).toList(),
             change.getUri(), pc.getUri());
+    }
+
+    /**
+     * Creates notifications for admins about new gestoring request.
+     *
+     * @param gestoringRequest gestoring request
+     */
+    @Transactional
+    public void createdGestoringRequest(GestoringRequest gestoringRequest) {
+        Set<User> notifiedUsers = new HashSet<>();
+        Vocabulary vocabulary = vocabularyService.findRequired(gestoringRequest.getVocabulary());
+        Notification template =
+            NotificationTemplateUtil.getForCreatedGestoringRequest(gestoringRequest.getApplicant(), vocabulary);
+        for (String adminId : keycloakApiUtil.getAdminIds()) {
+            User admin = userService.findRequiredByUserId(adminId);
+            notifiedUsers.add(admin);
+            Notification notification = Notification.createFromTemplate(template);
+            notification.setAddressedTo(admin);
+            persist(notification);
+        }
+        logger.debug("Notifications for admins {} about new gestoring request from applicant {} for vocabulary {}, "
+                + "were created.",
+            notifiedUsers.stream().map(User::toSimpleString).toList(), gestoringRequest.getApplicant().toSimpleString(),
+            vocabulary.toSimpleString());
+    }
+
+    /**
+     * Creates notification about resolved gestoring request for applicant.
+     *
+     * @param gestoringRequest gestoring request
+     * @param approved         if it was approved or not
+     */
+    @Transactional
+    public void resolvedGestoringRequest(GestoringRequest gestoringRequest, boolean approved) {
+        Vocabulary vocabulary = vocabularyService.findRequired(gestoringRequest.getVocabulary());
+        Notification notification =
+            NotificationTemplateUtil.getForResolvedGestoringRequest(vocabulary, approved);
+        notification.setAddressedTo(gestoringRequest.getApplicant());
+        persist(notification);
+        logger.debug("Notification about {} of applicant's {} gestoring request for vocabulary {}, was created.",
+            approved ? "approval" : "rejection", gestoringRequest.getApplicant().toSimpleString(),
+            vocabulary.toSimpleString());
     }
 
     private PublicationContext findRequiredPublicationContext(URI changeUri) {
