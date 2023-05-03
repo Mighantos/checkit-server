@@ -38,6 +38,23 @@ public class AdminUserService {
     }
 
     /**
+     * Returns all users with their gestored vocabularies.
+     *
+     * @return list of users
+     */
+    public List<GestorUserDto> getAllUsers() {
+        return userService.findAll().stream().filter(user -> !user.getId().equals(keycloakApiUtil.getApiAdminId()))
+            .map(user -> {
+                boolean admin = keycloakApiUtil.isAdmin(user.getId());
+                UserRepresentation userRepresentation =
+                    keycloakApiUtil.getApi().users().get(user.getId()).toRepresentation();
+                Set<URI> gestoredVocabularies = user.getGestoredVocabularies();
+                return new GestorUserDto(user, userRepresentation.getEmail(), userRepresentation.getUsername(), admin,
+                    gestoredVocabularies);
+            }).collect(Collectors.toList());
+    }
+
+    /**
      * Sets or removes admin role for specified user in keycloak.
      *
      * @param userKeycloakId ID of user to be modified
@@ -54,23 +71,6 @@ public class AdminUserService {
             keycloakApiUtil.removeAdminRoleForUser(userKeycloakId);
             logger.info("User {} was removed from admins.", user.toSimpleString());
         }
-    }
-
-    /**
-     * Returns all users with their gestored vocabularies.
-     *
-     * @return list of users
-     */
-    public List<GestorUserDto> getAllUsers() {
-        return userService.findAll().stream().filter(user -> !user.getId().equals(keycloakApiUtil.getApiAdminId()))
-            .map(user -> {
-                boolean admin = keycloakApiUtil.isAdmin(user.getId());
-                UserRepresentation userRepresentation =
-                    keycloakApiUtil.getApi().users().get(user.getId()).toRepresentation();
-                Set<URI> gestoredVocabularies = user.getGestoredVocabularies();
-                return new GestorUserDto(user, userRepresentation.getEmail(), userRepresentation.getUsername(), admin,
-                    gestoredVocabularies);
-            }).collect(Collectors.toList());
     }
 
     /**

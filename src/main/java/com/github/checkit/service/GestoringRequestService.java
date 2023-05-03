@@ -40,16 +40,6 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
         return gestoringRequestDao;
     }
 
-    public Optional<GestoringRequest> findById(String id) {
-        URI uri = createUriFromId(id);
-        return find(uri);
-    }
-
-    public GestoringRequest findRequiredById(String id) {
-        URI uri = createUriFromId(id);
-        return findRequired(uri);
-    }
-
     @Transactional(readOnly = true)
     public List<GestoringRequestDto> findAllRequestsAsDto() {
         return findAll().stream()
@@ -68,35 +58,14 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
             vocabularyService.findRequired(gr.getVocabulary()))).toList();
     }
 
-    /**
-     * Remove specified gestoring request.
-     *
-     * @param id identifier of gestoring request
-     */
-    @Transactional
-    public void remove(String id) {
-        Optional<GestoringRequest> gestoringRequest = findById(id);
-        gestoringRequest.ifPresent(gr -> {
-            remove(gr);
-            logger.info("Gestoring request \"{}\" of user {} to vocabulary \"{}\" was removed.", gr.getUri(),
-                gr.getApplicant().toSimpleString(), gr.getVocabulary());
-        });
+    public Optional<GestoringRequest> findById(String id) {
+        URI uri = createUriFromId(id);
+        return find(uri);
     }
 
-    /**
-     * Remove gestoring request of specified user to specified vocabulary.
-     *
-     * @param vocabularyUri URI identifier of vocabulary
-     * @param applicantUri  URI identifier of user
-     */
-    @Transactional
-    public void remove(URI vocabularyUri, URI applicantUri) {
-        Optional<GestoringRequest> gestoringRequest = gestoringRequestDao.find(vocabularyUri, applicantUri);
-        gestoringRequest.ifPresent(gr -> {
-            remove(gr);
-            logger.info("Gestoring request \"{}\" of user {} to vocabulary \"{}\" was removed.", gr.getUri(),
-                gr.getApplicant().toSimpleString(), gr.getVocabulary());
-        });
+    public GestoringRequest findRequiredById(String id) {
+        URI uri = createUriFromId(id);
+        return findRequired(uri);
     }
 
     /**
@@ -142,6 +111,37 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
         logger.info("Gestoring request \"{}\" from user \"{}\" to vocabulary \"{}\" was {}.",
             gestoringRequest.getUri(), applicant.toSimpleString(), vocabulary.getUri(),
             approved ? "approved" : "rejected");
+    }
+
+    /**
+     * Remove specified gestoring request.
+     *
+     * @param id identifier of gestoring request
+     */
+    @Transactional
+    public void remove(String id) {
+        Optional<GestoringRequest> gestoringRequest = findById(id);
+        gestoringRequest.ifPresent(gr -> {
+            remove(gr);
+            logger.info("Gestoring request \"{}\" of user {} to vocabulary \"{}\" was removed.", gr.getUri(),
+                gr.getApplicant().toSimpleString(), gr.getVocabulary());
+        });
+    }
+
+    /**
+     * Remove gestoring request of specified user to specified vocabulary.
+     *
+     * @param vocabularyUri URI identifier of vocabulary
+     * @param applicantUri  URI identifier of user
+     */
+    @Transactional
+    public void remove(URI vocabularyUri, URI applicantUri) {
+        Optional<GestoringRequest> gestoringRequest = gestoringRequestDao.find(vocabularyUri, applicantUri);
+        gestoringRequest.ifPresent(gr -> {
+            remove(gr);
+            logger.info("Gestoring request \"{}\" of user {} to vocabulary \"{}\" was removed.", gr.getUri(),
+                gr.getApplicant().toSimpleString(), gr.getVocabulary());
+        });
     }
 
     public int getAllCount() {
