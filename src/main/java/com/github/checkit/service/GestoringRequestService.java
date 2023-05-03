@@ -11,11 +11,15 @@ import com.github.checkit.util.TermVocabulary;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GestoringRequestService extends BaseRepositoryService<GestoringRequest> {
+
+    private final Logger logger = LoggerFactory.getLogger(GestoringRequestService.class);
 
     private final GestoringRequestDao gestoringRequestDao;
     private final UserService userService;
@@ -34,6 +38,11 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     @Override
     protected BaseDao<GestoringRequest> getPrimaryDao() {
         return gestoringRequestDao;
+    }
+
+    public Optional<GestoringRequest> findById(String id) {
+        URI uri = createUriFromId(id);
+        return find(uri);
     }
 
     public GestoringRequest findRequiredById(String id) {
@@ -59,16 +68,35 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
             vocabularyService.findRequired(gr.getVocabulary()))).toList();
     }
 
+    /**
+     * Remove specified gestoring request.
+     *
+     * @param id identifier of gestoring request
+     */
     @Transactional
     public void remove(String id) {
-        GestoringRequest gestoringRequest = findRequiredById(id);
-        remove(gestoringRequest);
+        Optional<GestoringRequest> gestoringRequest = findById(id);
+        gestoringRequest.ifPresent(gr -> {
+            remove(gr);
+            logger.info("Gestoring request \"{}\" of user {} to vocabulary \"{}\" was removed.", gr.getUri(),
+                gr.getApplicant().toSimpleString(), gr.getVocabulary());
+        });
     }
 
+    /**
+     * Remove gestoring request of specified user to specified vocabulary.
+     *
+     * @param vocabularyUri URI identifier of vocabulary
+     * @param applicantUri  URI identifier of user
+     */
     @Transactional
     public void remove(URI vocabularyUri, URI applicantUri) {
         Optional<GestoringRequest> gestoringRequest = gestoringRequestDao.find(vocabularyUri, applicantUri);
-        gestoringRequest.ifPresent(this::remove);
+        gestoringRequest.ifPresent(gr -> {
+            remove(gr);
+            logger.info("Gestoring request \"{}\" of user {} to vocabulary \"{}\" was removed.", gr.getUri(),
+                gr.getApplicant().toSimpleString(), gr.getVocabulary());
+        });
     }
 
     /**
@@ -90,6 +118,8 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
                 applicant.getFullName(), vocabulary.getLabel());
         }
         persist(new GestoringRequest(applicant, vocabulary));
+        logger.info("Gestoring request from user \"{}\" to vocabulary \"{}\" was created.", applicant.toSimpleString(),
+            vocabulary.getUri());
     }
 
     /**
@@ -101,14 +131,17 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
      */
     @Transactional
     public void resolveGestoringRequest(String requestId, boolean approved) {
+        GestoringRequest gestoringRequest = findRequiredById(requestId);
+        Vocabulary vocabulary = vocabularyService.findRequired(gestoringRequest.getVocabulary());
+        User applicant = userService.findRequired(gestoringRequest.getApplicant().getUri());
         if (approved) {
-            GestoringRequest gestoringRequest = findRequiredById(requestId);
-            Vocabulary vocabulary = vocabularyService.findRequired(gestoringRequest.getVocabulary());
-            User applicant = userService.findRequired(gestoringRequest.getApplicant().getUri());
             vocabulary.addGestor(applicant);
             vocabularyService.update(vocabulary);
         }
-        remove(requestId);
+        remove(gestoringRequest);
+        logger.info("Gestoring request \"{}\" from user \"{}\" to vocabulary \"{}\" was {}.",
+            gestoringRequest.getUri(), applicant.toSimpleString(), vocabulary.getUri(),
+            approved ? "approved" : "rejected");
     }
 
     public int getAllCount() {
