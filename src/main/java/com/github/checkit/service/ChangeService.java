@@ -227,6 +227,19 @@ public class ChangeService extends BaseRepositoryService<Change> {
         }
     }
 
+    /**
+     * Finds any change in context in publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param contextUri            URI identifier of context
+     * @return change
+     */
+    public Change findRequiredAnyInContextInPublicationContext(URI publicationContextUri, URI contextUri) {
+        return changeDao.findAnyInContextInPublicationContext(publicationContextUri, contextUri).orElseThrow(() ->
+            new NotFoundException("No changes for context \"%s\" found in publication context \"%s\".",
+                contextUri, publicationContextUri));
+    }
+
     public URI generateEntityUri() {
         return changeDao.generateEntityUri();
     }

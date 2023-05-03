@@ -459,36 +459,34 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     }
 
     private boolean isApprovable(PublicationContext pc, User user) {
-        Map<AbstractChangeableContext, List<Change>> contextChangesMap = new HashMap<>();
         int totalChangesCount = publicationContextDao.countChanges(pc.getUri());
         int totalApprovedChangesCount = publicationContextDao.countApprovedChanges(pc.getUri());
         if (totalChangesCount != totalApprovedChangesCount) {
             return false;
         }
         //check that every vocabulary was reviewed in whole by someone
-        boolean userReviewedAtLeastOneWholeContext = false;
-        for (Change change : pc.getChanges()) {
-            AbstractChangeableContext context = change.getContext();
-            if (!contextChangesMap.containsKey(context)) {
-                contextChangesMap.put(context, new ArrayList<>());
-            }
-            contextChangesMap.get(context).add(change);
+        Map<URI, List<User>> contextApprovedByMap = resolveApprovedByForContexts(pc);
+        if (contextApprovedByMap.values().stream().anyMatch(List::isEmpty)) {
+            return false;
         }
-        for (List<Change> contextChanges : contextChangesMap.values()) {
-            Set<User> approvedBy = new HashSet<>(contextChanges.get(0).getApprovedBy());
-            if (approvedBy.contains(user)) {
-                approvedBy.remove(user);
-                if (contextChanges.stream().allMatch(change -> change.isApproved(user))) {
-                    userReviewedAtLeastOneWholeContext = true;
-                    continue;
+        return contextApprovedByMap.values().stream().anyMatch(approvedBy -> approvedBy.contains(user));
+    }
+
+    private Map<URI, List<User>> resolveApprovedByForContexts(PublicationContext pc) {
+        Map<URI, List<User>> contextApprovedByMap = new HashMap<>();
+        for (URI contextUri : publicationContextDao.getAllAffectedContexts(pc.getUri())) {
+            List<User> approvedBy = new ArrayList<>();
+            Set<User> potentiallyApprovedBy =
+                changeService.findRequiredAnyInContextInPublicationContext(pc.getUri(), contextUri).getApprovedBy();
+            for (User approvedByCandidate : potentiallyApprovedBy) {
+                if (publicationContextDao.hasApprovedWholeContext(pc.getUri(), contextUri,
+                    approvedByCandidate.getUri())) {
+                    approvedBy.add(approvedByCandidate);
                 }
             }
-            if (approvedBy.stream().noneMatch(
-                approvingUser -> contextChanges.stream().allMatch(change -> change.isApproved(approvingUser)))) {
-                return false;
-            }
+            contextApprovedByMap.put(contextUri, approvedBy);
         }
-        return userReviewedAtLeastOneWholeContext;
+        return contextApprovedByMap;
     }
 
     private Set<Change> takeIntoConsiderationExistingChanges(Set<Change> currentChanges, Set<Change> existingChanges) {

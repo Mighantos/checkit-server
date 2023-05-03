@@ -81,6 +81,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @return list of publication contexts
      */
     public List<PublicationContext> findAllOpenThatAffectVocabulariesGestoredBy(URI userUri) {
+        Objects.requireNonNull(userUri);
         try {
             return em.createNativeQuery("SELECT DISTINCT ?pc WHERE { "
                     + "?pc a ?type ; "
@@ -203,12 +204,37 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     }
 
     /**
+     * Get all URI identifiers of context affected in specified publication context.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @return list of contexts
+     */
+    public List<URI> getAllAffectedContexts(URI publicationContextUri) {
+        Objects.requireNonNull(publicationContextUri);
+        try {
+            return em.createNativeQuery("SELECT DISTINCT ?ctx WHERE { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?inContext ?ctx . "
+                    + "}", URI.class)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .getResultList();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
      * Checks if not approved publication context related to specified project exists.
      *
      * @param projectContextUri URI identifier of project context
      * @return if publication context exists
      */
     public boolean existsNotApproved(URI projectContextUri) {
+        Objects.requireNonNull(projectContextUri);
         try {
             return em.createNativeQuery("ASK { "
                     + "?pc a ?type ; "
@@ -241,6 +267,8 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @return true or false
      */
     public boolean canUserReview(URI publicationContextUri, URI userUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(userUri);
         try {
             return em.createNativeQuery("ASK { "
                     + "?pc a ?type ; "
@@ -271,6 +299,9 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
      * @return true or false
      */
     public boolean isUserPermittedToReviewVocabulary(URI userUri, URI publicationContextUri, URI vocabularyUri) {
+        Objects.requireNonNull(userUri);
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(vocabularyUri);
         try {
             return em.createNativeQuery("ASK { "
                     + "?pc a ?type ; "
@@ -286,6 +317,40 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                 .setParameter("basedOn", URI.create(TermVocabulary.s_p_vychazi_z_verze))
                 .setParameter("voc", vocabularyUri)
                 .setParameter("gestoredBy", URI.create(TermVocabulary.s_p_ma_gestora))
+                .setParameter("user", userUri)
+                .getSingleResult();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
+    /**
+     * Checks if all changes in specified publication context in specified context are approve by specified user.
+     *
+     * @param publicationContextUri URI identifier of publication context
+     * @param userUri               URI identifier of user
+     * @param contextUri            URI identifier of vocabulary
+     * @return true or false
+     */
+    public boolean hasApprovedWholeContext(URI publicationContextUri, URI contextUri, URI userUri) {
+        Objects.requireNonNull(publicationContextUri);
+        Objects.requireNonNull(contextUri);
+        Objects.requireNonNull(userUri);
+        try {
+            return !em.createNativeQuery("ASK { "
+                    + "?pc a ?type ; "
+                    + "    ?hasChange ?change . "
+                    + "?change ?inContext ?ctx . "
+                    + "FILTER NOT EXISTS { "
+                    + "     ?change ?approvedBy ?user . "
+                    + "     }"
+                    + "}", Boolean.class)
+                .setParameter("pc", publicationContextUri)
+                .setParameter("type", typeUri)
+                .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
+                .setParameter("ctx", contextUri)
+                .setParameter("approvedBy", URI.create(TermVocabulary.s_p_schvaleno))
                 .setParameter("user", userUri)
                 .getSingleResult();
         } catch (RuntimeException e) {
