@@ -61,6 +61,32 @@ public class NotificationDao extends BaseDao<Notification> {
         }
     }
 
+    /**
+     * Finds all unread notifications for specified user.
+     *
+     * @param userUri URI identifier of user
+     */
+    public List<Notification> getAllUnreadForUser(URI userUri) {
+        Objects.requireNonNull(userUri);
+        try {
+            return em.createNativeQuery("SELECT ?n WHERE { "
+                    + "?n a ?type ;"
+                    + "   ?addressedTo ?user . "
+                    + "FILTER NOT EXISTS { "
+                    + "     ?n ?seen ?time . "
+                    + "     }"
+                    + "}", type)
+                .setParameter("type", typeUri)
+                .setParameter("addressedTo", URI.create(TermVocabulary.s_p_addressed_to))
+                .setParameter("user", userUri)
+                .setParameter("seen", URI.create(TermVocabulary.s_p_read_at))
+                .setDescriptor(descriptorFactory.notificationDescriptor())
+                .getResultList();
+        } catch (RuntimeException e) {
+            throw new PersistenceException(e);
+        }
+    }
+
     @Override
     public Optional<Notification> find(URI id) {
         Objects.requireNonNull(id);

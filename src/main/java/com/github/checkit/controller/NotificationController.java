@@ -37,6 +37,12 @@ public class NotificationController extends BaseController {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/unread/seen")
+    public void markAllSeen() {
+        notificationService.markAllSeen();
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/seen")
     public void markSeen(@RequestBody URI notificationUri) {
         notificationService.markSeen(notificationUri);

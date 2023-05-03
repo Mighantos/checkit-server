@@ -24,15 +24,17 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
     private final GestoringRequestDao gestoringRequestDao;
     private final UserService userService;
     private final VocabularyService vocabularyService;
+    private final NotificationService notificationService;
 
     /**
      * Constructor.
      */
     public GestoringRequestService(GestoringRequestDao gestoringRequestDao, UserService userService,
-                                   VocabularyService vocabularyService) {
+                                   VocabularyService vocabularyService, NotificationService notificationService) {
         this.gestoringRequestDao = gestoringRequestDao;
         this.userService = userService;
         this.vocabularyService = vocabularyService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -86,7 +88,9 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
             throw new AlreadyExistsException("Gestoring request from user \"%s\" to vocabulary \"%s\" already exists.",
                 applicant.getFullName(), vocabulary.getLabel());
         }
-        persist(new GestoringRequest(applicant, vocabulary));
+        GestoringRequest gestoringRequest = new GestoringRequest(applicant, vocabulary);
+        persist(gestoringRequest);
+        notificationService.createdGestoringRequest(gestoringRequest);
         logger.info("Gestoring request from user \"{}\" to vocabulary \"{}\" was created.", applicant.toSimpleString(),
             vocabulary.getUri());
     }
@@ -108,6 +112,7 @@ public class GestoringRequestService extends BaseRepositoryService<GestoringRequ
             vocabularyService.update(vocabulary);
         }
         remove(gestoringRequest);
+        notificationService.resolvedGestoringRequest(gestoringRequest, approved);
         logger.info("Gestoring request \"{}\" from user \"{}\" to vocabulary \"{}\" was {}.",
             gestoringRequest.getUri(), applicant.toSimpleString(), vocabulary.getUri(),
             approved ? "approved" : "rejected");
