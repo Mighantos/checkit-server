@@ -230,12 +230,15 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             publicationContext = new PublicationContext();
             publicationContext.setFromProject(project);
         }
-
-        Set<Change> newlyFormedOfChanges =
-            takeIntoConsiderationExistingChanges(currentChanges, publicationContext.getChanges());
-        assignUris(newlyFormedOfChanges);
-        resolveCountable(newlyFormedOfChanges);
-        publicationContext.setChanges(newlyFormedOfChanges);
+        Set<Change> existingChanges = publicationContext.getChanges();
+        Set<Change> newFormOfChanges =
+            takeIntoConsiderationExistingChanges(new HashSet<>(currentChanges), new HashSet<>(existingChanges));
+        if (newFormOfChanges.equals(existingChanges)) {
+            return publicationContext.getUri();
+        }
+        assignUris(newFormOfChanges);
+        resolveCountable(newFormOfChanges);
+        publicationContext.setChanges(newFormOfChanges);
 
         URI publicationContextUri;
         if (publicationContextExists) {
@@ -487,12 +490,13 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         return userReviewedAtLeastOneWholeContext;
     }
 
-    private Set<Change> takeIntoConsiderationExistingChanges(List<Change> currentChanges, Set<Change> existingChanges) {
+    private Set<Change> takeIntoConsiderationExistingChanges(Set<Change> currentChanges, Set<Change> existingChanges) {
         if (existingChanges.isEmpty()) {
             return new HashSet<>(currentChanges);
         }
 
-        List<Change> newFormOfChanges = new ArrayList<>();
+        List<Change> newFormOfChanges = resolveBlankNodeChanges(existingChanges, currentChanges);
+
         for (Change currentChange : currentChanges) {
             Optional<Change> optExistingChange =
                 existingChanges.stream().filter(currentChange::hasSameTripleAs).findFirst();
@@ -524,6 +528,90 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         }
 
         return new HashSet<>(newFormOfChanges);
+    }
+
+    private List<Change> resolveBlankNodeChanges(Set<Change> existingChanges, Set<Change> currentChanges) {
+        List<Change> newFormOfChanges = new ArrayList<>();
+        Map<Change, List<Change>> existingBlankNodeGraphs = extractBlankNodeGraphs(existingChanges);
+        Map<Change, List<Change>> currentBlankNodeGraphs = extractBlankNodeGraphs(currentChanges);
+
+        for (Change currentPointingToBlankNodeChange : currentBlankNodeGraphs.keySet()) {
+            List<Change> currentGraphBlankNodes = currentBlankNodeGraphs.get(currentPointingToBlankNodeChange);
+            Change sameChange = null;
+            for (Change existingPointingToBlankNodeChange : existingBlankNodeGraphs.keySet()) {
+                List<Change> existingGraphBlankNodes = existingBlankNodeGraphs.get(existingPointingToBlankNodeChange);
+                if (currentPointingToBlankNodeChange.hasSameTripleAs(existingPointingToBlankNodeChange)
+                    && isListOfChangesIsomorphic(existingGraphBlankNodes, currentGraphBlankNodes)) {
+                    sameChange = existingPointingToBlankNodeChange;
+                    newFormOfChanges.add(existingPointingToBlankNodeChange);
+                    newFormOfChanges.addAll(existingGraphBlankNodes);
+                    break;
+                }
+            }
+            if (sameChange == null) {
+                newFormOfChanges.add(currentPointingToBlankNodeChange);
+                newFormOfChanges.addAll(currentGraphBlankNodes);
+            } else {
+                existingBlankNodeGraphs.remove(sameChange);
+            }
+        }
+        //remove unused
+        for (Change existingPointingToBlankNodeChange : existingBlankNodeGraphs.keySet()) {
+            existingBlankNodeGraphs.get(existingPointingToBlankNodeChange).forEach(changeService::remove);
+            changeService.remove(existingPointingToBlankNodeChange);
+        }
+        return newFormOfChanges;
+    }
+
+    private boolean isListOfChangesIsomorphic(List<Change> existingGraphBlankNodes,
+                                              List<Change> currentGraphBlankNodes) {
+        List<Change> currentGraphBlankNodesCopy = new ArrayList<>(currentGraphBlankNodes);
+        if (existingGraphBlankNodes.size() != currentGraphBlankNodesCopy.size()) {
+            return false;
+        }
+        for (Change existingGraphBlankNode : existingGraphBlankNodes) {
+            Change sameChange = null;
+            for (Change currentGraphBlankNode : currentGraphBlankNodesCopy) {
+                if (existingGraphBlankNode.hasSameTripleAs(currentGraphBlankNode)) {
+                    sameChange = currentGraphBlankNode;
+                    break;
+                }
+            }
+            if (sameChange == null) {
+                return false;
+            }
+            currentGraphBlankNodesCopy.remove(sameChange);
+        }
+        return true;
+    }
+
+    private Map<Change, List<Change>> extractBlankNodeGraphs(Set<Change> changes) {
+        List<Change> blankNodeChanges = new ArrayList<>(changes.stream().filter(Change::isInBlankNode).toList());
+        blankNodeChanges.forEach(changes::remove);
+        List<Change> pointingToBlankNodeChanges =
+            changes.stream().filter(change -> change.getObject().isBlankNode()).toList();
+        pointingToBlankNodeChanges.forEach(changes::remove);
+        Map<Change, List<Change>> blankNodeGraphs = new HashMap<>();
+        for (Change pointingToBlankNodeChange : pointingToBlankNodeChanges) {
+            blankNodeGraphs.put(pointingToBlankNodeChange,
+                getSubGraphChanges(pointingToBlankNodeChange, blankNodeChanges));
+        }
+        return blankNodeGraphs;
+    }
+
+    private List<Change> getSubGraphChanges(Change pointingToBlankNodeChange, List<Change> blankNodeChanges) {
+        URI parentUri = pointingToBlankNodeChange.getUri();
+        List<Change> graphBlankNodes =
+            new ArrayList<>(blankNodeChanges.stream().filter(change -> change.getSubject().equals(parentUri)).toList());
+        blankNodeChanges.removeAll(graphBlankNodes);
+        List<Change> subGraphChanges = new ArrayList<>();
+        for (Change blankNodeChange : graphBlankNodes) {
+            if (blankNodeChange.getObject().isBlankNode()) {
+                subGraphChanges.addAll(getSubGraphChanges(blankNodeChange, blankNodeChanges));
+            }
+        }
+        graphBlankNodes.addAll(subGraphChanges);
+        return graphBlankNodes;
     }
 
     private PublicationContext findRequiredFromProject(ProjectContext projectContext) {
