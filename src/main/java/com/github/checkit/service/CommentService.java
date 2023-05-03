@@ -48,9 +48,21 @@ public class CommentService extends BaseRepositoryService<Comment> {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentDto> getAllRelatedToChange(URI changeUri) {
+    public List<CommentDto> findAllRelatedToChange(URI changeUri) {
         changeService.getRequiredReference(changeUri);
         return commentDao.findAllRelatedToChange(changeUri).stream().map(CommentDto::new).toList();
+    }
+
+    public List<Comment> findAllFinalComments(Change change) {
+        return commentDao.findAllFinalComments(change.getUri());
+    }
+
+    public Optional<Comment> findFinalComment(Change change, User user) {
+        return commentDao.findFinalComment(change, user);
+    }
+
+    public Optional<Comment> findFinalComment(PublicationContext pc) {
+        return commentDao.findFinalComment(pc);
     }
 
     /**
@@ -99,18 +111,6 @@ public class CommentService extends BaseRepositoryService<Comment> {
         comment.setTopic(change);
         persist(comment);
         notificationService.createdRejectionComment(comment, change);
-    }
-
-    public List<Comment> findAllFinalComments(Change change) {
-        return commentDao.findAllFinalComments(change.getUri());
-    }
-
-    public Optional<Comment> findFinalComment(Change change, User user) {
-        return commentDao.findFinalComment(change, user);
-    }
-
-    public Optional<Comment> findFinalComment(PublicationContext pc) {
-        return commentDao.findFinalComment(pc);
     }
 
     public void removeAllFinalComments(Change change) {
