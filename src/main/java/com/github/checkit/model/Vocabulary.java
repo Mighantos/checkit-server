@@ -38,4 +38,8 @@ public class Vocabulary extends AbstractEntity implements HasTypes {
     public void removeGestor(User user) {
         getGestors().remove(user);
     }
+
+    public String toSimpleString() {
+        return String.format("{%s,  \"%s\"}", getLabel(), getUri());
+    }
 }
