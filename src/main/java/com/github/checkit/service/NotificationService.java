@@ -99,6 +99,19 @@ public class NotificationService extends BaseRepositoryService<Notification> {
     }
 
     /**
+     * Marks all unread notification of current user as read.
+     */
+    @Transactional
+    public void markAllSeen() {
+        User current = userService.getCurrent();
+        for (Notification notification : notificationDao.getAllUnreadForUser(current.getUri())) {
+            notification.markRead();
+            update(notification);
+        }
+        logger.debug("All unread notifications for user {} were marked as seen.", current.toSimpleString());
+    }
+
+    /**
      * Creates notifications for gestors about new publication context.
      *
      * @param publicationContext created publication context

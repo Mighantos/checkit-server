@@ -206,7 +206,7 @@ public final class NotificationTemplateUtil {
                 String.format("Vaše žádost o gestorování slovníku \"%s\" byla %s",
                     vocabulary.getLabel(), approved ? "schválena. Nyní můžete revidovat změny provedené pro tento "
                         + "slovník." : "zamítnuta.")));
-        notification.setAbout("");
+        notification.setAbout(null);
         return notification;
     }
 }
