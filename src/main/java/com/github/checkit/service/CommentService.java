@@ -15,11 +15,15 @@ import com.github.checkit.model.auxilary.CommentTag;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CommentService extends BaseRepositoryService<Comment> {
+
+    private final Logger logger = LoggerFactory.getLogger(AdminUserService.class);
 
     private final CommentDao commentDao;
     private final UserService userService;
@@ -74,13 +78,15 @@ public class CommentService extends BaseRepositoryService<Comment> {
     @Transactional
     public void createComment(URI changeUri, String content) {
         Change change = changeService.getRequiredReference(changeUri);
+        User current = userService.getCurrent();
         Comment comment = new Comment();
         comment.setTag(CommentTag.DISCUSSION);
-        comment.setAuthor(userService.getCurrent());
+        comment.setAuthor(current);
         comment.setContent(content);
         comment.setTopic(change);
         persist(comment);
         notificationService.createdDiscussionComment(comment, change);
+        logger.info("User {} created discussion comment on change \"{}\".", current.toSimpleString(), changeUri);
     }
 
     /**
@@ -111,6 +117,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
         comment.setTopic(change);
         persist(comment);
         notificationService.createdRejectionComment(comment, change);
+        logger.info("User {} created rejection comment on change \"{}\".", current.toSimpleString(), changeUri);
     }
 
     public void removeAllFinalComments(Change change) {
