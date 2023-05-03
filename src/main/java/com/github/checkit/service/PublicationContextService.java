@@ -31,6 +31,7 @@ import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.auxilary.CommentTag;
 import com.github.checkit.service.auxiliary.ChangeDtoComposer;
 import com.github.checkit.util.TermVocabulary;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -537,22 +538,29 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         for (Change currentPointingToBlankNodeChange : currentBlankNodeGraphs.keySet()) {
             List<Change> currentGraphBlankNodes = currentBlankNodeGraphs.get(currentPointingToBlankNodeChange);
-            Change sameChange = null;
+            Change sameExistingPointingToBlankNodeChange = null;
             for (Change existingPointingToBlankNodeChange : existingBlankNodeGraphs.keySet()) {
                 List<Change> existingGraphBlankNodes = existingBlankNodeGraphs.get(existingPointingToBlankNodeChange);
                 if (currentPointingToBlankNodeChange.hasSameTripleAs(existingPointingToBlankNodeChange)
                     && isListOfChangesIsomorphic(existingGraphBlankNodes, currentGraphBlankNodes)) {
-                    sameChange = existingPointingToBlankNodeChange;
-                    newFormOfChanges.add(existingPointingToBlankNodeChange);
-                    newFormOfChanges.addAll(existingGraphBlankNodes);
+                    sameExistingPointingToBlankNodeChange = existingPointingToBlankNodeChange;
                     break;
                 }
             }
-            if (sameChange == null) {
+            if (sameExistingPointingToBlankNodeChange == null) {
                 newFormOfChanges.add(currentPointingToBlankNodeChange);
                 newFormOfChanges.addAll(currentGraphBlankNodes);
             } else {
-                existingBlankNodeGraphs.remove(sameChange);
+                List<Change> existingGraphBlankNodes =
+                    existingBlankNodeGraphs.get(sameExistingPointingToBlankNodeChange);
+                existingBlankNodeGraphs.remove(sameExistingPointingToBlankNodeChange);
+                MultilingualString label = currentPointingToBlankNodeChange.getLabel();
+                existingGraphBlankNodes.forEach(blankNodeChange -> {
+                    blankNodeChange.setLabel(label);
+                    newFormOfChanges.add(blankNodeChange);
+                });
+                sameExistingPointingToBlankNodeChange.setLabel(label);
+                newFormOfChanges.add(sameExistingPointingToBlankNodeChange);
             }
         }
         //remove unused
