@@ -165,12 +165,16 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext pc = findRequired(publicationContextUri);
         PublicationContextState state = getState(pc, current);
+        Map<AbstractChangeableContext, List<User>> contextApprovedByMap = resolveApprovedByForContexts(pc);
         List<ReviewableVocabularyDto> affectedVocabularies =
             vocabularyService.findAllAffectedVocabularies(pc.getUri()).stream()
                 .map(vocabulary -> {
                     boolean gestored = userService.isCurrentAdmin() || vocabulary.getGestors().contains(current);
+                    List<User> approvedBy =
+                        contextApprovedByMap.get(contextApprovedByMap.keySet().stream()
+                            .filter(ctx -> ctx.getBasedOnVersion().equals(vocabulary.getUri())).findFirst().get());
                     VocabularyStatisticsDto vocStatistics = getVocabularyStatistics(pc, vocabulary, current, gestored);
-                    return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics);
+                    return new ReviewableVocabularyDto(vocabulary, gestored, vocStatistics, approvedBy);
                 }).toList();
         PublicationContextStatisticsDto statistics =
             affectedVocabularies.stream().anyMatch(ReviewableVocabularyDto::isGestored) ? getStatistics(pc, current)
@@ -465,26 +469,27 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             return false;
         }
         //check that every vocabulary was reviewed in whole by someone
-        Map<URI, List<User>> contextApprovedByMap = resolveApprovedByForContexts(pc);
+        Map<AbstractChangeableContext, List<User>> contextApprovedByMap = resolveApprovedByForContexts(pc);
         if (contextApprovedByMap.values().stream().anyMatch(List::isEmpty)) {
             return false;
         }
         return contextApprovedByMap.values().stream().anyMatch(approvedBy -> approvedBy.contains(user));
     }
 
-    private Map<URI, List<User>> resolveApprovedByForContexts(PublicationContext pc) {
-        Map<URI, List<User>> contextApprovedByMap = new HashMap<>();
-        for (URI contextUri : publicationContextDao.getAllAffectedContexts(pc.getUri())) {
+    private Map<AbstractChangeableContext, List<User>> resolveApprovedByForContexts(PublicationContext pc) {
+        Map<AbstractChangeableContext, List<User>> contextApprovedByMap = new HashMap<>();
+        for (AbstractChangeableContext context : publicationContextDao.getAllAffectedContexts(pc.getUri())) {
             List<User> approvedBy = new ArrayList<>();
             Set<User> potentiallyApprovedBy =
-                changeService.findRequiredAnyInContextInPublicationContext(pc.getUri(), contextUri).getApprovedBy();
+                changeService.findRequiredAnyInContextInPublicationContext(pc.getUri(), context.getUri())
+                    .getApprovedBy();
             for (User approvedByCandidate : potentiallyApprovedBy) {
-                if (publicationContextDao.hasApprovedWholeContext(pc.getUri(), contextUri,
+                if (publicationContextDao.hasApprovedWholeContext(pc.getUri(), context.getUri(),
                     approvedByCandidate.getUri())) {
                     approvedBy.add(approvedByCandidate);
                 }
             }
-            contextApprovedByMap.put(contextUri, approvedBy);
+            contextApprovedByMap.put(context, approvedBy);
         }
         return contextApprovedByMap;
     }

@@ -2,6 +2,7 @@ package com.github.checkit.dao;
 
 import com.github.checkit.exception.PersistenceException;
 import com.github.checkit.model.PublicationContext;
+import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.auxilary.CommentTag;
 import com.github.checkit.persistence.DescriptorFactory;
 import com.github.checkit.util.TermVocabulary;
@@ -204,19 +205,19 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     }
 
     /**
-     * Get all URI identifiers of context affected in specified publication context.
+     * Get all contexts affected in specified publication context.
      *
      * @param publicationContextUri URI identifier of publication context
      * @return list of contexts
      */
-    public List<URI> getAllAffectedContexts(URI publicationContextUri) {
+    public List<AbstractChangeableContext> getAllAffectedContexts(URI publicationContextUri) {
         Objects.requireNonNull(publicationContextUri);
         try {
             return em.createNativeQuery("SELECT DISTINCT ?ctx WHERE { "
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
                     + "?change ?inContext ?ctx . "
-                    + "}", URI.class)
+                    + "}", AbstractChangeableContext.class)
                 .setParameter("pc", publicationContextUri)
                 .setParameter("type", typeUri)
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
