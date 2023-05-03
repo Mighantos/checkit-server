@@ -285,6 +285,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         comment.setContent(finalComment);
         commentService.persist(comment);
         notificationService.approvedPublicationContext(comment, publicationContext);
+        logger.info("Publication context \"{}\" was approved by user {}.", publicationContext.getUri(),
+            current.toSimpleString());
     }
 
     /**
@@ -310,6 +312,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         comment.setContent(finalComment);
         commentService.persist(comment);
         notificationService.rejectedPublicationContext(comment, publicationContext);
+        logger.info("Publication context \"{}\" was rejected by user {}.", publicationContext.getUri(),
+            current.toSimpleString());
     }
 
     private List<ChangeDto> convertChangesInVocabularyToDtos(PublicationContext pc, User current, String language,
