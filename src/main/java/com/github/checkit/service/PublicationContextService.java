@@ -218,7 +218,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
 
         PublicationContext publicationContext;
         Set<User> reviewers = new HashSet<>();
-        boolean publicationContextExists = publicationContextDao.exists(project);
+        boolean publicationContextExists = publicationContextDao.existsNotApproved(project.getUri());
         if (publicationContextExists) {
             publicationContext = findRequiredFromProject(project);
             publicationContext.getChanges().forEach(change -> reviewers.addAll(change.getReviewBy()));

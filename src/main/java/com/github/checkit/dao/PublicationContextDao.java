@@ -1,7 +1,6 @@
 package com.github.checkit.dao;
 
 import com.github.checkit.exception.PersistenceException;
-import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.auxilary.CommentTag;
 import com.github.checkit.persistence.DescriptorFactory;
@@ -206,10 +205,10 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
     /**
      * Checks if not approved publication context related to specified project exists.
      *
-     * @param projectContext Project context
+     * @param projectContextUri URI identifier of project context
      * @return if publication context exists
      */
-    public boolean exists(ProjectContext projectContext) {
+    public boolean existsNotApproved(URI projectContextUri) {
         try {
             return em.createNativeQuery("ASK { "
                     + "?pc a ?type ; "
@@ -223,7 +222,7 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                     + "}", Boolean.class)
                 .setParameter("type", typeUri)
                 .setParameter("fromProject", URI.create(TermVocabulary.s_p_z_projektu))
-                .setParameter("project", projectContext.getUri())
+                .setParameter("project", projectContextUri)
                 .setParameter("commentType", URI.create(TermVocabulary.s_c_Comment))
                 .setParameter("hasTag", URI.create(TermVocabulary.s_p_ma_stitek))
                 .setParameter("topic", URI.create(TermVocabulary.s_p_topic))
