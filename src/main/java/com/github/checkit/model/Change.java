@@ -156,11 +156,6 @@ public class Change extends AbstractCommentableEntity {
         return !getApprovedBy().isEmpty() || !getRejectedBy().isEmpty();
     }
 
-    public void clearReviews() {
-        getApprovedBy().clear();
-        getRejectedBy().clear();
-    }
-
     public boolean isApproved(User user) {
         return getApprovedBy().contains(user);
     }
@@ -169,8 +164,16 @@ public class Change extends AbstractCommentableEntity {
         return getRejectedBy().contains(user);
     }
 
+    public boolean isReviewed(User user) {
+        return isApproved(user) || isRejected(user);
+    }
+
     public boolean notApproved() {
         return getApprovedBy().isEmpty();
+    }
+
+    public boolean isRollback() {
+        return getChangeType().equals(ChangeType.ROLLBACKED);
     }
 
     public boolean isInBlankNode() {
