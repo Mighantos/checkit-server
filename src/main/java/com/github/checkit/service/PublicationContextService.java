@@ -322,6 +322,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         List<ChangeDto> changeDtos = new ArrayList<>(changes.stream()
             .filter(change ->
                 change.getContext().getBasedOnVersion().equals(vocabularyUri))
+            .filter(change -> !change.isRollback() || change.isReviewed(current))
             .map(change ->
                 new ChangeDto(change, current, language, defaultLanguageTag, resolveRejectionComment(change, current),
                     resolveRejectionCommentsOfOthers(change, current),
@@ -351,6 +352,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
             countableChangeUris.addAll(changeComposer.getCountable());
         }
         changes.forEach(change -> change.setCountable(countableChangeUris.remove(change.getUri())));
+        changes.stream().filter(change -> change.getChangeType().equals(ChangeType.ROLLBACKED))
+            .forEach(change -> change.setCountable(false));
     }
 
     private void assignUris(Set<Change> newlyFormedOfChanges) {
@@ -527,8 +530,6 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         for (Change rollbackedChange : existingChanges) {
             if (rollbackedChange.hasBeenReviewed()) {
                 rollbackedChange.setChangeType(ChangeType.ROLLBACKED);
-                rollbackedChange.clearReviews();
-                commentService.removeAllFinalComments(rollbackedChange);
                 newFormOfChanges.add(rollbackedChange);
             } else {
                 changeService.remove(rollbackedChange);
