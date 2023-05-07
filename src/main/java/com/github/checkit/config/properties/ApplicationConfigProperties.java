@@ -1,6 +1,7 @@
 package com.github.checkit.config.properties;
 
 import jakarta.annotation.Nonnull;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -18,12 +19,21 @@ public class ApplicationConfigProperties {
      * Application version.
      */
     private String version;
+    private Boolean publishToSSP;
     @Nonnull
     private CommentProperties comment;
     @Nonnull
     private PublicationContextProperties publicationContext;
     @Nonnull
     private NotificationProperties notification;
+
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
+    public Boolean getPublishToSSP() {
+        if (Objects.isNull(publishToSSP)) {
+            publishToSSP = false;
+        }
+        return publishToSSP;
+    }
 
     @Getter
     @Setter

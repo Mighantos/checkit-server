@@ -30,4 +30,8 @@ public class ProjectContext extends AbstractEntity {
 
     @OWLObjectProperty(iri = TermVocabulary.s_p_odkazuje_na_kontext, fetch = FetchType.EAGER)
     private Set<VocabularyContext> vocabularyContexts;
+
+    public String getId() {
+        return getUri().toString().substring(getUri().toString().lastIndexOf("/") + 1);
+    }
 }

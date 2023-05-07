@@ -58,6 +58,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final UserService userService;
     private final CommentService commentService;
     private final NotificationService notificationService;
+    private final SGoVServerService sgovServerService;
     private final String defaultLanguageTag;
     private final int minimalRejectionCommentLength;
     private final int pageSize;
@@ -70,7 +71,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                                      VocabularyService vocabularyService, UserService userService,
                                      CommentService commentService,
                                      NotificationService notificationService,
-                                     RepositoryConfigProperties repositoryConfigProperties,
+                                     SGoVServerService sgovServerService, RepositoryConfigProperties repositoryConfigProperties,
                                      ApplicationConfigProperties applicationConfigProperties) {
         this.publicationContextDao = publicationContextDao;
         this.projectContextService = projectContextService;
@@ -79,6 +80,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         this.userService = userService;
         this.commentService = commentService;
         this.notificationService = notificationService;
+        this.sgovServerService = sgovServerService;
         this.defaultLanguageTag = repositoryConfigProperties.getLanguage();
         this.minimalRejectionCommentLength =
             applicationConfigProperties.getComment().getRejectionMinimalContentLength();
@@ -244,6 +246,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         assignUris(newFormOfChanges);
         resolveCountable(newFormOfChanges);
         publicationContext.setChanges(newFormOfChanges);
+        publicationContext.setCorrespondingPullRequest(sgovServerService.createPullRequest(project));
 
         URI publicationContextUri;
         if (publicationContextExists) {

@@ -1,12 +1,12 @@
 application:
   version: ${version}
+  publishToSSP: false
   publicationContext:
     pageSize: 15
   notification:
     pageSize: 15
   comment:
     rejectionMinimalContentLength: 10
-
 
 logging:
   level:
@@ -18,6 +18,9 @@ server:
   port: 8080
   servlet:
     contextPath: /checkit-server
+
+sgovServer:
+  url: http://localhost:8080/
 
 keycloak:
   realm: your-realm
