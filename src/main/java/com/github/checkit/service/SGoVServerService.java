@@ -1,6 +1,5 @@
 package com.github.checkit.service;
 
-import com.github.checkit.config.properties.ApplicationConfigProperties;
 import com.github.checkit.config.properties.GitHubConfigProperties;
 import com.github.checkit.config.properties.SgovConfigProperties;
 import com.github.checkit.exception.SgovPublishException;
@@ -23,8 +22,8 @@ public class SGoVServerService {
     private final boolean allowedToPublishToSSP;
     private final String sgovServerUrl;
     private final String doNotPublishUrl = "http://DoNotPublishToSSP/";
-    private final String PUBLISH_PATH_TEMPLATE = "workspaces/%s/publish";
-    private final String PULL_REQUEST_HEADER_NAME = "Location";
+    private final String publishPathTemplate = "workspaces/%s/publish";
+    private final String pullRequestHeaderName = "Location";
 
     /**
      * Constructor.
@@ -48,7 +47,7 @@ public class SGoVServerService {
         String prUrl = null;
         String exceptionMessage = "Returned Pull Request URL is null.";
         try {
-            String publishPath = String.format(PUBLISH_PATH_TEMPLATE, projectContext.getId());
+            String publishPath = String.format(publishPathTemplate, projectContext.getId());
             String token =
                 ((Jwt) SecurityContextHolder.getContext().getAuthentication().getCredentials()).getTokenValue();
 
@@ -59,8 +58,8 @@ public class SGoVServerService {
             sgovConnection.setRequestProperty("authorization", "Bearer " + token);
             int responseCode = sgovConnection.getResponseCode();
             Map<String, List<String>> headerFields = sgovConnection.getHeaderFields();
-            if (responseCode == 201 && headerFields.containsKey(PULL_REQUEST_HEADER_NAME)) {
-                prUrl = headerFields.get(PULL_REQUEST_HEADER_NAME).iterator().next();
+            if (responseCode == 201 && headerFields.containsKey(pullRequestHeaderName)) {
+                prUrl = headerFields.get(pullRequestHeaderName).iterator().next();
             } else if (responseCode < 300) {
                 BufferedReader bufferedReader =
                     new BufferedReader(new InputStreamReader(sgovConnection.getInputStream()));
