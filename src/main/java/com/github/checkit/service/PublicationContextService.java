@@ -59,6 +59,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
     private final CommentService commentService;
     private final NotificationService notificationService;
     private final SGoVServerService sgovServerService;
+    private final GitHubService gitHubService;
     private final String defaultLanguageTag;
     private final int minimalRejectionCommentLength;
     private final int pageSize;
@@ -71,7 +72,8 @@ public class PublicationContextService extends BaseRepositoryService<Publication
                                      VocabularyService vocabularyService, UserService userService,
                                      CommentService commentService,
                                      NotificationService notificationService,
-                                     SGoVServerService sgovServerService, RepositoryConfigProperties repositoryConfigProperties,
+                                     SGoVServerService sgovServerService, GitHubService gitHubService,
+                                     RepositoryConfigProperties repositoryConfigProperties,
                                      ApplicationConfigProperties applicationConfigProperties) {
         this.publicationContextDao = publicationContextDao;
         this.projectContextService = projectContextService;
@@ -81,6 +83,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         this.commentService = commentService;
         this.notificationService = notificationService;
         this.sgovServerService = sgovServerService;
+        this.gitHubService = gitHubService;
         this.defaultLanguageTag = repositoryConfigProperties.getLanguage();
         this.minimalRejectionCommentLength =
             applicationConfigProperties.getComment().getRejectionMinimalContentLength();
@@ -286,6 +289,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         comment.setTag(CommentTag.APPROVAL);
         comment.setAuthor(current);
         comment.setContent(finalComment);
+        gitHubService.approvePullRequest(publicationContext);
         commentService.persist(comment);
         notificationService.approvedPublicationContext(comment, publicationContext);
         logger.info("Publication context \"{}\" was approved by user {}.", publicationContext.getUri(),

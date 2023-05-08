@@ -49,6 +49,7 @@ ext {
     springVersion = '3.0.6'
     keycloakVersion = '21.1.1'
     jenaVersion = '4.8.0'
+    githubApiVersion = '1.314'
 }
 
 dependencies {
@@ -64,6 +65,7 @@ dependencies {
     implementation "com.github.ledsoft:jopa-spring-transaction:$jopaSpringTransactionVersion"
     implementation "org.keycloak:keycloak-admin-client:$keycloakVersion"
     implementation "org.apache.jena:apache-jena-libs:$jenaVersion"
+    implementation "org.kohsuke:github-api:$githubApiVersion"
 
     compileOnly "org.projectlombok:lombok"
     annotationProcessor "org.projectlombok:lombok"

@@ -1,6 +1,7 @@
 package com.github.checkit.service;
 
 import com.github.checkit.config.properties.ApplicationConfigProperties;
+import com.github.checkit.config.properties.GitHubConfigProperties;
 import com.github.checkit.config.properties.SgovConfigProperties;
 import com.github.checkit.exception.SgovPublishException;
 import com.github.checkit.model.ProjectContext;
@@ -29,8 +30,8 @@ public class SGoVServerService {
      * Constructor.
      */
     public SGoVServerService(SgovConfigProperties sgovConfigProperties,
-                             ApplicationConfigProperties applicationConfigProperties) {
-        this.allowedToPublishToSSP = applicationConfigProperties.getPublishToSSP();
+                             GitHubConfigProperties gitHubConfigProperties) {
+        this.allowedToPublishToSSP = gitHubConfigProperties.getPublishToSSP();
         this.sgovServerUrl = makeSureSgovUrlEndsWithSlash(sgovConfigProperties.getUrl());
     }
 

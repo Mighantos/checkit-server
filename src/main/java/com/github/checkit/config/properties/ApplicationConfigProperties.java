@@ -19,21 +19,12 @@ public class ApplicationConfigProperties {
      * Application version.
      */
     private String version;
-    private Boolean publishToSSP;
     @Nonnull
     private CommentProperties comment;
     @Nonnull
     private PublicationContextProperties publicationContext;
     @Nonnull
     private NotificationProperties notification;
-
-    @SuppressWarnings("checkstyle:MissingJavadocMethod")
-    public Boolean getPublishToSSP() {
-        if (Objects.isNull(publishToSSP)) {
-            publishToSSP = false;
-        }
-        return publishToSSP;
-    }
 
     @Getter
     @Setter

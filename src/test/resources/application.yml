@@ -1,6 +1,5 @@
 application:
   version: ${version}
-  publishToSSP: false
   publicationContext:
     pageSize: 15
   notification:
@@ -21,6 +20,12 @@ server:
 
 sgovServer:
   url: http://localhost:8080/
+
+gitHub:
+  publishToSSP: false
+  organization: datagov-cz
+  repository: ssp
+  token: GitHubTokenForMergingPullRequestsInSSP
 
 keycloak:
   realm: your-realm
