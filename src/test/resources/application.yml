@@ -7,7 +7,6 @@ application:
   comment:
     rejectionMinimalContentLength: 10
 
-
 logging:
   level:
     root: info
@@ -18,6 +17,15 @@ server:
   port: 8080
   servlet:
     contextPath: /checkit-server
+
+sgovServer:
+  url: http://localhost:8080/
+
+gitHub:
+  publishToSSP: false
+  organization: datagov-cz
+  repository: ssp
+  token: GitHubTokenForMergingPullRequestsInSSP
 
 keycloak:
   realm: your-realm

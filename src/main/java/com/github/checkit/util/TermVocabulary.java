@@ -52,6 +52,8 @@ public final class TermVocabulary {
     public static final String s_p_ma_stitek = CHANGE_DESCRIPTION_NAMESPACE + "má-štítek";
     public static final String s_p_je_pocitatelna_do_statistiky = CHANGE_DESCRIPTION_NAMESPACE
         + "je-počitatelná-do-statistiky";
+    public static final String s_p_odpovidajici_pull_request = CHANGE_DESCRIPTION_NAMESPACE
+        + "odpovídající-pull-request";
 
     /**
      * Other terms definition.

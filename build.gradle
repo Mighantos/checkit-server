@@ -16,7 +16,7 @@ plugins {
 }
 
 group = 'com.github'
-version = "0.5.5"
+version = "0.6.0"
 
 compileJava {
     sourceCompatibility = '17'
@@ -44,11 +44,12 @@ repositories {
 }
 
 ext {
-    jopaVersion = '0.21.1'
-    jopaSpringTransactionVersion = '0.1.5'
-    springVersion = '3.0.5'
-    keycloakVersion = '21.0.2'
-    jenaVersion = '4.7.0'
+    jopaVersion = '0.22.0'
+    jopaSpringTransactionVersion = '0.1.6'
+    springVersion = '3.0.6'
+    keycloakVersion = '21.1.1'
+    jenaVersion = '4.8.0'
+    githubApiVersion = '1.314'
 }
 
 dependencies {
@@ -64,6 +65,7 @@ dependencies {
     implementation "com.github.ledsoft:jopa-spring-transaction:$jopaSpringTransactionVersion"
     implementation "org.keycloak:keycloak-admin-client:$keycloakVersion"
     implementation "org.apache.jena:apache-jena-libs:$jenaVersion"
+    implementation "org.kohsuke:github-api:$githubApiVersion"
 
     compileOnly "org.projectlombok:lombok"
     annotationProcessor "org.projectlombok:lombok"

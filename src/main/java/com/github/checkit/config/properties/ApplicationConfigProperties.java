@@ -1,6 +1,7 @@
 package com.github.checkit.config.properties;
 
 import jakarta.annotation.Nonnull;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
