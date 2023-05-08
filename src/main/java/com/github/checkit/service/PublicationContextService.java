@@ -317,6 +317,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         comment.setTag(CommentTag.REJECTION);
         comment.setAuthor(current);
         comment.setContent(finalComment);
+        gitHubService.closePullRequest(publicationContext);
         commentService.persist(comment);
         notificationService.rejectedPublicationContext(comment, publicationContext);
         logger.info("Publication context \"{}\" was rejected by user {}.", publicationContext.getUri(),

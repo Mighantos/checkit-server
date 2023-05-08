@@ -27,7 +27,7 @@ public class GitHubService {
     }
 
     /**
-     * Approve Pull Request in SSP GitHub repository.
+     * Approve Pull Request of specified publication context in SSP GitHub.
      *
      * @param publicationContext publication context that was approved
      */
@@ -37,10 +37,7 @@ public class GitHubService {
         }
         String pullRequestUrl = publicationContext.getCorrespondingPullRequest();
         try {
-            GitHub gitHub = new GitHubBuilder().withOAuthToken(gitHubConfigProperties.getToken()).build();
-            GHOrganization organization = gitHub.getOrganization(gitHubConfigProperties.getOrganization());
-            GHRepository repository = organization.getRepository(gitHubConfigProperties.getRepository());
-            GHPullRequest pullRequest = repository.getPullRequest(getPullRequestId(pullRequestUrl));
+            GHPullRequest pullRequest = getPullRequest(pullRequestUrl);
             pullRequest.createReview().event(GHPullRequestReviewEvent.APPROVE)
                 .body(String.format("Gestor %s approved these changes in publication context \"%s\".",
                     userService.getCurrent().toSimpleString(), publicationContext.getUri())).create();
@@ -55,6 +52,35 @@ public class GitHubService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Close Pull Request of specified publication context in SSP GitHub repository.
+     *
+     * @param publicationContext publication context that was rejected
+     */
+    public void closePullRequest(PublicationContext publicationContext) {
+        if (!gitHubConfigProperties.getPublishToSSP()) {
+            return;
+        }
+        String pullRequestUrl = publicationContext.getCorrespondingPullRequest();
+        try {
+            GHPullRequest pullRequest = getPullRequest(pullRequestUrl);
+            pullRequest.comment(String.format("Gestor %s rejected these changes in publication context \"%s\".",
+                userService.getCurrent().toSimpleString(), publicationContext.getUri()));
+            pullRequest.close();
+            logger.info("Pull Request \"{}\" for publication context \"{}\" was closed.",
+                pullRequest.getTitle(), publicationContext.getUri());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private GHPullRequest getPullRequest(String pullRequestUrl) throws IOException {
+        GitHub gitHub = new GitHubBuilder().withOAuthToken(gitHubConfigProperties.getToken()).build();
+        GHOrganization organization = gitHub.getOrganization(gitHubConfigProperties.getOrganization());
+        GHRepository repository = organization.getRepository(gitHubConfigProperties.getRepository());
+        return repository.getPullRequest(getPullRequestId(pullRequestUrl));
     }
 
     private int getPullRequestId(String pullRequestUrl) {
