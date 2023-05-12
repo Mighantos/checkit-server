@@ -61,17 +61,6 @@ public class ChangeResolver {
             getChangedStatementsWithoutBlankNodes(canonicalGraph, draftGraph);
         HashMap<Resource, ArrayList<Statement>> removedStatements =
             getChangedStatementsWithoutBlankNodes(draftGraph, canonicalGraph);
-        for (Resource subject : newStatements.keySet()) {
-            if (removedStatements.containsKey(subject)) {
-                continue;
-            }
-            MultilingualString label = fetchChangeLabel(subject, draftGraph);
-            for (Statement statement : newStatements.get(subject)) {
-                Change change = createChangeFromStatement(ChangeType.CREATED, label,
-                    fetchSubjectType(statement.getSubject(), draftGraph), statement);
-                changes.add(change);
-            }
-        }
 
         for (Resource subject : removedStatements.keySet()) {
             MultilingualString label = fetchChangeLabel(subject, canonicalGraph);
@@ -82,7 +71,21 @@ public class ChangeResolver {
                 if (changeType == ChangeType.MODIFIED) {
                     Statement modifiedStatement = resolveModifiedStatement(statement, newStatements);
                     change.setNewObject(resolveObject(modifiedStatement.getObject()));
+                    newStatements.get(subject).remove(modifiedStatement);
                 }
+                changes.add(change);
+            }
+        }
+
+        for (Resource subject : newStatements.keySet()) {
+            ArrayList<Statement> statements = newStatements.get(subject);
+            if (statements.isEmpty()) {
+                continue;
+            }
+            MultilingualString label = fetchChangeLabel(subject, draftGraph);
+            for (Statement statement : statements) {
+                Change change = createChangeFromStatement(ChangeType.CREATED, label,
+                    fetchSubjectType(statement.getSubject(), draftGraph), statement);
                 changes.add(change);
             }
         }
