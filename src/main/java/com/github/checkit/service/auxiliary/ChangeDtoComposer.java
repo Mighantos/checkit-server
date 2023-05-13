@@ -111,7 +111,7 @@ public class ChangeDtoComposer {
                 affectedChanges.add(topLevelChangeDto);
                 List<ChangeDto> blankNodeChanges = changeDtosInBlankNodes.stream()
                     .filter(changeDto -> changeDto.getSubject().equals(topLevelChangeDto.getUri())).toList();
-                if (!isChangeOnRelation(blankNodeChanges) || !isRelationship(blankNodeChanges)) {
+                if (!isChangeOnRelationship(blankNodeChanges) || !isRestriction(blankNodeChanges)) {
                     return null;
                 }
                 if (Objects.isNull(relationshipDto.getRelationUri())) {
@@ -249,13 +249,13 @@ public class ChangeDtoComposer {
                 && changeDto.getObject().getValue().equals(TermVocabulary.s_p_ma_vztazeny_prvek_1));
     }
 
-    private boolean isRelationship(List<ChangeDto> blankNodeChanges) {
+    private boolean isRestriction(List<ChangeDto> blankNodeChanges) {
         return blankNodeChanges.stream().anyMatch(changeDto ->
             changeDto.getPredicate().equals(URI.create(RDF.TYPE))
                 && changeDto.getObject().getValue().equals(OWL.RESTRICTION.toString()));
     }
 
-    private boolean isChangeOnRelation(List<ChangeDto> blankNodeChanges) {
+    private boolean isChangeOnRelationship(List<ChangeDto> blankNodeChanges) {
         return blankNodeChanges.stream().anyMatch(changeDto ->
             changeDto.getPredicate().equals(URI.create(OWL.ONPROPERTY.toString()))
                 && !changeDto.getObject().isBlankNode());
