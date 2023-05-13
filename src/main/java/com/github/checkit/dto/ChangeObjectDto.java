@@ -17,7 +17,7 @@ public class ChangeObjectDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String languageTag;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final RestrictionDto restriction;
+    private final RelationshipDto restriction;
     @JsonIgnore
     private final boolean blankNode;
 
@@ -35,7 +35,7 @@ public class ChangeObjectDto {
     /**
      * Constructor.
      */
-    public ChangeObjectDto(RestrictionDto restriction) {
+    public ChangeObjectDto(RelationshipDto restriction) {
         this.value = null;
         this.type = null;
         this.languageTag = null;
