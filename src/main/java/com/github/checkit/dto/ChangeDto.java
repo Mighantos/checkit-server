@@ -91,7 +91,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
     /**
      * Constructor for change with restriction.
      */
-    public ChangeDto(ChangeDto changeDto, RestrictionDto restrictionDto, ChangeState changeState) {
+    public ChangeDto(ChangeDto changeDto, RelationshipDto relationshipDto, ChangeState changeState) {
         this.id = null;
         this.uri = null;
         this.type = changeDto.getType();
@@ -99,7 +99,7 @@ public class ChangeDto implements Comparable<ChangeDto> {
         this.label = changeDto.getLabel();
         this.subject = changeDto.getSubject();
         this.predicate = changeDto.getPredicate();
-        this.object = new ChangeObjectDto(restrictionDto);
+        this.object = new ChangeObjectDto(relationshipDto);
         this.newObject = null;
         this.state = changeState;
         this.rejectionComment = null;

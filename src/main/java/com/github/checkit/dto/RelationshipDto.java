@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RestrictionDto {
+public class RelationshipDto {
 
     private List<ChangeDto> affectedChanges;
     private URI commentableChange;
@@ -20,7 +20,7 @@ public class RestrictionDto {
     private String relationName;
     private URI relationUri;
 
-    public RestrictionDto() {
+    public RelationshipDto() {
         this.cardinalityStart = new CardinalityDto();
         this.cardinalityEnd = new CardinalityDto();
     }

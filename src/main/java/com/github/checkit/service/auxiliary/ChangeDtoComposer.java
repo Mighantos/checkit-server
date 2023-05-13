@@ -1,7 +1,7 @@
 package com.github.checkit.service.auxiliary;
 
 import com.github.checkit.dto.ChangeDto;
-import com.github.checkit.dto.RestrictionDto;
+import com.github.checkit.dto.RelationshipDto;
 import com.github.checkit.dto.auxiliary.ChangeState;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.auxilary.ChangeSubjectType;
@@ -22,7 +22,7 @@ public class ChangeDtoComposer {
 
     private final List<ChangeDto> changeDtos;
     @Getter
-    private final List<ChangeDto> groupChangeDtosOfRestrictions = new ArrayList<>();
+    private final List<ChangeDto> groupChangeDtosOfRelationships = new ArrayList<>();
     private Map<URI, List<ChangeDto>> subjectsChangeDtosPointingAtBlankNodeMap;
     private List<ChangeDto> changeDtosInBlankNodes;
 
@@ -31,7 +31,7 @@ public class ChangeDtoComposer {
     }
 
     /**
-     * Composes change DTOs to contain restrictions and hides changes composed in restrictions.
+     * Composes change DTOs to contain relationship and hides changes composed in restrictions.
      */
     public void compose() {
         Map<URI, List<ChangeDto>> subjectsCreateChangeDtosPointingAtBlankNodeMap = new HashMap<>();
@@ -56,9 +56,9 @@ public class ChangeDtoComposer {
             }
         }
         subjectsChangeDtosPointingAtBlankNodeMap = subjectsCreateChangeDtosPointingAtBlankNodeMap;
-        createGroupChangeDtosOfRestriction();
+        createGroupChangeDtosOfRelationships();
         subjectsChangeDtosPointingAtBlankNodeMap = subjectsDeleteChangeDtosPointingAtBlankNodeMap;
-        createGroupChangeDtosOfRestriction();
+        createGroupChangeDtosOfRelationships();
         selectCommentableChangeInGroups();
     }
 
@@ -69,54 +69,54 @@ public class ChangeDtoComposer {
      */
     public Set<URI> getCountable() {
         Set<URI> countableChanges = new HashSet<>(changeDtos.stream().map(ChangeDto::getUri).toList());
-        countableChanges.addAll(groupChangeDtosOfRestrictions.stream()
+        countableChanges.addAll(groupChangeDtosOfRelationships.stream()
             .map(changeDto -> changeDto.getObject().getRestriction().getCommentableChange()).toList());
         return countableChanges;
     }
 
     private void selectCommentableChangeInGroups() {
-        for (ChangeDto groupChangeDtosOfRestriction : groupChangeDtosOfRestrictions) {
-            RestrictionDto restriction = groupChangeDtosOfRestriction.getObject().getRestriction();
-            List<ChangeDto> affectedChanges = restriction.getAffectedChanges();
+        for (ChangeDto groupChangeDtosOfRelationship : groupChangeDtosOfRelationships) {
+            RelationshipDto relationship = groupChangeDtosOfRelationship.getObject().getRestriction();
+            List<ChangeDto> affectedChanges = relationship.getAffectedChanges();
             ChangeDto commentableChangeDto = affectedChanges.stream()
                 .filter(ChangeDto::isCountable).findFirst()
                 .orElse(affectedChanges.iterator().next());
-            restriction.setCommentableChange(commentableChangeDto.getUri());
+            relationship.setCommentableChange(commentableChangeDto.getUri());
         }
     }
 
-    private void createGroupChangeDtosOfRestriction() {
+    private void createGroupChangeDtosOfRelationships() {
         for (URI subject : subjectsChangeDtosPointingAtBlankNodeMap.keySet()) {
             List<ChangeDto> subjectChangeDtosPointingAtBlankNode =
                 subjectsChangeDtosPointingAtBlankNodeMap.get(subject);
             if (subjectChangeDtosPointingAtBlankNode.isEmpty()) {
                 continue;
             }
-            RestrictionDto restrictionDto = createRestrictionFromChanges(subjectChangeDtosPointingAtBlankNode);
-            if (Objects.isNull(restrictionDto)) {
+            RelationshipDto relationshipDto = createRelationshipFromChanges(subjectChangeDtosPointingAtBlankNode);
+            if (Objects.isNull(relationshipDto)) {
                 continue;
             }
-            changeDtos.removeAll(restrictionDto.getAffectedChanges());
-            ChangeDto changeDto = new ChangeDto(subjectChangeDtosPointingAtBlankNode.get(0), restrictionDto,
-                resolveReviewState(restrictionDto));
-            groupChangeDtosOfRestrictions.add(changeDto);
+            changeDtos.removeAll(relationshipDto.getAffectedChanges());
+            ChangeDto changeDto = new ChangeDto(subjectChangeDtosPointingAtBlankNode.get(0), relationshipDto,
+                resolveReviewState(relationshipDto));
+            groupChangeDtosOfRelationships.add(changeDto);
         }
     }
 
-    private RestrictionDto createRestrictionFromChanges(List<ChangeDto> subjectChangeDtosPointingAtBlankNode) {
-        RestrictionDto restrictionDto = new RestrictionDto();
+    private RelationshipDto createRelationshipFromChanges(List<ChangeDto> subjectChangeDtosPointingAtBlankNode) {
+        RelationshipDto relationshipDto = new RelationshipDto();
         List<ChangeDto> affectedChanges = new ArrayList<>();
         try {
             for (ChangeDto topLevelChangeDto : subjectChangeDtosPointingAtBlankNode) {
                 affectedChanges.add(topLevelChangeDto);
                 List<ChangeDto> blankNodeChanges = changeDtosInBlankNodes.stream()
                     .filter(changeDto -> changeDto.getSubject().equals(topLevelChangeDto.getUri())).toList();
-                if (!isChangeOnRelation(blankNodeChanges) || !isRestriction(blankNodeChanges)) {
+                if (!isChangeOnRelation(blankNodeChanges) || !isRelationship(blankNodeChanges)) {
                     return null;
                 }
-                if (Objects.isNull(restrictionDto.getRelationUri())) {
-                    restrictionDto.setRelationUri(topLevelChangeDto.getSubject());
-                    restrictionDto.setRelationName(topLevelChangeDto.getLabel());
+                if (Objects.isNull(relationshipDto.getRelationUri())) {
+                    relationshipDto.setRelationUri(topLevelChangeDto.getSubject());
+                    relationshipDto.setRelationName(topLevelChangeDto.getLabel());
                 }
                 boolean start = isStart(blankNodeChanges);
                 for (ChangeDto blankNodeChange : blankNodeChanges) {
@@ -125,53 +125,53 @@ public class ChangeDtoComposer {
                     if (predicate.equals(OWL.MINQUALIFIEDCARDINALITY.toString())) {
                         int minCardinality = Integer.parseInt(blankNodeChange.getObject().getValue());
                         if (start) {
-                            if (Objects.nonNull(restrictionDto.getCardinalityStart().getMin())) {
+                            if (Objects.nonNull(relationshipDto.getCardinalityStart().getMin())) {
                                 continue;
                             }
-                            restrictionDto.getCardinalityStart().setMin(minCardinality);
+                            relationshipDto.getCardinalityStart().setMin(minCardinality);
                         } else {
-                            if (Objects.nonNull(restrictionDto.getCardinalityEnd().getMin())) {
+                            if (Objects.nonNull(relationshipDto.getCardinalityEnd().getMin())) {
                                 continue;
                             }
-                            restrictionDto.getCardinalityEnd().setMin(minCardinality);
+                            relationshipDto.getCardinalityEnd().setMin(minCardinality);
                         }
                     } else if (predicate.equals(OWL.MAXQUALIFIEDCARDINALITY.toString())) {
                         int maxCardinality = Integer.parseInt(blankNodeChange.getObject().getValue());
                         if (start) {
-                            if (Objects.nonNull(restrictionDto.getCardinalityStart().getMax())) {
+                            if (Objects.nonNull(relationshipDto.getCardinalityStart().getMax())) {
                                 continue;
                             }
-                            restrictionDto.getCardinalityStart().setMax(maxCardinality);
+                            relationshipDto.getCardinalityStart().setMax(maxCardinality);
                         } else {
-                            if (Objects.nonNull(restrictionDto.getCardinalityEnd().getMax())) {
+                            if (Objects.nonNull(relationshipDto.getCardinalityEnd().getMax())) {
                                 continue;
                             }
-                            restrictionDto.getCardinalityEnd().setMax(maxCardinality);
+                            relationshipDto.getCardinalityEnd().setMax(maxCardinality);
                         }
                     } else if (predicate.equals(OWL.ONCLASS.toString())) {
                         URI onClass = URI.create(blankNodeChange.getObject().getValue());
                         if (start) {
-                            if (Objects.nonNull(restrictionDto.getStartUri())) {
+                            if (Objects.nonNull(relationshipDto.getStartUri())) {
                                 continue;
                             }
-                            restrictionDto.setStartUri(onClass);
-                            restrictionDto.setStartName(resolveLabelOfAffectedClass(onClass));
+                            relationshipDto.setStartUri(onClass);
+                            relationshipDto.setStartName(resolveLabelOfAffectedClass(onClass));
                         } else {
-                            if (Objects.nonNull(restrictionDto.getEndUri())) {
+                            if (Objects.nonNull(relationshipDto.getEndUri())) {
                                 continue;
                             }
-                            restrictionDto.setEndUri(onClass);
-                            restrictionDto.setEndName(resolveLabelOfAffectedClass(onClass));
+                            relationshipDto.setEndUri(onClass);
+                            relationshipDto.setEndName(resolveLabelOfAffectedClass(onClass));
                         }
-                        affectedChanges.addAll(traverseAffectedClass(onClass, restrictionDto.getRelationUri()));
+                        affectedChanges.addAll(traverseAffectedClass(onClass, relationshipDto.getRelationUri()));
                     }
                 }
             }
         } catch (Exception e) {
             return null;
         }
-        restrictionDto.setAffectedChanges(affectedChanges);
-        return restrictionDto;
+        relationshipDto.setAffectedChanges(affectedChanges);
+        return relationshipDto;
     }
 
     private List<ChangeDto> traverseAffectedClass(URI onClass, URI relationUri) {
@@ -206,8 +206,8 @@ public class ChangeDtoComposer {
         return affectedChanges;
     }
 
-    private ChangeState resolveReviewState(RestrictionDto restrictionDto) {
-        List<ChangeDto> affectedChanges = restrictionDto.getAffectedChanges();
+    private ChangeState resolveReviewState(RelationshipDto relationshipDto) {
+        List<ChangeDto> affectedChanges = relationshipDto.getAffectedChanges();
         boolean potentiallyApproved = true;
         boolean potentiallyRejected = true;
         for (ChangeDto changeDto : affectedChanges) {
@@ -249,7 +249,7 @@ public class ChangeDtoComposer {
                 && changeDto.getObject().getValue().equals(TermVocabulary.s_p_ma_vztazeny_prvek_1));
     }
 
-    private boolean isRestriction(List<ChangeDto> blankNodeChanges) {
+    private boolean isRelationship(List<ChangeDto> blankNodeChanges) {
         return blankNodeChanges.stream().anyMatch(changeDto ->
             changeDto.getPredicate().equals(URI.create(RDF.TYPE))
                 && changeDto.getObject().getValue().equals(OWL.RESTRICTION.toString()));

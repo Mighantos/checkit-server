@@ -342,7 +342,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         }
         ChangeDtoComposer changeDtoComposer = new ChangeDtoComposer(changeDtos);
         changeDtoComposer.compose();
-        changeDtos.addAll(changeDtoComposer.getGroupChangeDtosOfRestrictions());
+        changeDtos.addAll(changeDtoComposer.getGroupChangeDtosOfRelationships());
 
         return changeDtos.stream().sorted().toList();
     }
