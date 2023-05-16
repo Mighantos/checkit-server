@@ -63,7 +63,8 @@ public class GestoringRequestDao extends BaseDao<GestoringRequest> {
         Objects.requireNonNull(applicantUri);
         Objects.requireNonNull(vocabularyUri);
         try {
-            return Optional.ofNullable(em.createNativeQuery("SELECT ?gr { ?gr a ?type ; "
+            return Optional.ofNullable(em.createNativeQuery("SELECT ?gr WHERE { "
+                    + "?gr a ?type ; "
                     + "?applies ?applicant ; "
                     + "?requests ?vocabulary . "
                     + "}", GestoringRequest.class)
