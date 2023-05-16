@@ -53,7 +53,7 @@ public class ChangeService extends BaseRepositoryService<Change> {
     }
 
     /**
-     * Finds any change in context in publication context.
+     * Finds any change in context in publication context that is not ROLLBACKED.
      *
      * @param publicationContextUri URI identifier of publication context
      * @param contextUri            URI identifier of context

@@ -1,6 +1,7 @@
 package com.github.checkit.dao;
 
 import com.github.checkit.exception.PersistenceException;
+import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.auxilary.CommentTag;
@@ -341,7 +342,9 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
             return !em.createNativeQuery("ASK { "
                     + "?pc a ?type ; "
                     + "    ?hasChange ?change . "
-                    + "?change ?inContext ?ctx . "
+                    + "?change ?inContext ?ctx ; "
+                    + "        ?isOfType ?changeType . "
+                    + "FILTER (?changeType != ?rollbacked)"
                     + "FILTER NOT EXISTS { "
                     + "     ?change ?approvedBy ?user . "
                     + "     }"
@@ -351,6 +354,8 @@ public class PublicationContextDao extends BaseDao<PublicationContext> {
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
                 .setParameter("inContext", URI.create(TermVocabulary.s_p_v_kontextu))
                 .setParameter("ctx", contextUri)
+                .setParameter("isOfType", URI.create(TermVocabulary.s_p_je_typu))
+                .setParameter("rollbacked", URI.create(TermVocabulary.s_c_vraceno_zpet))
                 .setParameter("approvedBy", URI.create(TermVocabulary.s_p_schvaleno))
                 .setParameter("user", userUri)
                 .getSingleResult();

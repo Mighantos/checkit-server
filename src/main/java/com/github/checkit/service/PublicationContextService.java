@@ -538,6 +538,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         for (Change rollbackedChange : existingChanges) {
             if (rollbackedChange.hasBeenReviewed()) {
                 rollbackedChange.setChangeType(ChangeType.ROLLBACKED);
+                rollbackedChange.setCountable(false);
                 newFormOfChanges.add(rollbackedChange);
             } else {
                 changeService.remove(rollbackedChange);

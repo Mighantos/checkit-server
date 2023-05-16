@@ -137,7 +137,8 @@ public class Change extends AbstractCommentableEntity {
     public boolean hasSameTripleAs(Change right) {
         Objects.requireNonNull(right);
         return (subjectType.equals(ChangeSubjectType.BLANK_NODE) || this.subject.equals(right.subject))
-            && this.predicate.equals(right.predicate) && this.object.equals(right.object);
+            && this.predicate.equals(right.predicate) && this.object.equals(right.object)
+            && this.changeType.equals(right.changeType);
     }
 
     /**

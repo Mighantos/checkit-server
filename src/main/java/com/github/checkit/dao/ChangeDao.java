@@ -2,6 +2,7 @@ package com.github.checkit.dao;
 
 import com.github.checkit.exception.PersistenceException;
 import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeType;
 import com.github.checkit.persistence.DescriptorFactory;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -46,7 +47,9 @@ public class ChangeDao extends BaseDao<Change> {
         try {
             Optional<URI> anyChange = em.createNativeQuery("SELECT ?change WHERE { "
                     + "?change a ?type ; "
-                    + "        ?inContext ?ctx . "
+                    + "        ?inContext ?ctx ; "
+                    + "        ?isOfType ?changeType . "
+                    + "FILTER (STR(?changeType) != ?rollbacked) "
                     + "?pc ?hasChange ?change . "
                     + "}", URI.class)
                 .setParameter("type", typeUri)
@@ -54,6 +57,8 @@ public class ChangeDao extends BaseDao<Change> {
                 .setParameter("ctx", contextUri)
                 .setParameter("pc", publicationContextUri)
                 .setParameter("hasChange", URI.create(TermVocabulary.s_p_ma_zmenu))
+                .setParameter("isOfType", URI.create(TermVocabulary.s_p_je_typu))
+                .setParameter("rollbacked", URI.create(TermVocabulary.s_c_vraceno_zpet))
                 .getResultStream().findFirst();
             if (anyChange.isEmpty()) {
                 return Optional.empty();
@@ -92,7 +97,7 @@ public class ChangeDao extends BaseDao<Change> {
                     + "?change a ?type ; "
                     + "        ?inContext ?ctx . "
                     + "?ctx ?basedOn ?voc . "
-                    + "?voc ?gestoredBy ?user ."
+                    + "?voc ?gestoredBy ?user . "
                     + "}", Boolean.class)
                 .setParameter("change", changeUri)
                 .setParameter("type", typeUri)

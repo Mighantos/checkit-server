@@ -198,6 +198,7 @@ public class NotificationService extends BaseRepositoryService<Notification> {
      * Creates notifications for gestors about new version of existing publication context.
      *
      * @param publicationContext updated publication context
+     * @param reviewers          users who reviewed at least one change
      */
     @Transactional
     public void updatedPublication(PublicationContext publicationContext, Set<User> reviewers) {
