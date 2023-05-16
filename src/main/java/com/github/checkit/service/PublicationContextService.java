@@ -222,7 +222,7 @@ public class PublicationContextService extends BaseRepositoryService<Publication
         ProjectContext project = projectContextService.findRequired(projectUri);
         List<Change> currentChanges = new ArrayList<>();
         for (VocabularyContext vocabularyContext : project.getVocabularyContexts()) {
-            currentChanges.addAll(changeService.getChanges(vocabularyContext));
+            currentChanges.addAll(changeService.getChanges(vocabularyContext, project));
         }
 
         PublicationContext publicationContext;

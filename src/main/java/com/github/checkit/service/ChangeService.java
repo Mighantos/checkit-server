@@ -3,12 +3,14 @@ package com.github.checkit.service;
 import com.github.checkit.dao.BaseDao;
 import com.github.checkit.dao.ChangeDao;
 import com.github.checkit.dao.CommentDao;
+import com.github.checkit.dao.ProjectContextDao;
 import com.github.checkit.exception.EmptyArrayParameterException;
 import com.github.checkit.exception.ForbiddenException;
 import com.github.checkit.exception.NotFoundException;
 import com.github.checkit.exception.PublicationContextIsClosedException;
 import com.github.checkit.exception.PublicationContextWasUpdatedException;
 import com.github.checkit.model.Change;
+import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.VocabularyContext;
 import com.github.checkit.model.auxilary.AbstractChangeableContext;
@@ -33,17 +35,20 @@ public class ChangeService extends BaseRepositoryService<Change> {
     private final VocabularyContextService vocabularyContextService;
     private final UserService userService;
     private final ChangeDao changeDao;
+    private final ProjectContextDao projectContextDao;
     private final CommentDao commentDao;
 
     /**
      * Constructor.
      */
     public ChangeService(VocabularyService vocabularyService, VocabularyContextService vocabularyContextService,
-                         UserService userService, ChangeDao changeDao, CommentDao commentDao) {
+                         UserService userService, ChangeDao changeDao, ProjectContextDao projectContextDao,
+                         CommentDao commentDao) {
         this.vocabularyService = vocabularyService;
         this.vocabularyContextService = vocabularyContextService;
         this.userService = userService;
         this.changeDao = changeDao;
+        this.projectContextDao = projectContextDao;
         this.commentDao = commentDao;
     }
 
@@ -197,13 +202,14 @@ public class ChangeService extends BaseRepositoryService<Change> {
      * Returns list of changes made in specified vocabulary context compared to its canonical version.
      *
      * @param vocabularyContext {@link VocabularyContext} to find changes in
+     * @param project           context of a project the vocabulary context is in
      * @return list of changes
      */
-    public List<Change> getChanges(VocabularyContext vocabularyContext) {
+    public List<Change> getChanges(VocabularyContext vocabularyContext, ProjectContext project) {
         Model canonicalGraph =
             vocabularyService.getVocabularyContent(vocabularyContext.getBasedOnVersion());
         Model draftGraph = vocabularyContextService.getVocabularyContent(vocabularyContext.getUri());
-        return getChanges(canonicalGraph, draftGraph, vocabularyContext);
+        return getChanges(canonicalGraph, draftGraph, vocabularyContext, project);
     }
 
     /**
@@ -212,15 +218,16 @@ public class ChangeService extends BaseRepositoryService<Change> {
      * @param canonicalGraph            Model representation of canonical graph (context)
      * @param draftGraph                Model representation of draft graph (context)
      * @param abstractChangeableContext context the changes were made in
+     * @param project                   context of a project the draft is in
      * @return list of changes
      */
     public List<Change> getChanges(Model canonicalGraph, Model draftGraph,
-                                   AbstractChangeableContext abstractChangeableContext) {
+                                   AbstractChangeableContext abstractChangeableContext, ProjectContext project) {
         if (canonicalGraph.isIsomorphicWith(draftGraph)) {
             return new ArrayList<>();
         }
         ChangeResolver changeResolver = new ChangeResolver(canonicalGraph, draftGraph, abstractChangeableContext,
-            changeDao);
+            project, projectContextDao, changeDao);
         changeResolver.findChangesInStatementsWithoutBlankNode();
         changeResolver.findChangesInSubGraphs();
         return changeResolver.getChanges();

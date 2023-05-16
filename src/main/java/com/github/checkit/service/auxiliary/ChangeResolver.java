@@ -1,11 +1,13 @@
 package com.github.checkit.service.auxiliary;
 
 import com.github.checkit.dao.ChangeDao;
+import com.github.checkit.dao.ProjectContextDao;
 import com.github.checkit.exception.UnexpectedRdfObjectException;
 import com.github.checkit.exception.WrongChangeTypeException;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeObject;
 import com.github.checkit.model.ChangeType;
+import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.auxilary.AbstractChangeableContext;
 import com.github.checkit.model.auxilary.ChangeSubjectType;
 import cz.cvut.kbss.jopa.model.MultilingualString;
@@ -34,6 +36,9 @@ public class ChangeResolver {
     private final Model draftGraph;
     private final AbstractChangeableContext draftContext;
     private final ChangeDao changeDao;
+    private final ProjectContextDao projectContextDao;
+    private final ProjectContext project;
+
     private HashMap<Resource, Model> canonicalSubGraphs;
     private HashMap<Resource, Model> draftSubGraphs;
     private HashMap<Resource, List<Statement>> canonicalTopLevelSubjectsSubGraphs;
@@ -45,10 +50,12 @@ public class ChangeResolver {
      * Constructor.
      */
     public ChangeResolver(Model canonicalGraph, Model draftGraph, AbstractChangeableContext draftContext,
-                          ChangeDao changeDao) {
+                          ProjectContext project, ProjectContextDao projectContextDao, ChangeDao changeDao) {
         this.canonicalGraph = canonicalGraph;
         this.draftGraph = draftGraph;
         this.draftContext = draftContext;
+        this.project = project;
+        this.projectContextDao = projectContextDao;
         this.changeDao = changeDao;
     }
 
@@ -300,10 +307,17 @@ public class ChangeResolver {
         if (!labelStatementIterator.hasNext()) {
             labelStatementIterator = subject.listProperties(graph.getProperty(DC.Terms.TITLE));
         }
-        while (labelStatementIterator.hasNext()) {
-            Statement statement = labelStatementIterator.nextStatement();
-            Literal literal = statement.getObject().asLiteral();
-            multilingualString.set(literal.getLanguage(), literal.getString());
+        if (labelStatementIterator.hasNext()) {
+            do {
+                Statement statement = labelStatementIterator.nextStatement();
+                Literal literal = statement.getObject().asLiteral();
+                multilingualString.set(literal.getLanguage(), literal.getString());
+            } while (labelStatementIterator.hasNext());
+        } else {
+            multilingualString = projectContextDao.getPrefLabelOfIRI(project.getUri(), URI.create(subject.getURI()));
+            if (multilingualString.isEmpty()) {
+                multilingualString = projectContextDao.getPrefLabelOfIRI(URI.create(subject.getURI()));
+            }
         }
         return multilingualString;
     }
