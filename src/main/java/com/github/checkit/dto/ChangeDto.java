@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class ChangeDto implements Comparable<ChangeDto> {
@@ -35,7 +36,8 @@ public class ChangeDto implements Comparable<ChangeDto> {
     private final CommentDto rejectionComment;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private final List<CommentDto> rejectionCommentsOfOthers;
-    private final int numberOfComments;
+    @Setter
+    private int numberOfComments;
     @JsonIgnore
     private final boolean countable;
 

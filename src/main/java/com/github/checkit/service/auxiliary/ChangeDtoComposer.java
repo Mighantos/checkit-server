@@ -82,6 +82,7 @@ public class ChangeDtoComposer {
                 .filter(ChangeDto::isCountable).findFirst()
                 .orElse(affectedChanges.iterator().next());
             relationship.setCommentableChange(commentableChangeDto.getUri());
+            groupChangeDtosOfRelationship.setNumberOfComments(commentableChangeDto.getNumberOfComments());
         }
     }
 
