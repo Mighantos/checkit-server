@@ -1,0 +1,15 @@
+com.github.checkit
+com.github.checkit.config
+com.github.checkit.config.properties
+com.github.checkit.controller
+com.github.checkit.dao
+com.github.checkit.dto
+com.github.checkit.dto.auxiliary
+com.github.checkit.exception
+com.github.checkit.model
+com.github.checkit.model.auxilary
+com.github.checkit.persistence
+com.github.checkit.security
+com.github.checkit.service
+com.github.checkit.service.auxiliary
+com.github.checkit.util
