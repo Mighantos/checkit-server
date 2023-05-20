@@ -1,0 +1,19 @@
+@prefix e: <http://example.com/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix wd: <http://www.wikidata.org/entity/> .
+@prefix schema: <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+e:Lucy
+    a foaf:Person ;
+    foaf:firstName "Lucy"@en , "Lucka"@cs ;
+    schema:birthDate  "1991-09-04"^^xsd:date .
+
+e:knows
+    a rdf:Property ;
+    skos:definition "A person at least saw this person. - Edited"@en ;
+    rdfs:domain foaf:Person ;
+    rdfs:range foaf:Person .

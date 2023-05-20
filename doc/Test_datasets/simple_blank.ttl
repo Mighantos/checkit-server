@@ -1,0 +1,5 @@
+<https://slovník.gov.cz/veřejný-sektor/pojem/jméno-právnické-osoby> a <http://www.w3.org/2002/07/owl#DatatypeProperty>,
+    <http://www.w3.org/2002/07/owl#NamedIndividual>, <http://www.w3.org/2004/02/skos/core#Concept>,
+    <https://slovník.gov.cz/základní/pojem/typ-vlastnosti>;
+  <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> <http://www.w3.org/ns/regorg#legalName>;
+  <http://example.org/ns#rel> [ <http://www.w3.org/2000/01/rdf-schema#label> "SAME"] .
