@@ -1,0 +1,1650 @@
+{
+	"info": {
+		"_postman_id": "85efc4a8-d6f2-41ce-8e62-84cb1f33c0a0",
+		"name": "VL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8932246",
+		"_collection_link": "https://checkit-colab.postman.co/workspace/ChecktIt-workspace~59b3077a-6205-4f06-8087-17d74769e7ca/collection/8932246-85efc4a8-d6f2-41ce-8e62-84cb1f33c0a0?action=share&creator=8932246&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "CheckIt server",
+			"item": [
+				{
+					"name": "Admin",
+					"item": [
+						{
+							"name": "Admin panel summary",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/admin-management/summary",
+									"host": [
+										"{{CheckIt_URL}}"
+									],
+									"path": [
+										"modelujeme",
+										"sluzby",
+										"checkit-server",
+										"admin-management",
+										"summary"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "All users",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/admin-management/users",
+									"host": [
+										"{{CheckIt_URL}}"
+									],
+									"path": [
+										"modelujeme",
+										"sluzby",
+										"checkit-server",
+										"admin-management",
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Change user role",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "false",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/admin-management/users/{{User_ID}}/admin-role",
+									"host": [
+										"{{CheckIt_URL}}"
+									],
+									"path": [
+										"modelujeme",
+										"sluzby",
+										"checkit-server",
+										"admin-management",
+										"users",
+										"{{User_ID}}",
+										"admin-role"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add gestored vocabulary",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "\"https://slovník.gov.cz/datový/440-test\"",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/admin-management/users/{{User_ID}}/gestored-vocabulary",
+									"host": [
+										"{{CheckIt_URL}}"
+									],
+									"path": [
+										"modelujeme",
+										"sluzby",
+										"checkit-server",
+										"admin-management",
+										"users",
+										"{{User_ID}}",
+										"gestored-vocabulary"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove gestored vocabulary",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "\"https://slovník.gov.cz/datový/440-test\"",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/admin-management/users/{{User_ID}}/gestored-vocabulary",
+									"host": [
+										"{{CheckIt_URL}}"
+									],
+									"path": [
+										"modelujeme",
+										"sluzby",
+										"checkit-server",
+										"admin-management",
+										"users",
+										"{{User_ID}}",
+										"gestored-vocabulary"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "All gestoring request",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/gestoring-requests",
+									"host": [
+										"{{CheckIt_URL}}"
+									],
+									"path": [
+										"modelujeme",
+										"sluzby",
+										"checkit-server",
+										"gestoring-requests"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "All",
+					"item": [
+						{
+							"name": "Vocabularies",
+							"item": [
+								{
+									"name": "All vocabularies",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/vocabularies",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"vocabularies"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "My gestored vocabularies",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/vocabularies/my-gestored",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"vocabularies",
+												"my-gestored"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Gestoring requests",
+							"item": [
+								{
+									"name": "My gestoring request",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/gestoring-requests/my-requests",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"gestoring-requests",
+												"my-requests"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Resolve gestoring request",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "true",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/gestoring-requests/instance-1910223461/approved",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"gestoring-requests",
+												"instance-1910223461",
+												"approved"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add gestoring request",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "\"https://slovník.gov.cz/datový/440-test\"",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/gestoring-requests",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"gestoring-requests"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Remove gestoring request",
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/gestoring-requests/instance1625734561",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"gestoring-requests",
+												"instance1625734561"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "PublicationContext",
+							"item": [
+								{
+									"name": "Get reviewable publication contexts",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts/reviewable",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts",
+												"reviewable"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get readonly publication contexts",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts/readonly",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts",
+												"readonly"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get closed publication contexts",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts/closed",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts",
+												"closed"
+											],
+											"query": [
+												{
+													"key": "pageNumber",
+													"value": "1",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get number of pages of closed publication contexts",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts/closed/page-count",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts",
+												"closed",
+												"page-count"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get publication context",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts/{{Publication_ID}}",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts",
+												"{{Publication_ID}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get changes of vocabulary in publication context",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts/{{Publication_ID}}/vocabulary-changes?vocabularyUri={{Vocabulary}}",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts",
+												"{{Publication_ID}}",
+												"vocabulary-changes"
+											],
+											"query": [
+												{
+													"key": "vocabularyUri",
+													"value": "{{Vocabulary}}"
+												},
+												{
+													"key": "language",
+													"value": "en",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Submit project for review",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "\"https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext/{{Workspace}}\"",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Approve publication context",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "\"\"",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts/{{Publication_ID}}/approved",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts",
+												"{{Publication_ID}}",
+												"approved"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Reject publication context",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "Tady je důvod proč to zamítám.",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/publication-contexts/{{Publication_ID}}/rejected",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"publication-contexts",
+												"{{Publication_ID}}",
+												"rejected"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Changes",
+							"item": [
+								{
+									"name": "Approve change",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/changes/instance1381830245/approved?versionDate=2023-04-24T20:24:57.462Z",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"changes",
+												"instance1381830245",
+												"approved"
+											],
+											"query": [
+												{
+													"key": "versionDate",
+													"value": "2023-04-24T20:24:57.462Z"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Approve multiple changes",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "[\r\n    \"https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1469213559\",\r\n    \"https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1555256863\"\r\n]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/changes/approved?versionDate=2023-04-19T08:54:43.249Z",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"changes",
+												"approved"
+											],
+											"query": [
+												{
+													"key": "versionDate",
+													"value": "2023-04-19T08:54:43.249Z"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Reject change",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/changes/instance1381830245/rejected?versionDate=2023-04-27T22:36:19.727Z",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"changes",
+												"instance1381830245",
+												"rejected"
+											],
+											"query": [
+												{
+													"key": "versionDate",
+													"value": "2023-04-27T22:36:19.727Z"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Reject multiple changes",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "[\r\n    \"https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1469213559\",\r\n    \"https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1555256863\"\r\n]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/changes/rejected?versionDate=2023-04-19T08:54:43.249Z",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"changes",
+												"rejected"
+											],
+											"query": [
+												{
+													"key": "versionDate",
+													"value": "2023-04-19T08:54:43.249Z"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Clear review of change",
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/changes/instance1469213559/review?versionDate=2023-04-19T08:54:43.249Z",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"changes",
+												"instance1469213559",
+												"review"
+											],
+											"query": [
+												{
+													"key": "versionDate",
+													"value": "2023-04-19T08:54:43.249Z"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Clear review of multiple changes",
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "[\r\n    \"https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1469213559\",\r\n    \"https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1555256863\"\r\n]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/changes/review?versionDate=2023-04-19T08:54:43.249Z",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"changes",
+												"review"
+											],
+											"query": [
+												{
+													"key": "versionDate",
+													"value": "2023-04-19T08:54:43.249Z"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Comments",
+							"item": [
+								{
+									"name": "Get comments on change",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/comments/discussion-on-change?changeUri=https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1381830245",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"comments",
+												"discussion-on-change"
+											],
+											"query": [
+												{
+													"key": "changeUri",
+													"value": "https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1381830245"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create comment",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "Tady je super komentář",
+											"options": {
+												"raw": {
+													"language": "text"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/comments?changeUri=https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1381830245",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"comments"
+											],
+											"query": [
+												{
+													"key": "changeUri",
+													"value": "https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1381830245"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create final comment on change",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "Tady je super odmítající komentář",
+											"options": {
+												"raw": {
+													"language": "text"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/comments/rejection-on-change?changeUri=https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1381830245",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"comments",
+												"rejection-on-change"
+											],
+											"query": [
+												{
+													"key": "changeUri",
+													"value": "https://slovník.gov.cz/datový/popis-zmen/pojem/změna/instance1381830245"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Notifications",
+							"item": [
+								{
+									"name": "Get my notifications",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/notifications?languageTag=en",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"notifications"
+											],
+											"query": [
+												{
+													"key": "pageNumber",
+													"value": "1",
+													"disabled": true
+												},
+												{
+													"key": "languageTag",
+													"value": "en"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get count of my unread notifications",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/notifications/unread/count",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"notifications",
+												"unread",
+												"count"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Mark all as read",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/notifications/unread/seen",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"notifications",
+												"unread",
+												"seen"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Mark notification as seen",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "\"https://slovník.gov.cz/datový/popis-zmen/pojem/notifikace/instance1558918577\"",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/notifications/seen",
+											"host": [
+												"{{CheckIt_URL}}"
+											],
+											"path": [
+												"modelujeme",
+												"sluzby",
+												"checkit-server",
+												"notifications",
+												"seen"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Current user",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{CheckIt_URL}}/modelujeme/sluzby/checkit-server/users/current",
+									"host": [
+										"{{CheckIt_URL}}"
+									],
+									"path": [
+										"modelujeme",
+										"sluzby",
+										"checkit-server",
+										"users",
+										"current"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "SGoV server",
+			"item": [
+				{
+					"name": "workspaces",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "vocabularies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/vocabularies",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"vocabularies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "workspace",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces/{{Workspace}}",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces",
+								"{{Workspace}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "workspace vocabularies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces/{{Workspace}}/vocabularies",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces",
+								"{{Workspace}}",
+								"vocabularies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "workspace",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": null,\r\n    \"description\":\"\",\r\n    \"basedOnVersion\": \"https://slovník.gov.cz/generický/umístění\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces/?workspaceName=New ws",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces",
+								""
+							],
+							"query": [
+								{
+									"key": "workspaceName",
+									"value": "New ws"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add vocabulary",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": null,\r\n    \"description\":\"\",\r\n    \"basedOnVersion\": \"https://slovník.gov.cz/datový/440-test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces/{{Workspace}}/vocabularies-full",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces",
+								"{{Workspace}}",
+								"vocabularies-full"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add vocabulary deprecated",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces/{{Workspace}}/vocabularies?vocabularyUri=https://slovník.gov.cz/datový/440-test",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces",
+								"{{Workspace}}",
+								"vocabularies"
+							],
+							"query": [
+								{
+									"key": "vocabularyUri",
+									"value": "https://slovník.gov.cz/datový/440-test"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Publish workspace",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces/{{Workspace}}/publish",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces",
+								"{{Workspace}}",
+								"publish"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete vocabulary",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"{{Vocabulary_context}}\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces/{{Workspace}}/vocabularies",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces",
+								"{{Workspace}}",
+								"vocabularies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete workspace",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/workspaces/{{Workspace}}",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"workspaces",
+								"{{Workspace}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Vocabulary status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/vocabularies/vocabulary-status/mstestslov?namespace=https://slovník.gov.cz/datový",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"vocabularies",
+								"vocabulary-status",
+								"mstestslov"
+							],
+							"query": [
+								{
+									"key": "namespace",
+									"value": "https://slovník.gov.cz/datový"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all voc",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/ld+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/vocabularies",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"vocabularies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "current user",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/ld+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SGoV_URL}}/modelujeme/sluzby/sgov-server/users/current",
+							"host": [
+								"{{SGoV_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"sgov-server",
+								"users",
+								"current"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TermIt Server",
+			"item": [
+				{
+					"name": "Set editable vocabularies",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"https://slovník.gov.cz/datový/440-test/verze/74263673-3814-49e1-93b1-911d9207ffc9\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{TermIt_URL}}/modelujeme/sluzby/termit-server/rest/workspace",
+							"host": [
+								"{{TermIt_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"termit-server",
+								"rest",
+								"workspace"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export Turtle",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "text/turtle",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"https://slovník.gov.cz/datový/440-test/verze/74263673-3814-49e1-93b1-911d9207ffc9\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{TermIt_URL}}/modelujeme/sluzby/termit-server/rest/vocabularies/440-test/terms?namespace=https%3A%2F%2Fslovn%C3%ADk.gov.cz%2Fdatov%C3%BD%2F",
+							"host": [
+								"{{TermIt_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"termit-server",
+								"rest",
+								"vocabularies",
+								"440-test",
+								"terms"
+							],
+							"query": [
+								{
+									"key": "namespace",
+									"value": "https%3A%2F%2Fslovn%C3%ADk.gov.cz%2Fdatov%C3%BD%2F"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export Turtle with related terms",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "text/turtle",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"https://slovník.gov.cz/datový/440-test/verze/74263673-3814-49e1-93b1-911d9207ffc9\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{TermIt_URL}}/modelujeme/sluzby/termit-server/rest/vocabularies/440-test/terms?withReferences=true&property=http://www.w3.org/2004/02/skos/core%23exactMatch&namespace=https%3A%2F%2Fslovn%C3%ADk.gov.cz%2Fdatov%C3%BD%2F",
+							"host": [
+								"{{TermIt_URL}}"
+							],
+							"path": [
+								"modelujeme",
+								"sluzby",
+								"termit-server",
+								"rest",
+								"vocabularies",
+								"440-test",
+								"terms"
+							],
+							"query": [
+								{
+									"key": "withReferences",
+									"value": "true"
+								},
+								{
+									"key": "property",
+									"value": "http://www.w3.org/2004/02/skos/core%23exactMatch"
+								},
+								{
+									"key": "namespace",
+									"value": "https%3A%2F%2Fslovn%C3%ADk.gov.cz%2Fdatov%C3%BD%2F"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "accessTokenUrl",
+				"value": "{{AUTH_URL}}/modelujeme/sluzby/auth-server/realms/{{Keycloak_realm}}/protocol/openid-connect/token",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "{{AUTH_URL}}/modelujeme/sluzby/auth-server/realms/{{Keycloak_realm}}/protocol/openid-connect/auth",
+				"type": "string"
+			},
+			{
+				"key": "redirect_uri",
+				"value": "{{AUTH_URL}}/modelujeme/sluzby/auth-server/realms/{{Keycloak_realm}}/protocol/openid-connect/auth",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "Keycloak",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "al-mission-control",
+				"type": "string"
+			},
+			{
+				"key": "tokenType",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "accessToken",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "useBrowser",
+				"value": false,
+				"type": "boolean"
+			},
+			{
+				"key": "grant_type",
+				"value": "authorization_code",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "kodi",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "michalsvag@gmail.com",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Instance",
+			"value": "http://localhost",
+			"type": "string"
+		},
+		{
+			"key": "dev",
+			"value": "http://localhost",
+			"type": "string"
+		},
+		{
+			"key": "SGoV_URL",
+			"value": "{{Instance}}"
+		},
+		{
+			"key": "CheckIt_URL",
+			"value": "{{Instance}}",
+			"type": "string"
+		},
+		{
+			"key": "TermIt_URL",
+			"value": "{{Instance}}",
+			"type": "string"
+		},
+		{
+			"key": "AUTH_URL",
+			"value": "{{Instance}}",
+			"type": "string"
+		},
+		{
+			"key": "Keycloak_realm",
+			"value": "assembly-line"
+		},
+		{
+			"key": "Keycloak_API_URL",
+			"value": "{{AUTH_URL}}/modelujeme/sluzby/auth-server/admin/realms/{{Keycloak_realm}}",
+			"type": "string"
+		},
+		{
+			"key": "Workspace",
+			"value": "instance1874675185"
+		},
+		{
+			"key": "Vocabulary_context",
+			"value": "https://slovník.gov.cz/datový/test/verze/7d734af4-6dfa-494b-a179-5addca665eaa",
+			"type": "string"
+		},
+		{
+			"key": "Vocabulary",
+			"value": "https://slovník.gov.cz/datový/440-test",
+			"type": "string"
+		},
+		{
+			"key": "User_ID",
+			"value": "598ff839-c7ad-45d1-ae40-199e230f059f",
+			"type": "string"
+		},
+		{
+			"key": "Publication_ID",
+			"value": "instance-193253451",
+			"type": "string"
+		}
+	]
+}
