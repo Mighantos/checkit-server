@@ -1,12 +1,14 @@
 package com.github.checkit.environment;
 
 import com.github.checkit.model.Change;
+import com.github.checkit.model.ChangeObject;
 import com.github.checkit.model.ChangeType;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.model.VocabularyContext;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Random;
@@ -85,11 +87,14 @@ public class Generator {
     /**
      * Generates a project context with random URI.
      *
+     * @param author author of the project
      * @return project context
      */
-    public static ProjectContext generateProjectContextWithUri() {
+    public static ProjectContext generateProjectContextWithUri(User author) {
         ProjectContext projectContext = new ProjectContext();
         projectContext.setUri(generateUri(ProjectContext.class));
+        projectContext.setLabel("Project" + random.nextInt());
+        projectContext.setAuthor(author);
         return projectContext;
     }
 
@@ -102,6 +107,7 @@ public class Generator {
     public static PublicationContext generatePublicationContextWithUri() {
         PublicationContext publicationContext = new PublicationContext();
         publicationContext.setUri(generateUri(PublicationContext.class));
+        publicationContext.setCorrespondingPullRequest("NotPublished");
         return publicationContext;
     }
 
@@ -115,10 +121,23 @@ public class Generator {
         URI uri = generateUri(Change.class);
         change.setUri(uri);
         change.setChangeType(ChangeType.CREATED);
-        change.setLabel(uri.toString().substring(uri.toString().lastIndexOf("/") + 1));
+        change.setLabel(new MultilingualString().set(uri.toString().substring(uri.toString().lastIndexOf("/") + 1)));
         change.setSubject(Generator.generateUri());
         change.setPredicate(Generator.generateUri());
-        change.setObject(Generator.generateUri().toString());
+        change.setObject(Generator.generateObjectOfChangeWithURI());
+        change.setCountable(true);
         return change;
+    }
+
+
+    /**
+     * Generates an ChangeObject for a change with random URI as the content.
+     *
+     * @return publication context
+     */
+    public static ChangeObject generateObjectOfChangeWithURI() {
+        ChangeObject changeObject = new ChangeObject();
+        changeObject.setValueWithLanguageTag(new MultilingualString().set(Generator.generateUri().toString()));
+        return changeObject;
     }
 }

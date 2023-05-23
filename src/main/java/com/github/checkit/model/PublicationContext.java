@@ -30,7 +30,7 @@ public class PublicationContext extends AbstractCommentableEntity {
 
     @NotBlank
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = TermVocabulary.s_p_odpovidajici_pull_request)
+    @OWLDataProperty(iri = TermVocabulary.s_p_odpovidajici_pull_request)
     private String correspondingPullRequest;
 
     @OWLDataProperty(iri = TermVocabulary.s_p_ma_datum_a_cas_vytvoreni)

@@ -47,8 +47,8 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
 
         this.vocabulary = Generator.generateVocabularyWithUri();
         this.vocabularyContext = Generator.generateVocabularyContextWithUri();
-        this.vocabularyContext.setBasedOnVocabulary(vocabulary);
-        this.projectContext = Generator.generateProjectContextWithUri();
+        this.vocabularyContext.setBasedOnVersion(vocabulary.getUri());
+        this.projectContext = Generator.generateProjectContextWithUri(user);
         this.projectContext.setVocabularyContexts(Collections.singleton(vocabularyContext));
         this.publicationContext = Generator.generatePublicationContextWithUri();
         this.publicationContext.setFromProject(projectContext);

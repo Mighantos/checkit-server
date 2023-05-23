@@ -22,7 +22,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableTransactionManagement
 @ExtendWith(SpringExtension.class)
-@ComponentScan(basePackages = {"com.github.checkit.service", "com.github.checkit.dao"})
+@ComponentScan(basePackages = {"com.github.checkit.service", "com.github.checkit.dao",
+    "com.github.checkit.config.properties"})
 @ContextConfiguration(initializers = {ConfigDataApplicationContextInitializer.class},
     classes = {
         PersistenceConfig.class,
