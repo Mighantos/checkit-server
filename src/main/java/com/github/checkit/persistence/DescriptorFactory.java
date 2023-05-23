@@ -159,7 +159,7 @@ public class DescriptorFactory {
      */
     public Descriptor projectContextDescriptor(ProjectContext projectContext) {
         Objects.requireNonNull(projectContext);
-        return vocabularyDescriptor(projectContext.getUri());
+        return projectContextDescriptor(projectContext.getUri());
     }
 
     /**

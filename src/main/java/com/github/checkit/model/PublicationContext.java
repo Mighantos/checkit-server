@@ -55,8 +55,8 @@ public class PublicationContext extends AbstractCommentableEntity {
     }
 
     public void setChanges(Set<Change> changes) {
-        this.changes.clear();
-        this.changes.addAll(changes);
+        getChanges().clear();
+        getChanges().addAll(changes);
     }
 
     public String getId() {

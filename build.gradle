@@ -50,6 +50,7 @@ ext {
     keycloakVersion = '21.1.1'
     jenaVersion = '4.8.0'
     githubApiVersion = '1.314'
+    junitVersion = '5.9.2'
 }
 
 dependencies {
@@ -72,6 +73,7 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
     testImplementation "org.springframework.security:spring-security-test:6.0.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
 }
 
 checkstyle {
