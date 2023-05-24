@@ -146,7 +146,8 @@ public class Generator {
      */
     public static PublicationContext generatePublicationContext(ProjectContext projectContext, Set<Change> changes) {
         PublicationContext publicationContext = new PublicationContext();
-        publicationContext.setUri(URI.create(TermVocabulary.s_c_publikacni_kontext + "/PublicationContext-" + generatePositiveInt()));
+        publicationContext.setUri(
+            URI.create(TermVocabulary.s_c_publikacni_kontext + "/PublicationContext-" + generatePositiveInt()));
         publicationContext.setCorrespondingPullRequest("NotPublished");
         publicationContext.setFromProject(projectContext);
         publicationContext.setChanges(changes);

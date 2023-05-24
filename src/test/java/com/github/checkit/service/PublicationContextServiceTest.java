@@ -1,5 +1,8 @@
 package com.github.checkit.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.dto.ChangeDto;
 import com.github.checkit.dto.ContextChangesDto;
@@ -13,12 +16,10 @@ import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.model.VocabularyContext;
-import com.github.checkit.persistence.DescriptorFactory;
-import cz.cvut.kbss.jopa.model.EntityManager;
+import com.github.checkit.service.auxilary.BaseServiceTestRunner;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,6 @@ import org.springframework.test.annotation.DirtiesContext;
 class PublicationContextServiceTest extends BaseServiceTestRunner {
 
     @Autowired
-    private EntityManager em;
-
-    @Autowired
-    private DescriptorFactory descriptorFactory;
-
-    @Autowired
     private PublicationContextService sut;
 
     @Autowired
@@ -42,9 +37,9 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
 
     private User user;
     private User gestor;
+    private Vocabulary vocabulary;
     private ProjectContext projectContext;
     private VocabularyContext vocabularyContext;
-    private Vocabulary vocabulary;
     private PublicationContext publicationContext;
 
     @BeforeEach
@@ -75,26 +70,26 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
     @WithMockUser
     void getReadonlyPublicationContexts() {
         List<PublicationContextDto> readonlyPublicationContexts = sut.getReadonlyPublicationContexts();
-        Assertions.assertEquals(readonlyPublicationContexts.size(), 1);
-        Assertions.assertEquals(readonlyPublicationContexts.get(0).getUri(), publicationContext.getUri());
+        assertEquals(readonlyPublicationContexts.size(), 1);
+        assertEquals(readonlyPublicationContexts.get(0).getUri(), publicationContext.getUri());
 
         vocabulary.setGestors(Collections.singleton(user));
         transactional(() -> em.merge(vocabulary, descriptorFactory.vocabularyDescriptor(vocabulary)));
         readonlyPublicationContexts = sut.getReadonlyPublicationContexts();
-        Assertions.assertEquals(readonlyPublicationContexts.size(), 0);
+        assertEquals(readonlyPublicationContexts.size(), 0);
     }
 
     @Test
     @WithMockUser
     void getReviewablePublicationContexts() {
         List<PublicationContextDto> reviewablePublicationContexts = sut.getReviewablePublicationContexts();
-        Assertions.assertEquals(reviewablePublicationContexts.size(), 0);
+        assertEquals(reviewablePublicationContexts.size(), 0);
         vocabulary.setGestors(Collections.singleton(user));
         transactional(() -> em.merge(vocabulary, descriptorFactory.vocabularyDescriptor(vocabulary)));
 
         reviewablePublicationContexts = sut.getReviewablePublicationContexts();
-        Assertions.assertEquals(reviewablePublicationContexts.size(), 1);
-        Assertions.assertEquals(reviewablePublicationContexts.get(0).getUri(), publicationContext.getUri());
+        assertEquals(reviewablePublicationContexts.size(), 1);
+        assertEquals(reviewablePublicationContexts.get(0).getUri(), publicationContext.getUri());
     }
 
     @Test
@@ -102,7 +97,7 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
     void getPublicationContextDetailWithNoChangesToReview() {
         PublicationContextDetailDto publicationContextDetail =
             sut.getPublicationContextDetail(publicationContext.getId());
-        Assertions.assertEquals(publicationContextDetail.getState(), PublicationContextState.WAITING_FOR_OTHERS);
+        assertEquals(publicationContextDetail.getState(), PublicationContextState.WAITING_FOR_OTHERS);
     }
 
     @Test
@@ -110,7 +105,7 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
     void getPublicationContextDetailWithOneReviewableChange() {
         PublicationContextDetailDto publicationContextDetail =
             sut.getPublicationContextDetail(publicationContext.getId());
-        Assertions.assertEquals(publicationContextDetail.getState(), PublicationContextState.CREATED);
+        assertEquals(publicationContextDetail.getState(), PublicationContextState.CREATED);
     }
 
     @Test
@@ -118,7 +113,7 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
     void getPublicationContextDetailRollbackChangeDoesNotChangeStatistics() {
         PublicationContextDetailDto publicationContextDetail =
             sut.getPublicationContextDetail(publicationContext.getId());
-        Assertions.assertEquals(publicationContextDetail.getStatistics().getTotalChanges(), 1);
+        assertEquals(publicationContextDetail.getStatistics().getTotalChanges(), 1);
 
         Change rollbackedChange = Generator.generateRollbackedChange(vocabularyContext);
         rollbackedChange.addApprovedBy(user);
@@ -127,7 +122,7 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
             em.merge(publicationContext, descriptorFactory.publicationContextDescriptor(publicationContext)));
         publicationContextDetail =
             sut.getPublicationContextDetail(publicationContext.getId());
-        Assertions.assertEquals(publicationContextDetail.getStatistics().getTotalChanges(), 1);
+        assertEquals(publicationContextDetail.getStatistics().getTotalChanges(), 1);
     }
 
     @Test
@@ -138,7 +133,7 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
             em.merge(publicationContext, descriptorFactory.publicationContextDescriptor(publicationContext)));
         PublicationContextDetailDto publicationContextDetail =
             sut.getPublicationContextDetail(publicationContext.getId());
-        Assertions.assertEquals(publicationContextDetail.getState(), PublicationContextState.APPROVABLE);
+        assertEquals(publicationContextDetail.getState(), PublicationContextState.APPROVABLE);
     }
 
     @Test
@@ -150,7 +145,7 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
         ContextChangesDto contextChangesDto =
             sut.getChangesInContextInPublicationContext(publicationContext.getId(), vocabulary.getUri(), "en");
         List<ChangeDto> changes = contextChangesDto.getChanges();
-        Assertions.assertEquals(changes.size(), 1);
+        assertEquals(changes.size(), 1);
     }
 
     @Test
@@ -164,8 +159,8 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
         ContextChangesDto contextChangesDto =
             sut.getChangesInContextInPublicationContext(publicationContext.getId(), vocabulary.getUri(), "en");
         List<ChangeDto> changes = contextChangesDto.getChanges();
-        Assertions.assertEquals(changes.size(), 2);
-        Assertions.assertTrue(publicationContext.getChanges().stream().map(Change::getUri).toList()
+        assertEquals(changes.size(), 2);
+        assertTrue(publicationContext.getChanges().stream().map(Change::getUri).toList()
             .containsAll(changes.stream().map(ChangeDto::getUri).toList()));
     }
 }

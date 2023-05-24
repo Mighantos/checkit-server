@@ -1,4 +1,4 @@
-package com.github.checkit.service;
+package com.github.checkit.service.auxilary;
 
 import com.github.checkit.config.PersistenceConfig;
 import com.github.checkit.config.properties.RepositoryConfigProperties;
@@ -10,7 +10,10 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import java.net.URI;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.annotation.DirtiesContext;
@@ -35,6 +38,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class BaseServiceTestRunner extends TransactionalTestRunner {
+
+    @Autowired
+    protected EntityManager em;
+
+    @Autowired
+    protected DescriptorFactory descriptorFactory;
+
+    @MockBean
+    protected KeycloakApiUtil keycloakApiUtil;
 
     private static final String EXISTENCE_CHECK_QUERY = "ASK { ?x a ?type . }";
 
