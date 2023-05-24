@@ -1,8 +1,13 @@
 package com.github.checkit.service;
 
 import com.github.checkit.config.properties.RepositoryConfigProperties;
+import com.github.checkit.dto.ChangeDto;
+import com.github.checkit.dto.ContextChangesDto;
+import com.github.checkit.dto.PublicationContextDetailDto;
 import com.github.checkit.dto.PublicationContextDto;
+import com.github.checkit.dto.auxiliary.PublicationContextState;
 import com.github.checkit.environment.Generator;
+import com.github.checkit.model.Change;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
@@ -12,6 +17,7 @@ import com.github.checkit.persistence.DescriptorFactory;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +41,7 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
     private RepositoryConfigProperties repositoryConfigProperties;
 
     private User user;
+    private User gestor;
     private ProjectContext projectContext;
     private VocabularyContext vocabularyContext;
     private Vocabulary vocabulary;
@@ -43,20 +50,22 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
     @BeforeEach
     void setUp() {
         this.user = Generator.generateDefaultUser(repositoryConfigProperties.getUser().getIdPrefix());
-        transactional(() -> em.persist(user));
+        this.gestor = Generator.generateUser("gestor", repositoryConfigProperties.getUser().getIdPrefix());
+        transactional(() -> {
+            em.persist(user);
+            em.persist(gestor);
+        });
 
-        this.vocabulary = Generator.generateVocabularyWithUri();
-        this.vocabularyContext = Generator.generateVocabularyContextWithUri();
-        this.vocabularyContext.setBasedOnVersion(vocabulary.getUri());
-        this.projectContext = Generator.generateProjectContextWithUri(user);
-        this.projectContext.setVocabularyContexts(Collections.singleton(vocabularyContext));
-        this.publicationContext = Generator.generatePublicationContextWithUri();
-        this.publicationContext.setFromProject(projectContext);
-        this.publicationContext.setChanges(
-            Collections.singleton(Generator.generateCreateChangeWitUri(vocabularyContext)));
+        this.vocabulary = Generator.generateVocabulary(Collections.singleton(gestor));
+        this.vocabularyContext = Generator.generateVocabularyContext(vocabulary);
+        this.projectContext = Generator.generateProjectContext(user, Collections.singleton(
+            vocabularyContext));
+        Set<Change> changes = Collections.singleton(Generator.generateCreateChange(vocabularyContext));
+        this.publicationContext = Generator.generatePublicationContext(projectContext, changes);
         transactional(() -> {
             em.persist(vocabulary, descriptorFactory.vocabularyDescriptor(vocabulary));
-            em.persist(vocabularyContext, descriptorFactory.vocabularyDescriptor(vocabularyContext.getUri()));
+            em.persist(vocabularyContext,
+                descriptorFactory.vocabularyDescriptor(vocabularyContext.getUri()));
             em.persist(projectContext, descriptorFactory.projectContextDescriptor(projectContext));
             em.persist(publicationContext, descriptorFactory.publicationContextDescriptor(publicationContext));
         });
@@ -68,21 +77,95 @@ class PublicationContextServiceTest extends BaseServiceTestRunner {
         List<PublicationContextDto> readonlyPublicationContexts = sut.getReadonlyPublicationContexts();
         Assertions.assertEquals(readonlyPublicationContexts.size(), 1);
         Assertions.assertEquals(readonlyPublicationContexts.get(0).getUri(), publicationContext.getUri());
+
+        vocabulary.setGestors(Collections.singleton(user));
+        transactional(() -> em.merge(vocabulary, descriptorFactory.vocabularyDescriptor(vocabulary)));
+        readonlyPublicationContexts = sut.getReadonlyPublicationContexts();
+        Assertions.assertEquals(readonlyPublicationContexts.size(), 0);
     }
 
     @Test
+    @WithMockUser
     void getReviewablePublicationContexts() {
+        List<PublicationContextDto> reviewablePublicationContexts = sut.getReviewablePublicationContexts();
+        Assertions.assertEquals(reviewablePublicationContexts.size(), 0);
+        vocabulary.setGestors(Collections.singleton(user));
+        transactional(() -> em.merge(vocabulary, descriptorFactory.vocabularyDescriptor(vocabulary)));
+
+        reviewablePublicationContexts = sut.getReviewablePublicationContexts();
+        Assertions.assertEquals(reviewablePublicationContexts.size(), 1);
+        Assertions.assertEquals(reviewablePublicationContexts.get(0).getUri(), publicationContext.getUri());
     }
 
     @Test
-    void getPublicationContextDetail() {
+    @WithMockUser
+    void getPublicationContextDetailWithNoChangesToReview() {
+        PublicationContextDetailDto publicationContextDetail =
+            sut.getPublicationContextDetail(publicationContext.getId());
+        Assertions.assertEquals(publicationContextDetail.getState(), PublicationContextState.WAITING_FOR_OTHERS);
     }
 
     @Test
-    void getChangesInContextInPublicationContext() {
+    @WithMockUser("gestor")
+    void getPublicationContextDetailWithOneReviewableChange() {
+        PublicationContextDetailDto publicationContextDetail =
+            sut.getPublicationContextDetail(publicationContext.getId());
+        Assertions.assertEquals(publicationContextDetail.getState(), PublicationContextState.CREATED);
     }
 
     @Test
-    void createOrUpdatePublicationContext() {
+    @WithMockUser
+    void getPublicationContextDetailRollbackChangeDoesNotChangeStatistics() {
+        PublicationContextDetailDto publicationContextDetail =
+            sut.getPublicationContextDetail(publicationContext.getId());
+        Assertions.assertEquals(publicationContextDetail.getStatistics().getTotalChanges(), 1);
+
+        Change rollbackedChange = Generator.generateRollbackedChange(vocabularyContext);
+        rollbackedChange.addApprovedBy(user);
+        publicationContext.getChanges().add(rollbackedChange);
+        transactional(() ->
+            em.merge(publicationContext, descriptorFactory.publicationContextDescriptor(publicationContext)));
+        publicationContextDetail =
+            sut.getPublicationContextDetail(publicationContext.getId());
+        Assertions.assertEquals(publicationContextDetail.getStatistics().getTotalChanges(), 1);
+    }
+
+    @Test
+    @WithMockUser("gestor")
+    void getPublicationContextDetailWithApprovedChanges() {
+        publicationContext.getChanges().stream().iterator().next().addApprovedBy(gestor);
+        transactional(() ->
+            em.merge(publicationContext, descriptorFactory.publicationContextDescriptor(publicationContext)));
+        PublicationContextDetailDto publicationContextDetail =
+            sut.getPublicationContextDetail(publicationContext.getId());
+        Assertions.assertEquals(publicationContextDetail.getState(), PublicationContextState.APPROVABLE);
+    }
+
+    @Test
+    @WithMockUser
+    void getChangesInContextInPublicationContextWithHiddenRollbackChange() {
+        publicationContext.getChanges().add(Generator.generateRollbackedChange(vocabularyContext));
+        transactional(() ->
+            em.merge(publicationContext, descriptorFactory.publicationContextDescriptor(publicationContext)));
+        ContextChangesDto contextChangesDto =
+            sut.getChangesInContextInPublicationContext(publicationContext.getId(), vocabulary.getUri(), "en");
+        List<ChangeDto> changes = contextChangesDto.getChanges();
+        Assertions.assertEquals(changes.size(), 1);
+    }
+
+    @Test
+    @WithMockUser
+    void getChangesInContextInPublicationContextWithRollbackChange() {
+        Change rollbackedChange = Generator.generateRollbackedChange(vocabularyContext);
+        rollbackedChange.addApprovedBy(user);
+        publicationContext.getChanges().add(rollbackedChange);
+        transactional(() ->
+            em.merge(publicationContext, descriptorFactory.publicationContextDescriptor(publicationContext)));
+        ContextChangesDto contextChangesDto =
+            sut.getChangesInContextInPublicationContext(publicationContext.getId(), vocabulary.getUri(), "en");
+        List<ChangeDto> changes = contextChangesDto.getChanges();
+        Assertions.assertEquals(changes.size(), 2);
+        Assertions.assertTrue(publicationContext.getChanges().stream().map(Change::getUri).toList()
+            .containsAll(changes.stream().map(ChangeDto::getUri).toList()));
     }
 }

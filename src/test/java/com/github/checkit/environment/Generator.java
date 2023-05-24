@@ -8,14 +8,21 @@ import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.model.VocabularyContext;
+import com.github.checkit.model.auxilary.ChangeSubjectType;
+import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 
 public class Generator {
 
     private static final Random random = new Random();
+
+    private static int generatePositiveInt() {
+        return random.nextInt(200000000);
+    }
 
     /**
      * Generates a (pseudo) random URI with optional class name, usable for test individuals.
@@ -26,7 +33,7 @@ public class Generator {
         if (Objects.isNull(className) || className.isEmpty()) {
             className = "unknown";
         }
-        return URI.create(Environment.BASE_URI + "randomInstance/" + className + "/" + random.nextLong());
+        return URI.create(Environment.BASE_URI + "randomInstance/" + className + "-" + generatePositiveInt());
     }
 
     /**
@@ -62,13 +69,42 @@ public class Generator {
     }
 
     /**
+     * Generates user with specified name.
+     *
+     * @param name           name of the user
+     * @param usernamePrefix prefix before username
+     * @return user
+     */
+    public static User generateUser(String name, String usernamePrefix) {
+        User user = new User();
+        user.setUri(URI.create(usernamePrefix + name));
+        user.setFirstName(name);
+        user.setLastName("Test");
+        return user;
+    }
+
+    /**
      * Generates a vocabulary with random URI.
      *
      * @return vocabulary
      */
-    public static Vocabulary generateVocabularyWithUri() {
+    public static Vocabulary generateVocabulary() {
         Vocabulary vocabulary = new Vocabulary();
-        vocabulary.setUri(generateUri(Vocabulary.class));
+        URI uri = generateUri(Vocabulary.class);
+        vocabulary.setUri(uri);
+        vocabulary.setLabel("Vocabulary" + uri.toString().substring(uri.toString().lastIndexOf("/") + 1));
+        return vocabulary;
+    }
+
+    /**
+     * Generates a vocabulary with random URI.
+     *
+     * @param gestors set of users who gestor this vocabulary
+     * @return vocabulary
+     */
+    public static Vocabulary generateVocabulary(Set<User> gestors) {
+        Vocabulary vocabulary = generateVocabulary();
+        vocabulary.setGestors(gestors);
         return vocabulary;
     }
 
@@ -76,25 +112,29 @@ public class Generator {
     /**
      * Generates a vocabulary context with random URI.
      *
+     * @param vocabulary vocabulary the context is based on
      * @return vocabulary context
      */
-    public static VocabularyContext generateVocabularyContextWithUri() {
+    public static VocabularyContext generateVocabularyContext(Vocabulary vocabulary) {
         VocabularyContext vocabularyContext = new VocabularyContext();
         vocabularyContext.setUri(generateUri(VocabularyContext.class));
+        vocabularyContext.setBasedOnVersion(vocabulary.getUri());
         return vocabularyContext;
     }
 
     /**
      * Generates a project context with random URI.
      *
-     * @param author author of the project
+     * @param author             author of the project
+     * @param vocabularyContexts set of vocabulary contexts in project
      * @return project context
      */
-    public static ProjectContext generateProjectContextWithUri(User author) {
+    public static ProjectContext generateProjectContext(User author, Set<VocabularyContext> vocabularyContexts) {
         ProjectContext projectContext = new ProjectContext();
         projectContext.setUri(generateUri(ProjectContext.class));
-        projectContext.setLabel("Project" + random.nextInt());
+        projectContext.setLabel("Project" + generatePositiveInt());
         projectContext.setAuthor(author);
+        projectContext.setVocabularyContexts(vocabularyContexts);
         return projectContext;
     }
 
@@ -104,23 +144,26 @@ public class Generator {
      *
      * @return publication context
      */
-    public static PublicationContext generatePublicationContextWithUri() {
+    public static PublicationContext generatePublicationContext(ProjectContext projectContext, Set<Change> changes) {
         PublicationContext publicationContext = new PublicationContext();
-        publicationContext.setUri(generateUri(PublicationContext.class));
+        publicationContext.setUri(URI.create(TermVocabulary.s_c_publikacni_kontext + "/PublicationContext-" + generatePositiveInt()));
         publicationContext.setCorrespondingPullRequest("NotPublished");
+        publicationContext.setFromProject(projectContext);
+        publicationContext.setChanges(changes);
         return publicationContext;
     }
 
     /**
-     * Generates a change of type create with random URI.
+     * Generates a change of type Created with random URI.
      *
      * @return create change
      */
-    public static Change generateCreateChangeWitUri(VocabularyContext vocabularyContext) {
+    public static Change generateCreateChange(VocabularyContext vocabularyContext) {
         Change change = new Change(vocabularyContext);
         URI uri = generateUri(Change.class);
         change.setUri(uri);
         change.setChangeType(ChangeType.CREATED);
+        change.setSubjectType(ChangeSubjectType.UNKNOWN);
         change.setLabel(new MultilingualString().set(uri.toString().substring(uri.toString().lastIndexOf("/") + 1)));
         change.setSubject(Generator.generateUri());
         change.setPredicate(Generator.generateUri());
@@ -129,6 +172,24 @@ public class Generator {
         return change;
     }
 
+    /**
+     * Generates a change of type Rollbacked with random URI.
+     *
+     * @return create change
+     */
+    public static Change generateRollbackedChange(VocabularyContext vocabularyContext) {
+        Change change = new Change(vocabularyContext);
+        URI uri = generateUri(Change.class);
+        change.setUri(uri);
+        change.setChangeType(ChangeType.ROLLBACKED);
+        change.setSubjectType(ChangeSubjectType.UNKNOWN);
+        change.setLabel(new MultilingualString().set(uri.toString().substring(uri.toString().lastIndexOf("/") + 1)));
+        change.setSubject(Generator.generateUri());
+        change.setPredicate(Generator.generateUri());
+        change.setObject(Generator.generateObjectOfChangeWithURI());
+        change.setCountable(false);
+        return change;
+    }
 
     /**
      * Generates an ChangeObject for a change with random URI as the content.
