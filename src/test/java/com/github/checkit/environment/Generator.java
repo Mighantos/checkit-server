@@ -227,23 +227,65 @@ public class Generator {
     }
 
     /**
+     * Generates a discussion Comment on a change.
+     *
+     * @param author author of the comment
+     * @param change change
+     * @return comment
+     */
+    public static Comment generateDiscussionComment(User author, Change change) {
+        Comment comment = generateComment(author);
+        comment.setTag(CommentTag.DISCUSSION);
+        comment.setTopic(change);
+        return comment;
+    }
+
+    /**
      * Generates a rejection Comment for a change.
      *
      * @param author author of the comment
      * @param change change
      * @return comment
      */
-    public static Comment generateFinalCommentOnChange(User author, Change change) {
+    public static Comment generateRejectionCommentOnChange(User author, Change change) {
         Comment comment = generateComment(author);
         comment.setTag(CommentTag.REJECTION);
         comment.setTopic(change);
         return comment;
     }
 
-    private static Comment generateComment(User author){
-        Comment comment =new Comment();
+    /**
+     * Generates a final approval Comment for a Publication context.
+     *
+     * @param author             author of the comment
+     * @param publicationContext publication context to create comment on
+     * @return comment
+     */
+    public static Comment generateApprovalCommentOnPC(User author, PublicationContext publicationContext) {
+        Comment comment = generateComment(author);
+        comment.setTag(CommentTag.APPROVAL);
+        comment.setTopic(publicationContext);
+        return comment;
+    }
+
+    /**
+     * Generates a final rejection Comment for a Publication context.
+     *
+     * @param author             author of the comment
+     * @param publicationContext publication context to create comment on
+     * @return comment
+     */
+    public static Comment generateRejectionCommentOnPC(User author, PublicationContext publicationContext) {
+        Comment comment = generateComment(author);
+        comment.setTag(CommentTag.REJECTION);
+        comment.setTopic(publicationContext);
+        return comment;
+    }
+
+    private static Comment generateComment(User author) {
+        Comment comment = new Comment();
         comment.setUri(generateUri(Comment.class));
-        comment.setContent("Random content of comment"+generatePositiveInt());
+        comment.setContent("Random content of comment" + generatePositiveInt());
         comment.setAuthor(author);
         return comment;
     }

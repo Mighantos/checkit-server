@@ -307,7 +307,7 @@ class ChangeServiceTest extends BaseServiceTestRunner {
     @WithMockUser("gestor")
     void removeChangesReviewRemovesFinalComment() {
         setChangesAsReviewed();
-        Comment comment = Generator.generateFinalCommentOnChange(gestor, changeWithGestor);
+        Comment comment = Generator.generateRejectionCommentOnChange(gestor, changeWithGestor);
         transactional(() -> em.persist(comment, descriptorFactory.commentDescriptor()));
         List<URI> changeUris = publicationContext.getChanges().stream().map(AbstractEntity::getUri).toList();
         assertTrue(em.createNativeQuery("ASK {?s a ?o . }", Boolean.class).setParameter("s", comment.getUri())
