@@ -16,7 +16,7 @@ plugins {
 }
 
 group = 'com.github'
-version = "0.6.5"
+version = "1.0.0"
 
 compileJava {
     sourceCompatibility = '17'
@@ -50,6 +50,7 @@ ext {
     keycloakVersion = '21.1.1'
     jenaVersion = '4.8.0'
     githubApiVersion = '1.314'
+    junitVersion = '5.9.2'
 }
 
 dependencies {
@@ -72,6 +73,7 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
     testImplementation "org.springframework.security:spring-security-test:6.0.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
 }
 
 checkstyle {
@@ -87,6 +89,17 @@ checkstyleTest {
     source = 'src/test/java'
 }
 
-tasks.named('test') {
+test {
+    testLogging {
+        events "PASSED", "SKIPPED", "FAILED", "STANDARD_OUT"
+    }
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)"
+            def startItem = '|  ', endItem = '  |'
+            def repeatLength = startItem.length() + output.length() + endItem.length()
+            println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+        }
+    }
     useJUnitPlatform()
 }

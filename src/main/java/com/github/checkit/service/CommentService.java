@@ -52,7 +52,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentDto> findAllRelatedToChange(URI changeUri) {
+    public List<CommentDto> findAllInDiscussionRelatedToChange(URI changeUri) {
         changeService.getRequiredReference(changeUri);
         return commentDao.findAllRelatedToChange(changeUri).stream().map(CommentDto::new).toList();
     }
@@ -74,9 +74,10 @@ public class CommentService extends BaseRepositoryService<Comment> {
      *
      * @param changeUri URI identifier of change
      * @param content   text content of comment
+     * @return URI identifier of the new comment
      */
     @Transactional
-    public void createComment(URI changeUri, String content) {
+    public URI createDiscussionComment(URI changeUri, String content) {
         Change change = changeService.getRequiredReference(changeUri);
         User current = userService.getCurrent();
         Comment comment = new Comment();
@@ -87,6 +88,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
         persist(comment);
         notificationService.createdDiscussionComment(comment, change);
         logger.info("User {} created discussion comment on change \"{}\".", current.toSimpleString(), changeUri);
+        return comment.getUri();
     }
 
     /**
@@ -94,9 +96,10 @@ public class CommentService extends BaseRepositoryService<Comment> {
      *
      * @param changeUri URI identifier of change
      * @param content   text content of comment
+     * @return URI identifier of the new comment
      */
     @Transactional
-    public void createRejectionComment(URI changeUri, String content) {
+    public URI createRejectionComment(URI changeUri, String content) {
         Change change = changeService.getRequiredReference(changeUri);
         User current = userService.getCurrent();
         changeService.checkUserCanReviewChange(current.getUri(), change.getUri());
@@ -118,10 +121,7 @@ public class CommentService extends BaseRepositoryService<Comment> {
         persist(comment);
         notificationService.createdRejectionComment(comment, change);
         logger.info("User {} created rejection comment on change \"{}\".", current.toSimpleString(), changeUri);
-    }
-
-    public void removeAllFinalComments(Change change) {
-        findAllFinalComments(change).forEach(this::remove);
+        return comment.getUri();
     }
 
     public void removeFinalComment(PublicationContext publicationContext) {

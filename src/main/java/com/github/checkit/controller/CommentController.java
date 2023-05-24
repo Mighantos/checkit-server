@@ -27,13 +27,13 @@ public class CommentController extends BaseController {
 
     @GetMapping("/discussion-on-change")
     public List<CommentDto> getAllRelatedToChange(@RequestParam URI changeUri) {
-        return commentService.findAllRelatedToChange(changeUri);
+        return commentService.findAllInDiscussionRelatedToChange(changeUri);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping
     public void createComment(@RequestParam URI changeUri, @RequestBody String content) {
-        commentService.createComment(changeUri, content);
+        commentService.createDiscussionComment(changeUri, content);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

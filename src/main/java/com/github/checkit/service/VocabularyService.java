@@ -10,6 +10,7 @@ import com.github.checkit.model.VocabularyContext;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
@@ -81,9 +82,12 @@ public class VocabularyService extends BaseRepositoryService<Vocabulary> {
      * @return vocabulary
      */
     public Vocabulary findRequiredInPublication(URI vocabularyUri, URI publicationContextUri) {
-        return vocabularyDao.find(vocabularyUri)
-            .orElse(vocabularyDao.findFromPublicationContext(vocabularyUri, publicationContextUri).orElseThrow(() ->
-                NotFoundException.create(Vocabulary.class.getSimpleName(), vocabularyUri)));
+        Optional<Vocabulary> vocabulary = vocabularyDao.find(vocabularyUri);
+        if (vocabulary.isEmpty()) {
+            vocabulary = vocabularyDao.findFromPublicationContext(vocabularyUri, publicationContextUri);
+        }
+        return vocabulary.orElseThrow(() ->
+            NotFoundException.create(Vocabulary.class.getSimpleName(), vocabularyUri));
     }
 
     public List<VocabularyDto> getAllInDto() {
