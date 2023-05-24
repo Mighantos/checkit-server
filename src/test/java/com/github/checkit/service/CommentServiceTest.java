@@ -149,13 +149,13 @@ class CommentServiceTest extends BaseServiceTestRunner {
     @Test
     @WithMockUser("gestor")
     void createRejectionComment() {
-        String commentContent = "Test rejection comment";
         changeWithGestor.addRejectedBy(gestor);
         transactional(
             () -> em.merge(changeWithGestor, descriptorFactory.changeDescriptor(publicationContext.getUri())));
         assertFalse(em.createNativeQuery("ASK {?s a ?o . }", Boolean.class)
             .setParameter("o", URI.create(TermVocabulary.s_c_Comment)).getSingleResult());
 
+        String commentContent = "Test rejection comment";
         URI testCommentUri = sut.createRejectionComment(changeWithGestor.getUri(), commentContent);
         assertTrue(em.createNativeQuery("ASK {?s a ?o . }", Boolean.class)
             .setParameter("o", URI.create(TermVocabulary.s_c_Comment)).getSingleResult());

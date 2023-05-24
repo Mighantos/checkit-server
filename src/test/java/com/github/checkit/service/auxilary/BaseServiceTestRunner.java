@@ -1,6 +1,7 @@
 package com.github.checkit.service.auxilary;
 
 import com.github.checkit.config.PersistenceConfig;
+import com.github.checkit.config.properties.ApplicationConfigProperties;
 import com.github.checkit.config.properties.RepositoryConfigProperties;
 import com.github.checkit.environment.TestPersistenceFactory;
 import com.github.checkit.environment.TransactionalTestRunner;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         TestPersistenceFactory.class,
         DescriptorFactory.class,
         RepositoryConfigProperties.class,
+        ApplicationConfigProperties.class,
         KeycloakApiUtil.class
     })
 @ActiveProfiles("test")
