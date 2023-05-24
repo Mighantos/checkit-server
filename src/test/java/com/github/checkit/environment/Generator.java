@@ -3,12 +3,14 @@ package com.github.checkit.environment;
 import com.github.checkit.model.Change;
 import com.github.checkit.model.ChangeObject;
 import com.github.checkit.model.ChangeType;
+import com.github.checkit.model.Comment;
 import com.github.checkit.model.ProjectContext;
 import com.github.checkit.model.PublicationContext;
 import com.github.checkit.model.User;
 import com.github.checkit.model.Vocabulary;
 import com.github.checkit.model.VocabularyContext;
 import com.github.checkit.model.auxilary.ChangeSubjectType;
+import com.github.checkit.model.auxilary.CommentTag;
 import com.github.checkit.util.TermVocabulary;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import java.net.URI;
@@ -37,12 +39,33 @@ public class Generator {
     }
 
     /**
+     * Generates a (pseudo) random URI with prefix and optional class name, usable for test individuals.
+     *
+     * @return Random URI
+     */
+    public static URI generateUri(String prefix, String className) {
+        if (Objects.isNull(className) || className.isEmpty()) {
+            className = "unknown";
+        }
+        return URI.create(prefix + "/" + className + "-" + generatePositiveInt());
+    }
+
+    /**
      * Generates a (pseudo) random URI with class name, usable for test individuals.
      *
      * @return Random URI
      */
     public static URI generateUri(Class c) {
         return generateUri(c.getSimpleName());
+    }
+
+    /**
+     * Generates a (pseudo) random URI with specified prefix and class's name, usable for test individuals.
+     *
+     * @return Random URI
+     */
+    public static URI generateUri(String prefix, Class c) {
+        return generateUri(prefix, c.getSimpleName());
     }
 
     /**
@@ -161,7 +184,7 @@ public class Generator {
      */
     public static Change generateCreateChange(VocabularyContext vocabularyContext) {
         Change change = new Change(vocabularyContext);
-        URI uri = generateUri(Change.class);
+        URI uri = generateUri(TermVocabulary.s_c_zmena, Change.class);
         change.setUri(uri);
         change.setChangeType(ChangeType.CREATED);
         change.setSubjectType(ChangeSubjectType.UNKNOWN);
@@ -201,5 +224,27 @@ public class Generator {
         ChangeObject changeObject = new ChangeObject();
         changeObject.setValueWithLanguageTag(new MultilingualString().set(Generator.generateUri().toString()));
         return changeObject;
+    }
+
+    /**
+     * Generates a rejection Comment for a change.
+     *
+     * @param author author of the comment
+     * @param change change
+     * @return comment
+     */
+    public static Comment generateFinalCommentOnChange(User author, Change change) {
+        Comment comment = generateComment(author);
+        comment.setTag(CommentTag.REJECTION);
+        comment.setTopic(change);
+        return comment;
+    }
+
+    private static Comment generateComment(User author){
+        Comment comment =new Comment();
+        comment.setUri(generateUri(Comment.class));
+        comment.setContent("Random content of comment"+generatePositiveInt());
+        comment.setAuthor(author);
+        return comment;
     }
 }
