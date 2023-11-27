@@ -79,16 +79,17 @@ this refer to [docker run](https://docs.docker.com/engine/reference/commandline/
 
 Before you start developing this application, you need to set required environmental variables that can be found in
 section [Environment variables](#environment-variables). These variables are needed to connect to Keycloak authorization
-service and database. *You can see some examples in `src/main/resources/application.yml` file.*
+service and database.
 
 ## Environment variables
 
-Description of environment variables consumed by CheckIt server. *You can see some variables set with placeholders
-in `src/main/resources/application.yml` file.*
+Description of environment variables consumed by CheckIt server. *You can see some variables set with
+examples/placeholders in [`src/main/resources/application.yml`](src/main/resources/application.yml) file.*
 
-You can choose to put your variables in YAML file located in `src/main/resources/application.yml` or run the application
-in environment with set environment variables. All variable bellow are written in environment variables format, but can
-be easily converted to YAML format, like so:
+You can choose to put your variables in YAML file located
+in [`src/main/resources/application.yml`](src/main/resources/application.yml) or run the application in environment with
+set environment variables. All variable bellow are written in environment variables format, but can be easily converted
+to YAML format, like so:
 
 ```yaml
 # YAML format
@@ -96,8 +97,8 @@ here:
   is:
     anExample: "of YAML format"
 
-# Environment variables format
-HERE_IS_AN-EXAMPLE="of environment variable format"
+  # Environment variables format
+  HERE_IS_AN-EXAMPLE="of environment variable format"
 ```
 
 ### Required
@@ -119,22 +120,27 @@ Variables required to be set to start the application.
 
 Optional variables allowing more configuration.
 
-| Name                                      | Description                                                              |
-|-------------------------------------------|--------------------------------------------------------------------------|
-| SERVER_PORT                               | Port the application is running on. *Default: 8080*                      |
-| SERVER_SERVLET_CONTEXT-PATH               | Sets base URL path. *Default: /checkit-server*                           |
-| KEYCLOAK_ISSUER-URL                       | URL of Keycloak's issuer endpoint.                                       |
-| KEYCLOAK_AUTHORIZATION-URL                | URL of Keycloak's authorization endpoint.                                |
-| KEYCLOAK_TOKEN-URL                        | URL of Keycloak's token endpoint.                                        |
-| KEYCLOAK_USER-INFO-URL                    | URL of Keycloak's user info endpoint.                                    |
-| KEYCLOAK_JWKS-URL                         | Keycloak's JWK Set URL.                                                  |
-| KEYCLOAK_END_SESSION_URL                  | URL of Keycloak's end session (logout) endpoint.                         |
-| REPOSITORY_USER_ID-PREFIX                 | Prefix for Keycloak user IDs used in Database.                           |
-| REPOSITORY_USER_CONTEXT                   | Identifier of context (graph) users are stored in.                       |
-| REPOSITORY_USER_GESTORING-REQUEST_CONTEXT | Identifier of context (graph) where Gestoring requests should be stored. |
-| REPOSITORY_USER_COMMENT_CONTEXT           | Identifier of context (graph) where comments should be stored.           |
-| REPOSITORY_DRIVER                         | Database connection driver.                                              |
-| REPOSITORY_LANGUAGE                       | Default language tag for literals in Database.                           |
+| Name                                      | Description                                                                               |
+|-------------------------------------------|-------------------------------------------------------------------------------------------|
+| SERVER_PORT                               | Port the application is running on. <br/>*Default: 8080*                                  |
+| SERVER_SERVLET_CONTEXT-PATH               | Sets base URL path. <br/>*Default: /checkit-server*                                       |
+| GITHUB_PUBLISH-TO-SSP                     | Indicates if approved publication contexts should be pushed to SSP. <br/>*Default: false* |
+| GITHUB_ORGANIZATION                       | GitHub organization where SSP is located.                                                 |
+| GITHUB_REPOSITORY                         | GitHub repository name of SSP.                                                            |
+| GITHUB_TOKEN                              | Login token to merge PRs in GitHub.                                                       |
+| SGOV-SERVER_URL                           | URL of SGoV server (to create Github PR with Publication Context).                        |
+| KEYCLOAK_ISSUER-URL                       | URL of Keycloak's issuer endpoint.                                                        |
+| KEYCLOAK_AUTHORIZATION-URL                | URL of Keycloak's authorization endpoint.                                                 |
+| KEYCLOAK_TOKEN-URL                        | URL of Keycloak's token endpoint.                                                         |
+| KEYCLOAK_USER-INFO-URL                    | URL of Keycloak's user info endpoint.                                                     |
+| KEYCLOAK_JWKS-URL                         | Keycloak's JWK Set URL.                                                                   |
+| KEYCLOAK_END_SESSION_URL                  | URL of Keycloak's end session (logout) endpoint.                                          |
+| REPOSITORY_USER_ID-PREFIX                 | Prefix for Keycloak user IDs used in Database.                                            |
+| REPOSITORY_USER_CONTEXT                   | Identifier of context (graph) users are stored in.                                        |
+| REPOSITORY_USER_GESTORING-REQUEST_CONTEXT | Identifier of context (graph) where Gestoring requests should be stored.                  |
+| REPOSITORY_USER_COMMENT_CONTEXT           | Identifier of context (graph) where comments should be stored.                            |
+| REPOSITORY_DRIVER                         | Database connection driver.                                                               |
+| REPOSITORY_LANGUAGE                       | Default language tag for literals in Database.                                            |
 
 You can find more optional variables
 in [Spring documentation](https://docs.spring.io/spring-boot/docs/3.0.4/reference/htmlsingle/).
